@@ -1,0 +1,13 @@
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "67758a68331b4c74a6a471d64b96ee89.0NGy9r72GanTwhzI",
+    "ANTHROPIC_MODEL": "glm-5",
+    "ANTHROPIC_BASE_URL": "https://open.bigmodel.cn/api/anthropic"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(python:*)"
+    ]
+  }
+}

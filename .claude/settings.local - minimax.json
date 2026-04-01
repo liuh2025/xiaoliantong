@@ -1,0 +1,13 @@
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "sk-cp-ZeoHCN-Zt-tudunpPEKndfhHMm5MYfdmJmNDZO7YQ2-mksuLjG0zpQtU98qawlYqmlaje6HEBc26bLpnRG3bxj_8_WzHxhwzkR_8x3T1EYsLs3RjCxzPSzc",
+    "ANTHROPIC_MODEL": "MiniMax-M2.7",
+    "ANTHROPIC_BASE_URL": "https://api.minimaxi.com/anthropic"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(python:*)"
+    ]
+  }
+}
