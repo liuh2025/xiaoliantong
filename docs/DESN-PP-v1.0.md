@@ -599,6 +599,16 @@ XiaoLianTong/
 | auth_status | string | UNCLAIMED/PENDING/VERIFIED/REJECTED |
 | admin_user_id | int | 管理员用户ID |
 | created_at | datetime | 创建时间 |
+| opportunities | array | 该企业发布的商机列表（最新3条） |
+
+**opportunities 元素**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 商机ID |
+| type | string | BUY/SUPPLY |
+| title | string | 商机标题 |
+| view_count | int | 浏览量 |
+| created_at | datetime | 发布时间 |
 
 ---
 
