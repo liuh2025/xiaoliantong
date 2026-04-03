@@ -551,6 +551,7 @@ XiaoLianTong/
 | page | int | N | 页码，默认1 |
 | page_size | int | N | 每页条数，默认20 |
 | industry_id | int | N | 行业ID |
+| category_id | int | N | 业务品类ID |
 | region_id | int | N | 地区ID |
 | tags | string | N | 标签，逗号分隔 |
 | keyword | string | N | 关键词搜索 |
