@@ -571,6 +571,7 @@ XiaoLianTong/
 | name | string | 企业名称 |
 | logo_url | string | Logo URL |
 | industry | string | 行业名称 |
+| category | string | 主营业务品类名称 |
 | region | string | 地区名称 |
 | tags | array | 标签列表 |
 | auth_status | string | 认证状态 |
