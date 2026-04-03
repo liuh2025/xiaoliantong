@@ -555,6 +555,7 @@ XiaoLianTong/
 | region_id | int | N | 地区ID |
 | tags | string | N | 标签，逗号分隔 |
 | keyword | string | N | 关键词搜索 |
+| auth_status | string | N | 认证状态筛选：UNCLAIMED/PENDING/VERIFIED/REJECTED |
 
 **响应字段**:
 | 字段 | 类型 | 说明 |

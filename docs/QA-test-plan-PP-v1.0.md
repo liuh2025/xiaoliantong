@@ -94,25 +94,26 @@ status: 草稿
 | TC-API-ENT-006 | 获取企业列表-关键词搜索 | GET /ent/enterprise | 正例 | 无 | keyword=威蓝 | 返回名称含威蓝的企业 |
 | TC-API-ENT-007 | 获取企业列表-分页 | GET /ent/enterprise | 正例 | 无 | page=2&page_size=10 | 返回第2页10条数据 |
 | TC-API-ENT-008 | 获取企业列表-无结果 | GET /ent/enterprise | 反例 | 无 | keyword=不存在的企业名 | 返回空列表，code=200 |
-| TC-API-ENT-009 | 获取企业详情 | GET /ent/enterprise/{id} | 正例 | 已登录 | 获取已认证企业详情 | 返回完整企业信息，含发布商机列表 |
-| TC-API-ENT-010 | 获取企业详情-未登录 | GET /ent/enterprise/{id} | 反例 | 未登录 | 获取需认证企业详情 | 联系方式脱敏，仅返回基本信息 |
-| TC-API-ENT-011 | 获取企业详情-不存在 | GET /ent/enterprise/{id} | 反例 | 已登录 | id=99999 | 返回 404 |
-| TC-API-ENT-012 | 认领企业-成功 | POST /ent/enterprise/claim | 正例 | 已登录，未绑定企业 | 提交认领申请+职务+材料 | 创建审核记录，code=200 |
-| TC-API-ENT-013 | 认领企业-已认领 | POST /ent/enterprise/claim | 反例 | 企业已被认领 | 认领已认证企业 | 返回"企业已被认领"，code=400 |
-| TC-API-ENT-014 | 认领企业-待审核 | POST /ent/enterprise/claim | 反例 | 企业正在审核中 | 认领待审核企业 | 返回"企业正在审核中"，code=400 |
-| TC-API-ENT-015 | 认领企业-未登录 | POST /ent/enterprise/claim | 反例 | 未登录 | 不带 Token 认领 | 返回 401 |
-| TC-API-ENT-016 | 创建企业-成功 | POST /ent/enterprise/create | 正例 | 已登录，未绑定企业 | 提交完整企业信息 | 创建待审核企业，code=200 |
-| TC-API-ENT-017 | 创建企业-缺少必填 | POST /ent/enterprise/create | 反例 | 已登录 | 缺少企业名称 | 返回"企业名称不能为空"，code=400 |
-| TC-API-ENT-018 | 创建企业-已存在 | POST /ent/enterprise/create | 反例 | 已登录 | 创建同名企业 | 返回"企业已存在"，code=400 |
-| TC-API-ENT-019 | 获取我的企业 | GET /ent/enterprise/my | 正例 | 已绑定企业 | 调用接口 | 返回当前用户所属企业信息 |
-| TC-API-ENT-020 | 获取我的企业-未绑定 | GET /ent/enterprise/my | 反例 | 未绑定企业 | 调用接口 | 返回空，code=200 |
-| TC-API-ENT-021 | 更新企业信息 | PUT /ent/enterprise/{id} | 正例 | 企业管理员 | 更新 logo/tags/description | 更新成功，code=200 |
-| TC-API-ENT-022 | 更新企业信息-无权限 | PUT /ent/enterprise/{id} | 反例 | 非企业管理员 | 尝试更新他企业信息 | 返回 403 |
-| TC-API-ENT-023 | 获取行业分类 | GET /ent/industry | 正例 | 公开 | 调用接口 | 返回行业树形结构 |
-| TC-API-ENT-024 | 获取业务品类 | GET /ent/category | 正例 | 公开 | 调用接口 | 返回品类树形结构 |
-| TC-API-ENT-025 | 获取行政区划 | GET /ent/region | 正例 | 公开 | 调用接口 | 返回省市区树形结构 |
-| TC-API-ENT-026 | 获取行业分类-缓存 | GET /ent/industry | 正例 | 公开 | 第二次调用 | 从缓存返回，响应更快 |
-| TC-API-ENT-027 | 获取品类-空分类 | GET /ent/category | 反例 | 公开但无数据 | 调用接口 | 返回空数组，code=200 |
+| TC-API-ENT-009 | 获取企业列表-筛选未认领 | GET /ent/enterprise | 正例 | 无 | auth_status=UNCLAIMED | 返回未认领企业列表 |
+| TC-API-ENT-010 | 获取企业详情 | GET /ent/enterprise/{id} | 正例 | 已登录 | 获取已认证企业详情 | 返回完整企业信息，含发布商机列表 |
+| TC-API-ENT-011 | 获取企业详情-未登录 | GET /ent/enterprise/{id} | 反例 | 未登录 | 获取需认证企业详情 | 联系方式脱敏，仅返回基本信息 |
+| TC-API-ENT-012 | 获取企业详情-不存在 | GET /ent/enterprise/{id} | 反例 | 已登录 | id=99999 | 返回 404 |
+| TC-API-ENT-013 | 认领企业-成功 | POST /ent/enterprise/claim | 正例 | 已登录，未绑定企业 | 提交认领申请+职务+材料 | 创建审核记录，code=200 |
+| TC-API-ENT-014 | 认领企业-已认领 | POST /ent/enterprise/claim | 反例 | 企业已被认领 | 认领已认证企业 | 返回"企业已被认领"，code=400 |
+| TC-API-ENT-015 | 认领企业-待审核 | POST /ent/enterprise/claim | 反例 | 企业正在审核中 | 认领待审核企业 | 返回"企业正在审核中"，code=400 |
+| TC-API-ENT-016 | 认领企业-未登录 | POST /ent/enterprise/claim | 反例 | 未登录 | 不带 Token 认领 | 返回 401 |
+| TC-API-ENT-017 | 创建企业-成功 | POST /ent/enterprise/create | 正例 | 已登录，未绑定企业 | 提交完整企业信息 | 创建待审核企业，code=200 |
+| TC-API-ENT-018 | 创建企业-缺少必填 | POST /ent/enterprise/create | 反例 | 已登录 | 缺少企业名称 | 返回"企业名称不能为空"，code=400 |
+| TC-API-ENT-019 | 创建企业-已存在 | POST /ent/enterprise/create | 反例 | 已登录 | 创建同名企业 | 返回"企业已存在"，code=400 |
+| TC-API-ENT-020 | 获取我的企业 | GET /ent/enterprise/my | 正例 | 已绑定企业 | 调用接口 | 返回当前用户所属企业信息 |
+| TC-API-ENT-021 | 获取我的企业-未绑定 | GET /ent/enterprise/my | 反例 | 未绑定企业 | 调用接口 | 返回空，code=200 |
+| TC-API-ENT-022 | 更新企业信息 | PUT /ent/enterprise/{id} | 正例 | 企业管理员 | 更新 logo/tags/description | 更新成功，code=200 |
+| TC-API-ENT-023 | 更新企业信息-无权限 | PUT /ent/enterprise/{id} | 反例 | 非企业管理员 | 尝试更新他企业信息 | 返回 403 |
+| TC-API-ENT-024 | 获取行业分类 | GET /ent/industry | 正例 | 公开 | 调用接口 | 返回行业树形结构 |
+| TC-API-ENT-025 | 获取业务品类 | GET /ent/category | 正例 | 公开 | 调用接口 | 返回品类树形结构 |
+| TC-API-ENT-026 | 获取行政区划 | GET /ent/region | 正例 | 公开 | 调用接口 | 返回省市区树形结构 |
+| TC-API-ENT-027 | 获取行业分类-缓存 | GET /ent/industry | 正例 | 公开 | 第二次调用 | 从缓存返回，响应更快 |
+| TC-API-ENT-028 | 获取品类-空分类 | GET /ent/category | 反例 | 公开但无数据 | 调用接口 | 返回空数组，code=200 |
 
 ### 2.3 商机模块（L1 API 测试）
 
@@ -500,14 +501,14 @@ status: 草稿
 | 认证 (auth_app) | 16 | 9 | 25 |
 | 宣传页 (public) | 2 | 2 | 4 |
 | 注册页 (register) | 0 | 2 | 2 |
-| 企业 (ent) | 27 | 10 | 37 |
+| 企业 (ent) | 28 | 10 | 38 |
 | 商机 (opp) | 28 | 16 | 44 |
 | 动态 (feed) | 16 | 7 | 23 |
 | 企业端管理 (ent-admin) | 20 | 16 | 36 |
 | 平台端管理 (plat-admin) | 37 | 18 | 55 |
 | 搜索 (search) | 6 | 6 | 12 |
 | 安全测试 | 6 | 0 | 6 |
-| **合计** | **158** | **88** | **246** |
+| **合计** | **159** | **88** | **247** |
 
 ---
 
