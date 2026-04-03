@@ -536,6 +536,7 @@ XiaoLianTong/
 | enterprise_count | int | 入驻企业数 |
 | opportunity_count | int | 累计商机数 |
 | deal_count | int | 成功撮合数 |
+| active_user_count | int | 活跃校友数（近30天有登录的用户数） |
 
 ---
 

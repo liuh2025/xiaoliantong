@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校链通 - 校友推广</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .promotion-page {
+            max-width: 480px;
+            width: 100%;
+        }
+
+        .promotion-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .brand-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .slogan {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 32px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #eee;
+            margin: 24px 0;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2563EB;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .qr-section {
+            margin: 32px 0;
+        }
+
+        .qr-box {
+            width: 200px;
+            height: 200px;
+            background: #f5f5f5;
+            border-radius: 16px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ddd;
+        }
+
+        .qr-placeholder {
+            width: 160px;
+            height: 160px;
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+        }
+
+        .qr-hint {
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .footer {
+            margin-top: 32px;
+            font-size: 0.75rem;
+            color: #999;
+        }
+
+        @media (max-width: 480px) {
+            .promotion-card {
+                padding: 32px 24px;
+            }
+
+            .brand-name {
+                font-size: 1.5rem;
+            }
+
+            .qr-box {
+                width: 180px;
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="promotion-page">
+        <div class="promotion-card">
+            <div class="logo">🏛️</div>
+            <h1 class="brand-name">校链通</h1>
+            <p class="slogan">连接校友资源，共创商业价值</p>
+
+            <div class="divider"></div>
+
+            <p style="font-size: 0.9375rem; color: #444; line-height: 1.6; margin-bottom: 16px;">
+                专为校友企业打造的轻量级供需撮合平台<br>
+                基于校友信任纽带，实现高效的业务对接与合作
+            </p>
+
+            <div class="divider"></div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value">1,284</div>
+                    <div class="stat-label">入驻企业</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">5,492</div>
+                    <div class="stat-label">累计商机</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">8,301</div>
+                    <div class="stat-label">成功撮合</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">3,128</div>
+                    <div class="stat-label">活跃校友</div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="qr-section">
+                <div class="qr-box">
+                    <div class="qr-placeholder">
+                        [二维码]<br>扫码注册
+                    </div>
+                </div>
+                <p class="qr-hint">扫码注册，加入校友商圈</p>
+            </div>
+
+            <div class="footer">
+                © 2026 校链通 · 校友供应链撮合平台
+            </div>
+        </div>
+    </div>
+</body>
+</html>
