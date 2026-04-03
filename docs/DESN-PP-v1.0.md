@@ -30,18 +30,18 @@ status: 草稿
 
 ### 1.1 技术栈选型
 
-| 层级 | 技术选型 | 版本 | 说明 |
-|------|----------|------|------|
-| **前端框架** | Vue3 | 3.4+ | 组合式 API (Composition API) |
-| **UI 组件库** | Element Plus | 2.5+ | 企业级 UI 组件库 |
-| **状态管理** | Pinia | 2.1+ | Vue3 官方推荐状态管理 |
-| **HTTP 客户端** | Axios | 1.6+ | HTTP 请求库 |
-| **路由** | Vue Router | 4.2+ | Vue3 官方路由 |
-| **后端框架** | Django 4.2+ | 4.2+ | Python Web 框架 |
-| **API 框架** | Django REST Framework | 3.14+ | RESTful API |
-| **数据库** | MySQL | 8.0+ | 关系型数据库 |
-| **认证** | SimpleJWT | - | Token 认证 |
-| **Docker** | Docker Compose | 2.20+ | 容器编排 |
+| 层级           | 技术选型                  | 版本    | 说明                        |
+| ------------ | --------------------- | ----- | ------------------------- |
+| **前端框架**     | Vue3                  | 3.4+  | 组合式 API (Composition API) |
+| **UI 组件库**   | Element Plus          | 2.5+  | 企业级 UI 组件库                |
+| **状态管理**     | Pinia                 | 2.1+  | Vue3 官方推荐状态管理             |
+| **HTTP 客户端** | Axios                 | 1.6+  | HTTP 请求库                  |
+| **路由**       | Vue Router            | 4.2+  | Vue3 官方路由                 |
+| **后端框架**     | Django 4.2+           | 4.2+  | Python Web 框架             |
+| **API 框架**   | Django REST Framework | 3.14+ | RESTful API               |
+| **数据库**      | MySQL                 | 8.0+  | 关系型数据库                    |
+| **认证**       | SimpleJWT             | -     | Token 认证                  |
+| **Docker**   | Docker Compose        | 2.20+ | 容器编排                      |
 
 ### 1.2 后端核心依赖
 
@@ -167,16 +167,16 @@ XiaoLianTong/
 
 ### 1.6 模块清单
 
-| 模块标识 | 模块名称 | 迭代顺序 | 说明 |
-|----------|----------|----------|------|
-| auth_app | 认证模块 | 1 | 登录、注册、Token 管理、短信验证 |
-| ent | 企业名录 | 1 | 企业浏览、认领、创建 |
-| opp | 商机广场 | 1 | 供需发布、检索、撮合 |
-| feed | 校友圈 | 1 | 动态发布、浏览 |
-| ent-admin | 企业端管理 | 1 | 企业信息维护、员工管理、商机管理 |
-| plat-admin | 平台端管理 | 1 | 数据大盘、企业审核、基础数据、RBAC |
-| msg | 消息通知 | 2 | 站内消息、撮合通知 |
-| search | 搜索服务 | 2 | 统一搜索 |
+| 模块标识       | 模块名称  | 迭代顺序 | 说明                  |
+| ---------- | ----- | ---- | ------------------- |
+| auth_app   | 认证模块  | 1    | 登录、注册、Token 管理、短信验证 |
+| ent        | 企业名录  | 1    | 企业浏览、认领、创建          |
+| opp        | 商机广场  | 1    | 供需发布、检索、撮合          |
+| feed       | 校友圈   | 1    | 动态发布、浏览             |
+| ent-admin  | 企业端管理 | 1    | 企业信息维护、员工管理、商机管理    |
+| plat-admin | 平台端管理 | 1    | 数据大盘、企业审核、基础数据、RBAC |
+| msg        | 消息通知  | 2    | 站内消息、撮合通知           |
+| search     | 搜索服务  | 2    | 统一搜索                |
 
 ---
 
@@ -225,39 +225,39 @@ XiaoLianTong/
 
 #### ent_user_profile（用户企业扩展表）
 
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| id | BIGINT | Y | 主键 |
-| user | FK(auth.User) | Y | 关联用户（一对一） |
-| enterprise | FK(ent_enterprise) | N | 归属企业 |
-| role_code | VARCHAR(20) | Y | 业务角色码（enterprise_admin/employee/guest） |
-| real_name | VARCHAR(50) | Y | 真实姓名 |
-| contact_phone | VARCHAR(11) | N | 联系电话 |
-| contact_wechat | VARCHAR(50) | N | 微信 |
-| created_at | DATETIME | Y | 创建时间 |
-| updated_at | DATETIME | Y | 更新时间 |
+| 字段             | 类型                 | 必填  | 说明                                     |
+| -------------- | ------------------ | --- | -------------------------------------- |
+| id             | BIGINT             | Y   | 主键                                     |
+| user           | FK(auth.User)      | Y   | 关联用户（一对一）                              |
+| enterprise     | FK(ent_enterprise) | N   | 归属企业                                   |
+| role_code      | VARCHAR(20)        | Y   | 业务角色码（enterprise_admin/employee/guest） |
+| real_name      | VARCHAR(50)        | Y   | 真实姓名                                   |
+| contact_phone  | VARCHAR(11)        | N   | 联系电话                                   |
+| contact_wechat | VARCHAR(50)        | N   | 微信                                     |
+| created_at     | DATETIME           | Y   | 创建时间                                   |
+| updated_at     | DATETIME           | Y   | 更新时间                                   |
 
 #### opp_opportunity（商机表）
 
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| id | BIGINT | Y | 主键 |
-| type | VARCHAR(10) | Y | BUY/SUPPLY |
-| title | VARCHAR(200) | Y | 商机标题 |
-| enterprise | FK(ent_enterprise) | Y | 发布企业 |
-| publisher | FK(auth.User) | Y | 发布人 |
-| industry_id | BIGINT | Y | 所属行业 |
-| category_id | BIGINT | Y | 业务品类 |
-| region_id | BIGINT | Y | 所在地区 |
-| tags | JSON | N | 业务标签 |
-| detail | TEXT | Y | 详细描述 |
-| status | VARCHAR(20) | Y | ACTIVE/OFFLINE |
-| view_count | INT | Y | 浏览量 |
-| contact_name | VARCHAR(50) | N | 联系人 |
-| contact_phone | VARCHAR(11) | N | 联系电话 |
-| contact_wechat | VARCHAR(50) | N | 微信 |
-| created_at | DATETIME | Y | 创建时间 |
-| updated_at | DATETIME | Y | 更新时间 |
+| 字段             | 类型                 | 必填  | 说明             |
+| -------------- | ------------------ | --- | -------------- |
+| id             | BIGINT             | Y   | 主键             |
+| type           | VARCHAR(10)        | Y   | BUY/SUPPLY     |
+| title          | VARCHAR(200)       | Y   | 商机标题           |
+| enterprise     | FK(ent_enterprise) | Y   | 发布企业           |
+| publisher      | FK(auth.User)      | Y   | 发布人            |
+| industry_id    | BIGINT             | Y   | 所属行业           |
+| category_id    | BIGINT             | Y   | 业务品类           |
+| region_id      | BIGINT             | Y   | 所在地区           |
+| tags           | JSON               | N   | 业务标签           |
+| detail         | TEXT               | Y   | 详细描述           |
+| status         | VARCHAR(20)        | Y   | ACTIVE/OFFLINE |
+| view_count     | INT                | Y   | 浏览量            |
+| contact_name   | VARCHAR(50)        | N   | 联系人            |
+| contact_phone  | VARCHAR(11)        | N   | 联系电话           |
+| contact_wechat | VARCHAR(50)        | N   | 微信             |
+| created_at     | DATETIME           | Y   | 创建时间           |
+| updated_at     | DATETIME           | Y   | 更新时间           |
 
 #### opp_contact_log（商机撮合日志表）
 
@@ -291,7 +291,8 @@ XiaoLianTong/
 | applicant | FK(auth.User) | Y | 申请人 |
 | auditor | FK(auth.User) | N | 审批人 |
 | status | VARCHAR(20) | Y | PENDING/VERIFIED/REJECTED |
-| applicant_position | VARCHAR(50) | N | 申请人职务 |
+| applicant_position | VARCHAR(50) | Y | 申请人职务 |
+| legal_representative | VARCHAR(100) | Y | 法人姓名 |
 | business_license | VARCHAR(500) | Y | 营业执照URL |
 | audit_reason | TEXT | N | 驳回原因 |
 | created_at | DATETIME | Y | 操作时间 |
@@ -429,97 +430,855 @@ XiaoLianTong/
 
 ### 3.2 认证接口
 
-| 方法 | 路径 | 描述 | 权限 |
+#### POST /api/v1/auth/login/sms（短信验证码登录）
+**权限**: 公开
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| POST | /api/v1/auth/login/sms | 短信验证码登录 | 公开 |
-| POST | /api/v1/auth/login/password | 密码登录 | 公开 |
-| POST | /api/v1/auth/register | 用户注册 | 公开 |
-| POST | /api/v1/auth/logout | 登出 | 已认证 |
-| POST | /api/v1/auth/refresh | 刷新 Token | 已认证 |
-| GET | /api/v1/auth/me | 获取当前用户信息 | 已认证 |
+| phone | string | Y | 手机号，11位 |
+| code | string | Y | 6位验证码 |
 
-### 3.2.1 宣传页接口
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| access_token | string | JWT访问令牌 |
+| refresh_token | string | JWT刷新令牌 |
+| user_id | int | 用户ID |
+| phone | string | 手机号 |
 
-| 方法 | 路径 | 描述 | 权限 |
+---
+
+#### POST /api/v1/auth/login/password（密码登录）
+**权限**: 公开
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| GET | /api/v1/public/stats | 获取平台统计数据（入驻企业数、累计商机、成功撮合） | 公开 |
+| phone | string | Y | 手机号，11位 |
+| password | string | Y | 密码 |
 
-### 3.3 企业相关接口
+**响应字段**: 同上
 
-| 方法 | 路径 | 描述 | 权限 |
+---
+
+#### POST /api/v1/auth/register（用户注册）
+**权限**: 公开
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| GET | /api/v1/ent/enterprise | 企业列表（分页+筛选） | 公开 |
-| GET | /api/v1/ent/enterprise/{id} | 企业详情 | 已认证 |
-| POST | /api/v1/ent/enterprise/claim | 认领企业 | 已认证 |
-| POST | /api/v1/ent/enterprise/create | 创建企业 | 已认证 |
-| GET | /api/v1/ent/enterprise/my | 我的企业 | 已认证 |
-| PUT | /api/v1/ent/enterprise/{id} | 更新企业信息 | 企业管理员 |
-| GET | /api/v1/ent/industry | 行业分类列表 | 公开 |
-| GET | /api/v1/ent/category | 业务品类列表 | 公开 |
-| GET | /api/v1/ent/region | 行政区划列表 | 公开 |
+| phone | string | Y | 手机号，11位 |
+| code | string | Y | 6位验证码 |
+| password | string | Y | 密码，8-20位 |
 
-### 3.4 商机相关接口
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| access_token | string | JWT访问令牌 |
+| refresh_token | string | JWT刷新令牌 |
+| user_id | int | 用户ID |
 
-| 方法 | 路径 | 描述 | 权限 |
+---
+
+#### POST /api/v1/auth/logout（登出）
+**权限**: 已认证
+
+**请求字段**: 无
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| message | string | 成功消息 |
+
+---
+
+#### POST /api/v1/auth/refresh（刷新Token）
+**权限**: 已认证
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| GET | /api/v1/opp/opportunity | 商机列表（分页+筛选） | 公开 |
-| GET | /api/v1/opp/opportunity/{id} | 商机详情 | 已认证 |
-| POST | /api/v1/opp/opportunity | 发布商机 | 已认证（需绑定认证企业） |
-| PUT | /api/v1/opp/opportunity/{id} | 更新商机 | 发布人或企业管理员 |
-| DELETE | /api/v1/opp/opportunity/{id} | 删除商机 | 发布人或企业管理员 |
-| PUT | /api/v1/opp/opportunity/{id}/offline | 下架商机 | 企业管理员 |
-| POST | /api/v1/opp/opportunity/{id}/contact | 获取联系方式 | 已认证（需绑定认证企业） |
+| refresh_token | string | Y | 刷新令牌 |
 
-### 3.5 动态相关接口
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| access_token | string | 新JWT访问令牌 |
+| refresh_token | string | 新JWT刷新令牌 |
 
-| 方法 | 路径 | 描述 | 权限 |
+---
+
+#### GET /api/v1/auth/me（获取当前用户信息）
+**权限**: 已认证
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 用户ID |
+| phone | string | 手机号 |
+| real_name | string | 真实姓名 |
+| role_code | string | 角色码 |
+| enterprise_id | int | 企业ID（无则null） |
+| enterprise_name | string | 企业名称（无则null） |
+| enterprise_status | string | 企业认证状态（无则null） |
+
+---
+
+### 3.3 宣传页接口
+
+#### GET /api/v1/public/stats（获取平台统计数据）
+**权限**: 公开
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| enterprise_count | int | 入驻企业数 |
+| opportunity_count | int | 累计商机数 |
+| deal_count | int | 成功撮合数 |
+
+---
+
+### 3.4 企业相关接口
+
+#### GET /api/v1/ent/enterprise（企业列表）
+**权限**: 公开
+
+**查询参数**:
+| 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| GET | /api/v1/feed/feed | 动态列表（分页） | 公开 |
-| GET | /api/v1/feed/feed/{id} | 动态详情 | 已认证 |
-| POST | /api/v1/feed/feed | 发布动态 | 已认证（需绑定认证企业） |
-| DELETE | /api/v1/feed/feed/{id} | 删除动态 | 发布人或企业管理员 |
-| PUT | /api/v1/feed/feed/{id}/offline | 下架动态 | 平台管理员 |
+| page | int | N | 页码，默认1 |
+| page_size | int | N | 每页条数，默认20 |
+| industry_id | int | N | 行业ID |
+| region_id | int | N | 地区ID |
+| tags | string | N | 标签，逗号分隔 |
+| keyword | string | N | 关键词搜索 |
 
-### 3.6 企业端管理接口
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| total | int | 总数 |
+| page | int | 当前页 |
+| page_size | int | 每页条数 |
+| items | array | 企业列表 |
 
-| 方法 | 路径 | 描述 | 权限 |
+**items元素**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 企业ID |
+| name | string | 企业名称 |
+| logo_url | string | Logo URL |
+| industry | string | 行业名称 |
+| region | string | 地区名称 |
+| tags | array | 标签列表 |
+| auth_status | string | 认证状态 |
+
+---
+
+#### GET /api/v1/ent/enterprise/{id}（企业详情）
+**权限**: 已认证
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 企业ID |
+| name | string | 企业全称 |
+| credit_code | string | 统一社会信用代码（已认证用户可见） |
+| logo_url | string | Logo URL |
+| industry_id | int | 行业ID |
+| industry_name | string | 行业名称 |
+| category_id | int | 品类ID |
+| category_name | string | 品类名称 |
+| region_id | int | 地区ID |
+| region_name | string | 地区名称 |
+| tags | array | 标签列表 |
+| description | string | 企业简介 |
+| auth_status | string | UNCLAIMED/PENDING/VERIFIED/REJECTED |
+| admin_user_id | int | 管理员用户ID |
+| created_at | datetime | 创建时间 |
+
+---
+
+#### POST /api/v1/ent/enterprise/claim（认领企业）
+**权限**: 已认证
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| GET | /api/v1/ent-admin/employees | 员工列表 | 企业管理员 |
-| POST | /api/v1/ent-admin/employees | 新增员工 | 企业管理员 |
-| PUT | /api/v1/ent-admin/employees/{id} | 更新员工 | 企业管理员 |
-| DELETE | /api/v1/ent-admin/employees/{id} | 移除员工 | 企业管理员 |
-| POST | /api/v1/ent-admin/employees/{id}/reset-password | 重置密码 | 企业管理员 |
-| POST | /api/v1/ent-admin/employees/{id}/toggle-status | 启用/停用 | 企业管理员 |
-| GET | /api/v1/ent-admin/my-opportunities | 本企业商机列表 | 企业管理员/员工 |
+| enterprise_id | int | Y | 企业ID |
+| applicant_position | string | Y | 申请人职务 |
+| legal_representative | string | Y | 法人姓名 |
+| business_license | file | Y | 营业执照图片 |
 
-### 3.7 平台端管理接口
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| audit_id | int | 审核记录ID |
+| status | string | PENDING |
+| message | string | 提示信息 |
 
-| 方法 | 路径 | 描述 | 权限 |
+---
+
+#### POST /api/v1/ent/enterprise/create（创建企业）
+**权限**: 已认证
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| GET | /api/v1/plat-admin/dashboard/stats | 统计指标 | 平台运营 |
-| GET | /api/v1/plat-admin/audit/enterprise | 企业审核列表 | 平台运营 |
-| POST | /api/v1/plat-admin/audit/enterprise/{id}/approve | 审核通过 | 平台运营 |
-| POST | /api/v1/plat-admin/audit/enterprise/{id}/reject | 审核驳回 | 平台运营 |
-| GET | /api/v1/plat-admin/tenant/enterprise | 企业列表 | 超级管理员 |
-| PUT | /api/v1/plat-admin/tenant/enterprise/{id}/toggle-status | 启用/停用企业 | 超级管理员 |
-| GET | /api/v1/plat-admin/content/opportunity | 商机列表 | 平台运营 |
-| PUT | /api/v1/plat-admin/content/opportunity/{id}/offline | 强制下架 | 平台运营 |
-| GET | /api/v1/plat-admin/content/feed | 动态列表 | 平台运营 |
-| PUT | /api/v1/plat-admin/content/feed/{id}/offline | 强制下架 | 平台运营 |
-| GET | /api/v1/plat-admin/master-data | 字典列表 | 平台运营 |
-| POST | /api/v1/plat-admin/master-data | 新增字典项 | 超级管理员 |
-| PUT | /api/v1/plat-admin/master-data/{id} | 更新字典项 | 超级管理员 |
-| PUT | /api/v1/plat-admin/master-data/{id}/toggle-status | 启用/禁用 | 超级管理员 |
-| GET | /api/v1/plat-admin/role | 角色列表 | 超级管理员 |
-| PUT | /api/v1/plat-admin/role/{id}/permissions | 更新角色权限 | 超级管理员 |
+| name | string | Y | 企业全称 |
+| credit_code | string | Y | 统一社会信用代码，18位 |
+| legal_representative | string | Y | 法人姓名 |
+| industry_id | int | Y | 所属行业ID |
+| category_id | int | N | 主营业务品类ID |
+| region_id | int | Y | 所在地区ID |
+| description | string | Y | 企业简介，≥50字 |
+| logo_url | file | N | Logo图片 |
+| business_license | file | Y | 营业执照图片 |
+| applicant_position | string | Y | 申请人职务 |
 
-### 3.8 搜索接口
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| enterprise_id | int | 企业ID |
+| audit_id | int | 审核记录ID |
+| status | string | PENDING |
+| message | string | 提示信息 |
 
-| 方法 | 路径 | 描述 | 权限 |
+---
+
+#### GET /api/v1/ent/enterprise/my（我的企业）
+**权限**: 已认证
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 企业ID |
+| name | string | 企业名称 |
+| auth_status | string | 认证状态 |
+| role_code | string | 当前用户在企业的角色 |
+
+---
+
+#### PUT /api/v1/ent/enterprise/{id}（更新企业信息）
+**权限**: 企业管理员
+
+**请求字段**（仅可修改以下字段）:
+| 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| GET | /api/v1/search/all | 统一搜索 | 已认证 |
+| logo_url | file | N | Logo图片 |
+| category_id | int | N | 主营业务品类 |
+| region_id | int | N | 所在地区 |
+| tags | array | N | 标签 |
+| description | string | N | 企业简介 |
 
-### 3.9 API 汇总
+**不可修改字段**: name, credit_code, legal_representative, industry_id（需联系平台运营）
+
+---
+
+#### GET /api/v1/ent/industry（行业分类列表）
+**权限**: 公开
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 行业ID |
+| name | string | 行业名称 |
+| sort_order | int | 排序 |
+
+---
+
+#### GET /api/v1/ent/category（业务品类列表）
+**权限**: 公开
+
+**查询参数**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| industry_id | int | N | 行业ID（筛选） |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 品类ID |
+| name | string | 品类名称 |
+| industry_id | int | 所属行业ID |
+| sort_order | int | 排序 |
+
+---
+
+#### GET /api/v1/ent/region（行政区划列表）
+**权限**: 公开
+
+**查询参数**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| parent_id | int | N | 父级ID，省份为0 |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 地区ID |
+| name | string | 地区名称 |
+| parent_id | int | 父级ID |
+
+---
+
+### 3.5 商机相关接口
+
+#### GET /api/v1/opp/opportunity（商机列表）
+**权限**: 公开
+
+**查询参数**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| page | int | N | 页码，默认1 |
+| page_size | int | N | 每页条数，默认20 |
+| type | string | N | BUY/SUPPLY/空（全部） |
+| industry_id | int | N | 行业ID |
+| category_id | int | N | 品类ID |
+| region_id | int | N | 地区ID |
+| tags | string | N | 标签 |
+| keyword | string | N | 关键词 |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| total | int | 总数 |
+| items | array | 商机列表 |
+
+**items元素**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 商机ID |
+| type | string | BUY/SUPPLY |
+| title | string | 商机标题 |
+| enterprise_id | int | 企业ID |
+| enterprise_name | string | 企业名称 |
+| industry_name | string | 行业名称 |
+| category_name | string | 品类名称 |
+| region_name | string | 地区名称 |
+| tags | array | 标签列表 |
+| view_count | int | 浏览量 |
+| created_at | datetime | 发布时间 |
+
+---
+
+#### GET /api/v1/opp/opportunity/{id}（商机详情）
+**权限**: 已认证
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 商机ID |
+| type | string | BUY/SUPPLY |
+| title | string | 商机标题 |
+| detail | string | 详细描述 |
+| enterprise_id | int | 企业ID |
+| enterprise_name | string | 企业名称 |
+| publisher_id | int | 发布人ID |
+| publisher_name | string | 发布人姓名 |
+| industry_id | int | 行业ID |
+| industry_name | string | 行业名称 |
+| category_id | int | 品类ID |
+| category_name | string | 品类名称 |
+| region_id | int | 地区ID |
+| region_name | string | 地区名称 |
+| tags | array | 标签列表 |
+| status | string | ACTIVE/OFFLINE |
+| view_count | int | 浏览量 |
+| contact_name | string | 联系人（已认证可见） |
+| contact_phone | string | 联系电话（已认证可见） |
+| contact_wechat | string | 微信（已认证可见） |
+| created_at | datetime | 创建时间 |
+| updated_at | datetime | 更新时间 |
+
+---
+
+#### POST /api/v1/opp/opportunity（发布商机）
+**权限**: 已认证（需绑定认证企业）
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| type | string | Y | BUY/SUPPLY |
+| title | string | Y | 商机标题，≤200字 |
+| industry_id | int | Y | 行业ID |
+| category_id | int | Y | 品类ID |
+| region_id | int | Y | 地区ID |
+| detail | string | Y | 详细描述 |
+| tags | array | N | 标签 |
+| contact_name | string | Y | 联系人 |
+| contact_phone | string | Y | 联系电话 |
+| contact_wechat | string | N | 微信 |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 商机ID |
+| status | string | ACTIVE |
+
+---
+
+#### PUT /api/v1/opp/opportunity/{id}（更新商机）
+**权限**: 发布人或企业管理员
+
+**请求字段**: 同发布，可选填
+
+**响应字段**: 同上
+
+---
+
+#### DELETE /api/v1/opp/opportunity/{id}（删除商机）
+**权限**: 发布人或企业管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| message | string | 删除成功 |
+
+---
+
+#### PUT /api/v1/opp/opportunity/{id}/offline（下架商机）
+**权限**: 企业管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 商机ID |
+| status | string | OFFLINE |
+
+---
+
+#### POST /api/v1/opp/opportunity/{id}/contact（获取联系方式）
+**权限**: 已认证（需绑定认证企业）
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| contact_name | string | 联系人 |
+| contact_phone | string | 联系电话 |
+| contact_wechat | string | 微信 |
+
+---
+
+### 3.6 动态相关接口
+
+#### GET /api/v1/feed/feed（动态列表）
+**权限**: 公开
+
+**查询参数**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| page | int | N | 页码，默认1 |
+| page_size | int | N | 每页条数，默认20 |
+| keyword | string | N | 关键词 |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| total | int | 总数 |
+| items | array | 动态列表 |
+
+**items元素**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 动态ID |
+| content | string | 动态内容 |
+| images | array | 图片URL列表 |
+| publisher_id | int | 发布人ID |
+| publisher_name | string | 发布人姓名 |
+| enterprise_id | int | 企业ID |
+| enterprise_name | string | 企业名称 |
+| created_at | datetime | 发布时间 |
+
+---
+
+#### GET /api/v1/feed/feed/{id}（动态详情）
+**权限**: 已认证
+
+**响应字段**: 同动态列表元素，增加 updated_at
+
+---
+
+#### POST /api/v1/feed/feed（发布动态）
+**权限**: 已认证（需绑定认证企业）
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| content | string | Y | 动态内容，≤1000字 |
+| images | array | N | 图片URL列表，最多9张 |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 动态ID |
+| status | string | ACTIVE |
+
+---
+
+#### DELETE /api/v1/feed/feed/{id}（删除动态）
+**权限**: 发布人或企业管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| message | string | 删除成功 |
+
+---
+
+#### PUT /api/v1/feed/feed/{id}/offline（下架动态）
+**权限**: 平台管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 动态ID |
+| status | string | OFFLINE |
+
+---
+
+### 3.7 企业端管理接口
+
+#### GET /api/v1/ent-admin/employees（员工列表）
+**权限**: 企业管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| items | array | 员工列表 |
+
+**items元素**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 用户ID |
+| real_name | string | 真实姓名 |
+| phone | string | 手机号 |
+| role_code | string | enterprise_admin/employee |
+| is_active | bool | 是否启用 |
+| created_at | datetime | 加入时间 |
+
+---
+
+#### POST /api/v1/ent-admin/employees（新增员工）
+**权限**: 企业管理员
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| phone | string | Y | 手机号 |
+| real_name | string | Y | 真实姓名 |
+| role_code | string | Y | enterprise_admin/employee |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 用户ID |
+| message | string | 成功提示 |
+
+---
+
+#### PUT /api/v1/ent-admin/employees/{id}（更新员工）
+**权限**: 企业管理员
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| real_name | string | N | 真实姓名 |
+| role_code | string | N | enterprise_admin/employee |
+
+---
+
+#### DELETE /api/v1/ent-admin/employees/{id}（移除员工）
+**权限**: 企业管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| message | string | 移除成功 |
+
+---
+
+#### POST /api/v1/ent-admin/employees/{id}/reset-password（重置密码）
+**权限**: 企业管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| temp_password | string | 临时密码（手机号后6位） |
+
+---
+
+#### POST /api/v1/ent-admin/employees/{id}/toggle-status（启用/停用）
+**权限**: 企业管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 用户ID |
+| is_active | bool | 当前状态 |
+
+---
+
+#### GET /api/v1/ent-admin/my-opportunities（本企业商机列表）
+**权限**: 企业管理员/员工
+
+**响应字段**: 同商机列表
+
+---
+
+### 3.8 平台端管理接口
+
+#### GET /api/v1/plat-admin/dashboard/stats（统计指标）
+**权限**: 平台运营
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| enterprise_count | int | 入驻企业数 |
+| opportunity_count | int | 累计商机数 |
+| deal_count | int | 成功撮合数 |
+| active_user_count | int | 活跃校友数 |
+| pending_audit_count | int | 待审核数 |
+
+---
+
+#### GET /api/v1/plat-admin/audit/enterprise（企业审核列表）
+**权限**: 平台运营
+
+**查询参数**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| page | int | N | 页码 |
+| status | string | N | PENDING/VERIFIED/REJECTED |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| total | int | 总数 |
+| items | array | 审核列表 |
+
+**items元素**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 审核记录ID |
+| enterprise_id | int | 企业ID |
+| enterprise_name | string | 企业名称 |
+| credit_code | string | 信用代码 |
+| applicant_name | string | 申请人姓名 |
+| applicant_position | string | 申请人职务 |
+| legal_representative | string | 法人姓名 |
+| business_license_url | string | 营业执照URL |
+| status | string | 审核状态 |
+| created_at | datetime | 申请时间 |
+
+---
+
+#### POST /api/v1/plat-admin/audit/enterprise/{id}/approve（审核通过）
+**权限**: 平台运营
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 审核记录ID |
+| status | string | VERIFIED |
+| enterprise_id | int | 企业ID |
+
+---
+
+#### POST /api/v1/plat-admin/audit/enterprise/{id}/reject（审核驳回）
+**权限**: 平台运营
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| reason | string | Y | 驳回原因 |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 审核记录ID |
+| status | string | REJECTED |
+
+---
+
+#### GET /api/v1/plat-admin/tenant/enterprise（企业列表）
+**权限**: 超级管理员
+
+**响应字段**: 同企业列表
+
+---
+
+#### PUT /api/v1/plat-admin/tenant/enterprise/{id}/toggle-status（启用/停用企业）
+**权限**: 超级管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 企业ID |
+| is_active | bool | 当前状态 |
+
+---
+
+#### GET /api/v1/plat-admin/content/opportunity（商机列表）
+**权限**: 平台运营
+
+**响应字段**: 同商机列表
+
+---
+
+#### PUT /api/v1/plat-admin/content/opportunity/{id}/offline（强制下架）
+**权限**: 平台运营
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| reason | string | N | 下架原因 |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 商机ID |
+| status | string | OFFLINE |
+
+---
+
+#### GET /api/v1/plat-admin/content/feed（动态列表）
+**权限**: 平台运营
+
+**响应字段**: 同动态列表
+
+---
+
+#### PUT /api/v1/plat-admin/content/feed/{id}/offline（强制下架）
+**权限**: 平台运营
+
+**响应字段**: 同上
+
+---
+
+#### GET /api/v1/plat-admin/master-data（字典列表）
+**权限**: 平台运营
+
+**查询参数**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| category | string | N | industry/category/tag/region |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| items | array | 字典项列表 |
+
+**items元素**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 字典ID |
+| category | string | 类别 |
+| name | string | 名称 |
+| code | string | 编码 |
+| parent_id | int | 父级ID |
+| sort_order | int | 排序 |
+| is_active | bool | 是否启用 |
+
+---
+
+#### POST /api/v1/plat-admin/master-data（新增字典项）
+**权限**: 超级管理员
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| category | string | Y | 类别 |
+| name | string | Y | 名称 |
+| code | string | N | 编码 |
+| parent_id | int | N | 父级ID |
+| sort_order | int | N | 排序，默认0 |
+
+**响应字段**: 新增的字典项
+
+---
+
+#### PUT /api/v1/plat-admin/master-data/{id}（更新字典项）
+**权限**: 超级管理员
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| name | string | N | 名称 |
+| code | string | N | 编码 |
+| sort_order | int | N | 排序 |
+
+**响应字段**: 更新后的字典项
+
+---
+
+#### PUT /api/v1/plat-admin/master-data/{id}/toggle-status（启用/禁用）
+**权限**: 超级管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 字典ID |
+| is_active | bool | 当前状态 |
+
+---
+
+#### GET /api/v1/plat-admin/role（角色列表）
+**权限**: 超级管理员
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| items | array | 角色列表 |
+
+**items元素**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 角色ID |
+| name | string | 角色名称 |
+| permissions | array | 权限列表 |
+
+---
+
+#### PUT /api/v1/plat-admin/role/{id}/permissions（更新角色权限）
+**权限**: 超级管理员
+
+**请求字段**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| permissions | array | Y | 权限码列表 |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | int | 角色ID |
+| permissions | array | 更新后的权限列表 |
+
+---
+
+### 3.9 搜索接口
+
+#### GET /api/v1/search/all（统一搜索）
+**权限**: 已认证
+
+**查询参数**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| keyword | string | Y | 关键词 |
+| type | string | N | opportunity/enterprise/feed/空（全部） |
+| page | int | N | 页码 |
+| page_size | int | N | 每页条数 |
+
+**响应字段**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| opportunity | object | 商机搜索结果 `{ total, items }` |
+| enterprise | object | 企业搜索结果 `{ total, items }` |
+| feed | object | 动态搜索结果 `{ total, items }` |
+
+---
+
+### 3.10 API 汇总
 
 | 模块标识 | 接口数 | 路径前缀 |
 |----------|--------|----------|
@@ -823,12 +1582,12 @@ export function usePermission() {
 
 **页面功能**：全局导航、数据展示、快捷入口、智能推荐
 
-| 功能 | 说明 |
-|------|------|
-| 热门标签点击 | 点击跳转 `/opportunity?tag=标签名`，商机广场自动应用该标签筛选 |
-| 快捷发布按钮 | 未登录→跳转登录页；未绑定企业→提示认领/创建企业；已认证→弹窗发布 |
-| 新入驻企业点击 | 跳转企业详情抽屉 |
-| 最新动态点击 | 跳转校友圈详情 |
+| 功能      | 说明                                        |
+| ------- | ----------------------------------------- |
+| 热门标签点击  | 点击跳转 `/opportunity?tag=标签名`，商机广场自动应用该标签筛选 |
+| 快捷发布按钮  | 未登录→跳转登录页；未绑定企业→提示认领/创建企业；已认证→弹窗发布        |
+| 新入驻企业点击 | 跳转企业详情抽屉                                  |
+| 最新动态点击  | 跳转校友圈详情                                   |
 
 #### 5.5.2 企业名录页（/enterprise）
 
