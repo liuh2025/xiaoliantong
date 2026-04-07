@@ -1,20 +1,21 @@
 ---
-status: 草稿
+status: 已批准
 ---
 
 # 测试计划
 
 ## XiaoLianTong (校链通)
 
-| 文档信息 | 内容 |
-|---------|------|
-| 项目名称 | XiaoLianTong (校链通) |
-| 文档版本 | v1.1 |
-| 创建日期 | 2026-04-02 |
-| 关联设计 | [DESN-PP-v1.0.md](DESN-PP-v1.0.md) (v1.1) |
-| 关联CHK | [CHK-PP-v1.0.md](CHK-PP-v1.0.md) (v1.1) |
-| 测试环境 | Windows 10, Python 3.11, Django 4.2+, MySQL 8.0+, Node.js 18+ |
-| 文档状态 | 待审批 |
+| 文档信息  | 内容                                                             |
+| ----- | -------------------------------------------------------------- |
+| 项目名称  | XiaoLianTong (校链通)                                             |
+| 文档版本  | v2.0                                                           |
+| 创建日期  | 2026-04-07                                                     |
+| 关联PRD | [PRD-XiaoLianTong-v1.0.md](PRD-XiaoLianTong-v1.0.md)           |
+| 关联设计  | [DESN-PP-v1.0.md](DESN-PP-v1.0.md)                             |
+| 关联CHK | [CHK-PP-v1.0.md](CHK-PP-v1.0.md)                               |
+| 测试环境  | Windows 10, Python 3.11+, Django 4.2+, MySQL 8.0+, Node.js 18+ |
+| 文档状态  | 已批准                                                           |
 
 ---
 
@@ -22,558 +23,782 @@ status: 草稿
 
 ### 1.1 测试范围
 
-本测试计划覆盖 XiaoLianTong v1.1 MVP 版本的全部功能模块：
-- **认证模块**：短信登录、密码登录、用户注册、Token 管理、登出
-- **宣传页模块**：平台统计数据获取
-- **企业模块**：企业列表、企业详情、企业认领、企业创建、企业更新
-- **商机模块**：商机发布、商机检索、商机详情、商机更新、商机删除、商机下架、获取联系方式
-- **动态模块**：动态发布、动态列表、动态详情、动态删除、动态下架
-- **企业端管理**：员工管理（增删改查、停用、重置密码、移除）
-- **平台端管理**：数据大盘、企业审核、租户管理、商机内容管理、动态内容管理、基础数据字典、RBAC
-- **统一搜索**：商机/企业/动态跨域搜索
+本测试计划覆盖 XiaoLianTong 项目的以下功能模块：
+
+| 模块标识 | 模块名称 | API数量 | 说明 |
+|----------|---------|:------:|------|
+| auth | 认证模块 | 8 | 登录/注册/登出/Token刷新/密码重置 |
+| public | 公共接口 | 1 | 公开统计数据 |
+| ent | 企业名录 | 9 | 企业列表/详情/认领/创建/认证 |
+| opp | 商机广场 | 7 | 商机列表/详情/发布/联系/推荐 |
+| feed | 校友圈 | 6 | 动态列表/详情/发布/最新动态 |
+| ent-admin | 企业工作台 | 10 | 企业信息/员工/商机/动态/联系记录 |
+| plat-admin | 平台管理 | 48 | 数据大盘/审核/租户/内容/字典/权限/设置 |
+| search | 搜索 | 1 | 全局搜索 |
+| msg | 消息通知 | 3 | 消息列表/已读/全部已读 |
+| **合计** | — | **93** | |
 
 ### 1.2 测试层级
 
 | 层次 | 范围 | 工具 | 执行者 | 覆盖目标 |
-|------|------|------|--------|----------|
-| L1 API 测试 | 全部 50 个 API（每个 API 包含正例+反例） | pytest + requests | Tester | API 接口覆盖率 100% |
-| L2 E2E 测试 | 全部 18 个功能页面，核心用户场景 9 个 | Playwright | Tester | 页面功能覆盖率 100% |
-
-### 1.3 测试说明
-
-- **L1 API 测试**：每个 API 接口至少包含 1 个正例和 1 个反例，覆盖业务规则和异常处理
-- **L2 E2E 测试**：覆盖所有 17 个功能页面，基于 PRD 原型设计
+|------|------|------|--------|---------|
+| L1 API 测试 | 所有接口（RPC/RESTful/MQ）正例、反例、边界值、业务规则 | pytest + requests | Tester | API 接口覆盖率 100% |
+| L2 E2E 测试 | 完整用户操作流程，主流程/核心功能 100%，含异常测试 | Playwright | Tester | 核心用户场景覆盖率 100% |
 
 ---
 
-## 2. 测试用例
+## 2. 测试用例模板
 
-### 2.1 认证模块（L1 API 测试）
+### 2.1 L1 API 测试用例结构
 
-**模块说明**：共 6 个 API，16 个用例
+每个 L1 API 测试用例包含以下结构：
 
-| 用例ID | 用例名称 | 接口 | 测试场景 | 前置条件 | 操作步骤 | 预期结果 |
-|--------|----------|------|----------|----------|----------|----------|
-| TC-API-AUTH-001 | 短信登录-成功 | POST /auth/login/sms | 正例 | 手机号已注册，验证码正确 | 提交正确手机号+6位验证码 | 返回 access_token + refresh_token，code=200 |
-| TC-API-AUTH-002 | 短信登录-验证码错误 | POST /auth/login/sms | 反例 | 手机号已注册 | 提交手机号+错误验证码 | 返回"验证码错误"，code=400 |
-| TC-API-AUTH-003 | 短信登录-验证码过期 | POST /auth/login/sms | 反例 | 验证码已超时 | 提交手机号+过期验证码 | 返回"验证码已过期"，code=400 |
-| TC-API-AUTH-004 | 短信登录-验证码已使用 | POST /auth/login/sms | 反例 | 验证码已使用 | 重复提交同一验证码 | 返回"验证码已使用"，code=400 |
-| TC-API-AUTH-005 | 短信登录-新用户自动注册 | POST /auth/login/sms | 正例 | 手机号未注册 | 提交未注册手机号+正确验证码 | 自动创建用户，返回 Token，code=200 |
-| TC-API-AUTH-006 | 密码登录-成功 | POST /auth/login/password | 正例 | 账号已设置密码 | 提交正确手机号+密码 | 返回 Token，code=200 |
-| TC-API-AUTH-007 | 密码登录-密码错误 | POST /auth/login/password | 反例 | 账号已设置密码 | 提交手机号+错误密码 | 返回"用户名或密码错误"，code=401 |
-| TC-API-AUTH-008 | 用户注册-成功 | POST /auth/register | 正例 | 手机号未注册 | 提交手机号+验证码+密码 | 注册成功，返回 Token，code=200 |
-| TC-API-AUTH-009 | 用户注册-手机号已存在 | POST /auth/register | 反例 | 手机号已注册 | 提交已注册手机号+验证码+密码 | 返回"手机号已注册"，code=400 |
-| TC-API-AUTH-010 | 用户注册-验证码错误 | POST /auth/register | 反例 | 手机号未注册 | 提交手机号+错误验证码+密码 | 返回"验证码错误"，code=400 |
-| TC-API-AUTH-011 | 用户注册-密码格式不符 | POST /auth/register | 反例 | 手机号未注册 | 提交手机号+验证码+短密码 | 返回"密码长度不符"，code=400 |
-| TC-API-AUTH-012 | 登出 | POST /auth/logout | 正例 | 已登录 | 携带有效 Token 调用登出 | Token 加入黑名单，code=200 |
-| TC-API-AUTH-013 | 刷新Token | POST /auth/refresh | 正例 | Token 未过期 | 提交有效 refresh_token | 返回新 access_token，code=200 |
-| TC-API-AUTH-014 | 刷新Token-无效token | POST /auth/refresh | 反例 | refresh_token无效 | 提交无效或过期token | 返回错误，code=401 |
-| TC-API-AUTH-015 | 获取当前用户信息 | GET /auth/me | 正例 | 已登录 | 携带有效 Token | 返回用户信息+角色+企业绑定状态 |
-| TC-API-AUTH-016 | 获取当前用户信息-未登录 | GET /auth/me | 反例 | 未登录 | 不带 Token 或 Token 无效 | 返回 401 |
+```yaml
+用例ID: TC-API-{模块}-{序号}
+用例名称: {描述}
+接口类型: RESTful / RPC / MQ
+模块: {模块名}
 
-### 2.1.2 宣传页模块（L1 API 测试）
+# 测试数据（支持参数化）
+test_data:
+  request: {}        # 请求参数
+  dependencies: []   # 依赖的外部数据
 
-**模块说明**：共 1 个 API，2 个用例
+# 前置条件
+preconditions:
+  - 已登录用户 / 已发送验证码 / 已创建企业 / ...
 
-| 用例ID | 用例名称 | 接口 | 测试场景 | 前置条件 | 操作步骤 | 预期结果 |
-|--------|----------|------|----------|----------|----------|----------|
-| TC-API-PUBLIC-001 | 获取平台统计-成功 | GET /public/stats | 正例 | 无 | 调用统计接口 | 返回入驻企业数、累计商机、成功撮合数、活跃校友数，code=200 |
-| TC-API-PUBLIC-002 | 获取平台统计-无需认证 | GET /public/stats | 反例 | 无 | 无需认证即可访问 | 公开接口，code=200 |
+# 操作步骤（详细）
+steps:
+  - step: 1
+    action: POST /api/v1/auth/sms/send
+    params:
+      phone: "${valid_phone}"
+      type: "login"
 
-### 2.2 企业模块（L1 API 测试）
+# 预期结果（HTTP层面）
+expected_http:
+  status_code: 200
+  code: 0
+  message: "success"
 
-**模块说明**：共 9 个 API，22 个用例
+# 验证步骤（多维验证）
+validators:
+  # API响应断言
+  api:
+    - field: data.send_status
+      operator: equals
+      value: true
+  # 数据库校验
+  db:
+    - table: sms_codes
+      conditions:
+        phone: "${valid_phone}"
+        type: "login"
+        used: false
+      fields:
+        code: "^\\d{6}$"                    # 正则：6位数字
+        expires_at: "_ > now + 4min"        # 脚本运行时计算，不写死
+        created_at: "_ <= now"
+  # 缓存/日志校验
+  cache:
+    - key: "sms:send:count:${valid_phone}"
+      operator: equals
+      value: 1
 
-| 用例ID | 用例名称 | 接口 | 测试场景 | 前置条件 | 操作步骤 | 预期结果 |
-|--------|----------|------|----------|----------|----------|----------|
-| TC-API-ENT-001 | 获取企业列表-公开浏览 | GET /ent/enterprise | 正例 | 无 | 不带 Token 访问 | 返回分页企业列表，code=200 |
-| TC-API-ENT-002 | 获取企业列表-筛选行业 | GET /ent/enterprise | 正例 | 无 | industry_id=1 | 返回该行业企业列表 |
-| TC-API-ENT-003 | 获取企业列表-筛选品类 | GET /ent/enterprise | 正例 | 无 | category_id=1 | 返回该品类企业列表 |
-| TC-API-ENT-004 | 获取企业列表-筛选地区 | GET /ent/enterprise | 正例 | 无 | region_id=310000 | 返回该地区企业列表 |
-| TC-API-ENT-005 | 获取企业列表-筛选标签 | GET /ent/enterprise | 正例 | 无 | tags=专精特新 | 返回含该标签企业列表 |
-| TC-API-ENT-006 | 获取企业列表-关键词搜索 | GET /ent/enterprise | 正例 | 无 | keyword=威蓝 | 返回名称含威蓝的企业 |
-| TC-API-ENT-007 | 获取企业列表-分页 | GET /ent/enterprise | 正例 | 无 | page=2&page_size=10 | 返回第2页10条数据 |
-| TC-API-ENT-008 | 获取企业列表-无结果 | GET /ent/enterprise | 反例 | 无 | keyword=不存在的企业名 | 返回空列表，code=200 |
-| TC-API-ENT-009 | 获取企业列表-筛选未认领 | GET /ent/enterprise | 正例 | 无 | auth_status=UNCLAIMED | 返回未认领企业列表 |
-| TC-API-ENT-010 | 获取企业详情 | GET /ent/enterprise/{id} | 正例 | 已登录 | 获取已认证企业详情 | 返回完整企业信息，含发布商机列表 |
-| TC-API-ENT-011 | 获取企业详情-未登录 | GET /ent/enterprise/{id} | 反例 | 未登录 | 获取需认证企业详情 | 联系方式脱敏，仅返回基本信息 |
-| TC-API-ENT-012 | 获取企业详情-不存在 | GET /ent/enterprise/{id} | 反例 | 已登录 | id=99999 | 返回 404 |
-| TC-API-ENT-013 | 认领企业-成功 | POST /ent/enterprise/claim | 正例 | 已登录，未绑定企业 | 提交认领申请+职务+材料 | 创建审核记录，code=200 |
-| TC-API-ENT-014 | 认领企业-已认领 | POST /ent/enterprise/claim | 反例 | 企业已被认领 | 认领已认证企业 | 返回"企业已被认领"，code=400 |
-| TC-API-ENT-015 | 认领企业-待审核 | POST /ent/enterprise/claim | 反例 | 企业正在审核中 | 认领待审核企业 | 返回"企业正在审核中"，code=400 |
-| TC-API-ENT-016 | 认领企业-未登录 | POST /ent/enterprise/claim | 反例 | 未登录 | 不带 Token 认领 | 返回 401 |
-| TC-API-ENT-017 | 创建企业-成功 | POST /ent/enterprise/create | 正例 | 已登录，未绑定企业 | 提交完整企业信息 | 创建待审核企业，code=200 |
-| TC-API-ENT-018 | 创建企业-缺少必填 | POST /ent/enterprise/create | 反例 | 已登录 | 缺少企业名称 | 返回"企业名称不能为空"，code=400 |
-| TC-API-ENT-019 | 创建企业-已存在 | POST /ent/enterprise/create | 反例 | 已登录 | 创建同名企业 | 返回"企业已存在"，code=400 |
-| TC-API-ENT-020 | 获取我的企业 | GET /ent/enterprise/my | 正例 | 已绑定企业 | 调用接口 | 返回当前用户所属企业信息 |
-| TC-API-ENT-021 | 获取我的企业-未绑定 | GET /ent/enterprise/my | 反例 | 未绑定企业 | 调用接口 | 返回空，code=200 |
-| TC-API-ENT-022 | 更新企业信息 | PUT /ent/enterprise/{id} | 正例 | 企业管理员 | 更新 logo/tags/description | 更新成功，code=200 |
-| TC-API-ENT-023 | 更新企业信息-无权限 | PUT /ent/enterprise/{id} | 反例 | 非企业管理员 | 尝试更新他企业信息 | 返回 403 |
-| TC-API-ENT-024 | 获取行业分类 | GET /ent/industry | 正例 | 公开 | 调用接口 | 返回行业树形结构 |
-| TC-API-ENT-025 | 获取业务品类 | GET /ent/category | 正例 | 公开 | 调用接口 | 返回品类树形结构 |
-| TC-API-ENT-026 | 获取行政区划 | GET /ent/region | 正例 | 公开 | 调用接口 | 返回省市区树形结构 |
-| TC-API-ENT-027 | 获取行业分类-缓存 | GET /ent/industry | 正例 | 公开 | 第二次调用 | 从缓存返回，响应更快 |
-| TC-API-ENT-028 | 获取品类-空分类 | GET /ent/category | 反例 | 公开但无数据 | 调用接口 | 返回空数组，code=200 |
+# 后置动作（数据清理）
+teardown:
+  - DELETE FROM sms_codes WHERE phone="${valid_phone}"
 
-### 2.3 商机模块（L1 API 测试）
+# 依赖用例（参数来源）
+depends_on: []
 
-**模块说明**：共 7 个 API，24 个用例
+# 参数提取（供后续用例使用）
+extractors:
+  - from: response.body.data.code_id
+    to: "${sms_code_id}"
+```
 
-| 用例ID | 用例名称 | 接口 | 测试场景 | 前置条件 | 操作步骤 | 预期结果 |
-|--------|----------|------|----------|----------|----------|----------|
-| TC-API-OPP-001 | 获取商机列表-公开浏览 | GET /opp/opportunity | 正例 | 无 | 不带 Token 访问 | 返回分页商机列表，联系方式脱敏 |
-| TC-API-OPP-002 | 商机列表-筛选类型 | GET /opp/opportunity | 正例 | 无 | type=BUY | 返回采购需求列表 |
-| TC-API-OPP-003 | 商机列表-筛选类型 | GET /opp/opportunity | 正例 | 无 | type=SUPPLY | 返回供应能力列表 |
-| TC-API-OPP-004 | 商机列表-行业筛选 | GET /opp/opportunity | 正例 | 无 | industry_id=1 | 返回该行业商机 |
-| TC-API-OPP-005 | 商机列表-品类筛选 | GET /opp/opportunity | 正例 | 无 | category_id=5 | 返回该品类商机 |
-| TC-API-OPP-006 | 商机列表-地区筛选 | GET /opp/opportunity | 正例 | 无 | region_id=310000 | 返回该地区商机 |
-| TC-API-OPP-007 | 商机列表-标签筛选 | GET /opp/opportunity | 正例 | 无 | tags=车规级 | 返回含该标签商机 |
-| TC-API-OPP-008 | 商机列表-关键词搜索 | GET /opp/opportunity | 正例 | 无 | keyword=芯片 | 返回标题含芯片的商机 |
-| TC-API-OPP-009 | 商机列表-多条件组合 | GET /opp/opportunity | 正例 | 无 | type=BUY&industry_id=1&tags=车规级 | 返回满足所有条件的商机 |
-| TC-API-OPP-010 | 商机列表-分页 | GET /opp/opportunity | 正例 | 无 | page=1&page_size=20 | 返回第1页20条 |
-| TC-API-OPP-011 | 商机列表-无结果 | GET /opp/opportunity | 反例 | 无 | keyword=不存在的词 | 返回空列表 |
-| TC-API-OPP-012 | 获取商机详情 | GET /opp/opportunity/{id} | 正例 | 已登录 | 获取商机详情 | 返回完整信息，联系方式脱敏 |
-| TC-API-OPP-013 | 获取商机详情-未登录 | GET /opp/opportunity/{id} | 反例 | 未登录 | 获取商机详情 | 返回基本信息，联系方式隐藏 |
-| TC-API-OPP-014 | 获取商机详情-不存在 | GET /opp/opportunity/{id} | 反例 | 已登录 | id=99999 | 返回 404 |
-| TC-API-OPP-015 | 发布商机-成功 | POST /opp/opportunity | 正例 | 已绑定认证企业 | 提交完整商机信息 | 创建成功，状态 ACTIVE，code=200 |
-| TC-API-OPP-016 | 发布商机-缺少必填 | POST /opp/opportunity | 反例 | 已绑定认证企业 | 缺少标题 | 返回"标题不能为空"，code=400 |
-| TC-API-OPP-017 | 发布商机-未绑定企业 | POST /opp/opportunity | 反例 | 未绑定企业 | 尝试发布 | 返回"请先加入企业"，code=403 |
-| TC-API-OPP-018 | 发布商机-企业未认证 | POST /opp/opportunity | 反例 | 企业待审核 | 尝试发布 | 返回"企业未通过认证"，code=403 |
-| TC-API-OPP-019 | 更新商机 | PUT /opp/opportunity/{id} | 正例 | 发布人或企业管理员 | 更新商机标题 | 更新成功，code=200 |
-| TC-API-OPP-020 | 更新商机-非发布人 | PUT /opp/opportunity/{id} | 反例 | 其他企业用户 | 尝试更新他企业商机 | 返回 403 |
-| TC-API-OPP-021 | 删除商机 | DELETE /opp/opportunity/{id} | 正例 | 发布人或企业管理员 | 删除商机 | 删除成功，code=200 |
-| TC-API-OPP-022 | 删除商机-非发布人 | DELETE /opp/opportunity/{id} | 反例 | 普通员工非发布人 | 尝试删除 | 返回 403 |
-| TC-API-OPP-023 | 下架商机 | PUT /opp/opportunity/{id}/offline | 正例 | 企业管理员 | 下架本企业商机 | 状态变为 OFFLINE |
-| TC-API-OPP-024 | 下架商机-非本企业 | PUT /opp/opportunity/{id}/offline | 反例 | 非本企业管理员 | 尝试下架他企业商机 | 返回 403 |
-| TC-API-OPP-025 | 获取联系方式-成功 | POST /opp/{id}/contact | 正例 | 已绑定认证企业 | 确认获取联系方式 | 记录撮合日志，发送通知，返回联系方式 |
-| TC-API-OPP-026 | 获取联系方式-重复 | POST /opp/{id}/contact | 正例 | 已获取过 | 再次获取 | 仍可查看，不报错 |
-| TC-API-OPP-027 | 获取联系方式-未登录 | POST /opp/{id}/contact | 反例 | 未登录 | 尝试获取 | 返回 401 |
-| TC-API-OPP-028 | 获取联系方式-未绑定企业 | POST /opp/{id}/contact | 反例 | 未绑定企业 | 尝试获取 | 返回"请先加入企业"，code=403 |
+### 2.2 用例模板说明
 
-### 2.4 动态模块（L1 API 测试）
-
-**模块说明**：共 5 个 API，14 个用例
-
-| 用例ID | 用例名称 | 接口 | 测试场景 | 前置条件 | 操作步骤 | 预期结果 |
-|--------|----------|------|----------|----------|----------|----------|
-| TC-API-FEED-001 | 获取动态列表-公开浏览 | GET /feed/feed | 正例 | 无 | 不带 Token 访问 | 返回分页动态列表 |
-| TC-API-FEED-002 | 获取动态列表-分页 | GET /feed/feed | 正例 | 无 | page=1&page_size=20 | 返回第1页 |
-| TC-API-FEED-003 | 获取动态列表-关键词 | GET /feed/feed | 正例 | 无 | keyword=论坛 | 返回内容含论坛的动态 |
-| TC-API-FEED-004 | 获取动态列表-空结果 | GET /feed/feed | 反例 | 无 | keyword=不存在的词 | 返回空列表 |
-| TC-API-FEED-005 | 获取动态详情 | GET /feed/feed/{id} | 正例 | 已登录 | 获取动态详情 | 返回完整动态信息+发布人信息 |
-| TC-API-FEED-006 | 获取动态详情-未登录 | GET /feed/feed/{id} | 反例 | 未登录 | 获取动态详情 | 可正常查看 |
-| TC-API-FEED-007 | 获取动态详情-不存在 | GET /feed/feed/{id} | 反例 | 已登录 | id=99999 | 返回 404 |
-| TC-API-FEED-008 | 发布动态-纯文本 | POST /feed/feed | 正例 | 已绑定认证企业 | 提交纯文本内容 | 发布成功，code=200 |
-| TC-API-FEED-009 | 发布动态-带图片 | POST /feed/feed | 正例 | 已绑定认证企业 | 提交内容+图片URLs | 图片正确存储，code=200 |
-| TC-API-FEED-010 | 发布动态-图片超限 | POST /feed/feed | 反例 | 已绑定认证企业 | 提交10张图片 | 返回"最多9张图片"，code=400 |
-| TC-API-FEED-011 | 发布动态-缺少内容 | POST /feed/feed | 反例 | 已绑定认证企业 | 内容为空 | 返回"内容不能为空"，code=400 |
-| TC-API-FEED-012 | 发布动态-未绑定企业 | POST /feed/feed | 反例 | 未绑定企业 | 尝试发布 | 返回"请先加入企业"，code=403 |
-| TC-API-FEED-013 | 删除动态 | DELETE /feed/feed/{id} | 正例 | 发布人或企业管理员 | 删除动态 | 删除成功，code=200 |
-| TC-API-FEED-014 | 删除动态-非发布人 | DELETE /feed/feed/{id} | 反例 | 非发布人且非管理员 | 尝试删除 | 返回 403 |
-| TC-API-FEED-015 | 平台下架动态 | PUT /feed/feed/{id}/offline | 正例 | 平台运营 | 下架动态 | 状态变为 OFFLINE |
-| TC-API-FEED-016 | 平台下架动态-无权限 | PUT /feed/feed/{id}/offline | 反例 | 非平台运营 | 尝试下架 | 返回 403 |
-
-### 2.5 企业端管理（L1 API 测试）
-
-**模块说明**：共 7 个 API，20 个用例
-
-| 用例ID | 用例名称 | 接口 | 测试场景 | 前置条件 | 操作步骤 | 预期结果 |
-|--------|----------|------|----------|----------|----------|----------|
-| TC-API-ENTADM-001 | 获取员工列表 | GET /ent-admin/employees | 正例 | 企业管理员 | 获取本企业员工 | 返回员工列表 |
-| TC-API-ENTADM-002 | 获取员工列表-无员工 | GET /ent-admin/employees | 正例 | 企业管理员 | 本企业无员工 | 返回空列表 |
-| TC-API-ENTADM-003 | 获取员工列表-非管理员 | GET /ent-admin/employees | 反例 | 普通员工 | 尝试获取 | 返回 403 |
-| TC-API-ENTADM-004 | 新增员工-手机号已注册 | POST /ent-admin/employees | 正例 | 企业管理员 | 添加已注册手机号 | 绑定企业，角色为员工 |
-| TC-API-ENTADM-005 | 新增员工-手机号未注册 | POST /ent-admin/employees | 正例 | 企业管理员 | 添加未注册手机号 | 创建账号，初始密码手机号后6位 |
-| TC-API-ENTADM-006 | 新增员工-缺少必填 | POST /ent-admin/employees | 反例 | 企业管理员 | 缺少手机号 | 返回"手机号不能为空"，code=400 |
-| TC-API-ENTADM-007 | 新增员工-手机号格式错误 | POST /ent-admin/employees | 反例 | 企业管理员 | 手机号=123 | 返回"手机号格式错误"，code=400 |
-| TC-API-ENTADM-008 | 新增员工-重复添加 | POST /ent-admin/employees | 反例 | 企业管理员 | 添加已在企业的员工 | 返回"员工已在企业中"，code=400 |
-| TC-API-ENTADM-009 | 编辑员工 | PUT /ent-admin/employees/{id} | 正例 | 企业管理员 | 更新姓名和角色 | 更新成功 |
-| TC-API-ENTADM-010 | 编辑员工-无权限 | PUT /ent-admin/employees/{id} | 反例 | 普通员工 | 尝试编辑 | 返回 403 |
-| TC-API-ENTADM-011 | 移除员工 | DELETE /ent-admin/employees/{id} | 正例 | 企业管理员 | 移除员工 | 解除企业绑定，账号保留 |
-| TC-API-ENTADM-012 | 移除员工-不能移除自己 | DELETE /ent-admin/employees/{id} | 反例 | 企业管理员 | 尝试移除自己 | 返回"不能移除自己"，code=400 |
-| TC-API-ENTADM-013 | 重置密码 | POST /ent-admin/employees/{id}/reset-password | 正例 | 企业管理员 | 重置密码 | 密码重置为手机号后6位 |
-| TC-API-ENTADM-014 | 重置密码-无权限 | POST /ent-admin/employees/{id}/reset-password | 反例 | 普通员工 | 尝试重置 | 返回 403 |
-| TC-API-ENTADM-015 | 启用员工 | POST /ent-admin/employees/{id}/toggle-status | 正例 | 企业管理员 | 启用已停用员工 | is_active=true |
-| TC-API-ENTADM-016 | 停用员工 | POST /ent-admin/employees/{id}/toggle-status | 正例 | 企业管理员 | 停用员工 | is_active=false |
-| TC-API-ENTADM-017 | 停用自己-不允许 | POST /ent-admin/employees/{id}/toggle-status | 反例 | 企业管理员 | 尝试停用自己 | 返回"不能停用自己"，code=400 |
-| TC-API-ENTADM-018 | 获取本企业商机 | GET /ent-admin/my-opportunities | 正例 | 企业管理员/员工 | 获取本企业商机 | 返回本企业所有商机 |
-| TC-API-ENTADM-019 | 获取本企业商机-筛选 | GET /ent-admin/my-opportunities | 正例 | 企业管理员 | type=BUY | 返回本企业采购商机 |
-| TC-API-ENTADM-020 | 获取本企业商机-非本企业 | GET /ent-admin/my-opportunities | 反例 | 其他企业用户 | 跨企业获取 | 仅返回自己企业商机 |
-
-### 2.6 平台端管理（L1 API 测试）
-
-**模块说明**：共 14 个 API，38 个用例
-
-| 用例ID | 用例名称 | 接口 | 测试场景 | 前置条件 | 操作步骤 | 预期结果 |
-|--------|----------|------|----------|----------|----------|----------|
-| TC-API-PLAT-001 | 获取统计指标 | GET /plat-admin/dashboard/stats | 正例 | 平台运营 | 获取统计数据 | 返回4项核心指标 |
-| TC-API-PLAT-002 | 获取统计指标-无数据 | GET /plat-admin/dashboard/stats | 正例 | 平台运营 | 全新系统 | 返回全0统计 |
-| TC-API-PLAT-003 | 获取统计指标-无权限 | GET /plat-admin/dashboard/stats | 反例 | 非平台运营 | 普通用户访问 | 返回 403 |
-| TC-API-PLAT-004 | 获取待审核企业列表 | GET /plat-admin/audit/enterprise | 正例 | 平台运营 | 获取待审核列表 | 返回PENDING状态企业 |
-| TC-API-PLAT-005 | 获取待审核企业列表-空 | GET /plat-admin/audit/enterprise | 正例 | 平台运营 | 无待审核 | 返回空列表 |
-| TC-API-PLAT-006 | 审核通过 | POST /plat-admin/audit/enterprise/{id}/approve | 正例 | 平台运营 | 审核通过 | 企业状态变VERIFIED，发送消息给申请人 |
-| TC-API-PLAT-007 | 审核通过-无权限 | POST /plat-admin/audit/enterprise/{id}/approve | 反例 | 非平台运营 | 尝试审核 | 返回 403 |
-| TC-API-PLAT-008 | 审核驳回 | POST /plat-admin/audit/enterprise/{id}/reject | 正例 | 平台运营 | 填写驳回原因 | 企业状态变REJECTED，发送消息 |
-| TC-API-PLAT-009 | 审核驳回-缺少原因 | POST /plat-admin/audit/enterprise/{id}/reject | 反例 | 平台运营 | 不填驳回原因 | 返回"驳回原因不能为空"，code=400 |
-| TC-API-PLAT-010 | 获取企业列表(租户) | GET /plat-admin/tenant/enterprise | 正例 | 超级管理员 | 获取所有企业 | 返回企业列表 |
-| TC-API-PLAT-011 | 获取企业列表-无权限 | GET /plat-admin/tenant/enterprise | 反例 | 平台运营 | 访问租户管理 | 返回 403（平台运营无此权限） |
-| TC-API-PLAT-012 | 停用企业 | PUT /plat-admin/tenant/enterprise/{id}/toggle-status | 正例 | 超级管理员 | 停用企业 | is_active=false，企业下所有账号停用 |
-| TC-API-PLAT-013 | 启用企业 | PUT /plat-admin/tenant/enterprise/{id}/toggle-status | 正例 | 超级管理员 | 启用企业 | is_active=true |
-| TC-API-PLAT-014 | 停用自己-不允许 | PUT /plat-admin/tenant/enterprise/{id}/toggle-status | 反例 | 超级管理员 | 停用自己所属企业 | 返回错误 |
-| TC-API-PLAT-015 | 获取商机列表(平台) | GET /plat-admin/content/opportunity | 正例 | 平台运营 | 获取所有商机 | 返回全平台商机列表 |
-| TC-API-PLAT-016 | 商机列表-筛选状态 | GET /plat-admin/content/opportunity | 正例 | 平台运营 | status=ACTIVE | 返回生效中商机 |
-| TC-API-PLAT-017 | 商机列表-筛选状态 | GET /plat-admin/content/opportunity | 正例 | 平台运营 | status=OFFLINE | 返回已下架商机 |
-| TC-API-PLAT-018 | 强制下架商机 | PUT /plat-admin/content/opportunity/{id}/offline | 正例 | 平台运营 | 填写原因强制下架 | 状态变OFFLINE，发送消息给发布企业 |
-| TC-API-PLAT-019 | 强制下架-缺少原因 | PUT /plat-admin/content/opportunity/{id}/offline | 反例 | 平台运营 | 不填原因 | 返回"原因不能为空"，code=400 |
-| TC-API-PLAT-020 | 获取动态列表(平台) | GET /plat-admin/content/feed | 正例 | 平台运营 | 获取所有动态 | 返回全平台动态 |
-| TC-API-PLAT-021 | 动态列表-筛选状态 | GET /plat-admin/content/feed | 正例 | 平台运营 | status=OFFLINE | 返回已下架动态 |
-| TC-API-PLAT-022 | 强制下架动态 | PUT /plat-admin/content/feed/{id}/offline | 正例 | 平台运营 | 下架动态 | 状态变OFFLINE |
-| TC-API-PLAT-023 | 强制下架动态-无权限 | PUT /plat-admin/content/feed/{id}/offline | 反例 | 非平台运营 | 尝试下架 | 返回 403 |
-| TC-API-PLAT-024 | 获取字典列表 | GET /plat-admin/master-data | 正例 | 平台运营 | 获取所有字典 | 返回树形字典结构 |
-| TC-API-PLAT-025 | 获取字典列表-按分类 | GET /plat-admin/master-data | 正例 | 平台运营 | category=industry | 返回行业字典 |
-| TC-API-PLAT-026 | 新增字典项 | POST /plat-admin/master-data | 正例 | 超级管理员 | 新增字典项 | 创建成功 |
-| TC-API-PLAT-027 | 新增字典项-缺少必填 | POST /plat-admin/master-data | 反例 | 超级管理员 | 缺少名称 | 返回错误，code=400 |
-| TC-API-PLAT-028 | 新增字典项-无权限 | POST /plat-admin/master-data | 反例 | 平台运营 | 尝试新增 | 返回 403 |
-| TC-API-PLAT-029 | 更新字典项 | PUT /plat-admin/master-data/{id} | 正例 | 超级管理员 | 更新名称 | 更新成功 |
-| TC-API-PLAT-030 | 更新字典项-被引用 | PUT /plat-admin/master-data/{id} | 正例 | 超级管理员 | 更新被引用的字典 | 更新成功（仅更新名称） |
-| TC-API-PLAT-031 | 禁用字典项 | PUT /plat-admin/master-data/{id}/toggle-status | 正例 | 超级管理员 | 禁用字典 | is_active=false |
-| TC-API-PLAT-032 | 禁用字典项-已引用 | PUT /plat-admin/master-data/{id}/toggle-status | 反例 | 超级管理员 | 禁用已被商机关联的字典 | 返回"字典已被引用，无法禁用"，code=400 |
-| TC-API-PLAT-033 | 获取角色列表 | GET /plat-admin/role | 正例 | 超级管理员 | 获取角色列表 | 返回角色列表+权限 |
-| TC-API-PLAT-034 | 获取角色列表-无权限 | GET /plat-admin/role | 反例 | 平台运营 | 尝试获取 | 返回 403 |
-| TC-API-PLAT-035 | 更新角色权限 | PUT /plat-admin/role/{id}/permissions | 正例 | 超级管理员 | 更新权限 | 权限更新成功 |
-| TC-API-PLAT-036 | 更新角色权限-无效权限 | PUT /plat-admin/role/{id}/permissions | 反例 | 超级管理员 | 提交不存在的权限code | 返回错误，code=400 |
-| TC-API-PLAT-037 | 更新角色权限-无权限 | PUT /plat-admin/role/{id}/permissions | 反例 | 平台运营 | 尝试更新 | 返回 403 |
-
-### 2.7 搜索服务（L1 API 测试）
-
-**模块说明**：共 1 个 API，6 个用例
-
-| 用例ID | 用例名称 | 接口 | 测试场景 | 前置条件 | 操作步骤 | 预期结果 |
-|--------|----------|------|----------|----------|----------|----------|
-| TC-API-SEARCH-001 | 统一搜索-商机 | GET /search/all | 正例 | 已登录 | keyword=芯片&tab=opportunity | 返回商机结果列表 |
-| TC-API-SEARCH-002 | 统一搜索-企业 | GET /search/all | 正例 | 已登录 | keyword=威蓝&tab=enterprise | 返回企业结果列表 |
-| TC-API-SEARCH-003 | 统一搜索-动态 | GET /search/all | 正例 | 已登录 | keyword=论坛&tab=feed | 返回动态结果列表 |
-| TC-API-SEARCH-004 | 统一搜索-全部 | GET /search/all | 正例 | 已登录 | 不指定tab | 返回三类结果 |
-| TC-API-SEARCH-005 | 统一搜索-未登录 | GET /search/all | 反例 | 未登录 | 不带Token | 返回 401 |
-| TC-API-SEARCH-006 | 统一搜索-无结果 | GET /search/all | 正例 | 已登录 | keyword=极不常见的词 | 返回空结果，code=200 |
-
-### 2.8 安全测试（L1 API 测试）
-
-| 用例ID | 用例名称 | 接口 | 测试场景 | 前置条件 | 操作步骤 | 预期结果 |
-|--------|----------|------|----------|----------|----------|----------|
-| TC-API-SEC-001 | XSS注入-存储型 | POST /opp/opportunity | 反例 | 已绑定认证企业 | 商机描述含`<script>alert(1)</script>` | 转义后存储，输出时无脚本执行 |
-| TC-API-SEC-002 | SQL注入 | GET /opp/opportunity | 反例 | 无 | keyword=' OR '1'='1 | 无SQL错误，正常返回结果 |
-| TC-API-SEC-003 | 越权访问-跨企业数据 | PUT /opp/opportunity/{id} | 反例 | A企业用户 | 修改B企业商机 | 返回 403 |
-| TC-API-SEC-004 | 越权访问-获取他企业联系方式 | POST /opp/{id}/contact | 反例 | 已绑定A企业 | 获取B企业商机联系方式 | 正常返回（撮合不限制企业） |
-| TC-API-SEC-005 | Token伪造 | GET /auth/me | 反例 | 无 | 使用伪造的Token | 返回 401 |
-| TC-API-SEC-006 | 敏感操作日志 | POST /ent-admin/employees/{id}/reset-password | 正例 | 企业管理员 | 重置密码 | 操作被记录到日志 |
+| 字段 | 说明 | 必填 |
+|------|------|------|
+| `test_data` | 测试数据，支持变量引用 `${var}` | 是 |
+| `steps` | 详细操作步骤，包含完整请求信息 | 是 |
+| `expected_http` | HTTP响应预期（状态码、业务码） | 是 |
+| `validators` | 多维验证：api/db/cache | 是 |
+| `validators.db` | 数据库校验，包含表名、条件、字段断言 | 涉及数据持久化的接口必填 |
+| `teardown` | 数据清理，保证用例可重复执行 | 建议填写 |
+| `extractors` | 从响应提取参数，供后续用例使用 | 涉及链路测试时填写 |
 
 ---
 
-## 3. E2E 测试用例
+## 3. 测试数据设计
 
-### 3.1 宣传页（Promotion）
+### 3.1 数据驱动架构
 
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-PUB-001 | 宣传页-扫码注册 | 无 | 扫描宣传页二维码 | 跳转注册页面 | **是** |
-| TC-E2E-PUB-002 | 宣传页-统计数据展示 | 无 | 访问宣传页 | 展示入驻企业数、累计商机、成功撮合数 | 否 |
+```
+tests/integration/
+├── script/
+│   ├── conftest.py              # pytest配置、fixtures、mock
+│   ├── test_data/               # 参数化测试数据
+│   │   ├── auth/
+│   │   │   ├── sms_send.yml    # 发送验证码测试数据
+│   │   │   ├── login.yml       # 登录测试数据
+│   │   │   └── register.yml    # 注册测试数据
+│   │   ├── ent/
+│   │   │   ├── list.yml        # 企业列表测试数据
+│   │   │   └── create.yml      # 企业创建测试数据
+│   │   └── ...
+│   ├── api/                     # API测试脚本
+│   ├── db/                      # 数据库校验辅助
+│   │   ├── queries.py           # 封装常用查询
+│   │   └── validators.py        # 自定义断言
+│   └── utils/
+│       ├── data_loader.py        # YAML数据加载
+│       └── parameter_linker.py   # 参数关联
+└── fixtures/                    # Django fixtures
+    ├── auth/
+    └── ent/
+```
 
-### 3.2 注册页（Register）
+### 3.2 测试数据类型
 
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-REG-001 | 注册-成功注册 | 无 | 填写手机号+验证码+密码，点击注册 | 注册成功，跳转首页 | **是** |
-| TC-E2E-REG-002 | 注册-已有账号登录 | 无 | 点击"立即登录"链接 | 跳转登录页 | 否 |
+| 类型 | 存储方式 | 示例 | 用途 |
+|------|---------|------|------|
+| 基础数据 | Django Fixtures | `users.json`, `enterprises.json` | 预置用户、企业、字典等基础数据 |
+| 业务数据 | YAML + Python | `sms_send.yml`, `login.yml` | 参数化请求数据、预期结果 |
+| 边界数据 | YAML | `boundary.yml` | 分页边界、超长字符串、特殊字符 |
+| 异常数据 | SQL 脚本 | `sms_expired.sql` | 构造过期验证码、黑名单Token |
 
-### 3.3 首页（Home）
+### 3.3 变量引用规则
 
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-HOME-001 | 首页导航-顶部导航栏 | 游客 | 验证校链通Logo、首页/商机广场/企业名录/校友圈导航 | 各导航链接正确跳转 | 否 |
-| TC-E2E-HOME-002 | 首页导航-登录入口 | 游客 | 点击顶部"登录"按钮 | 弹出登录弹窗 | 否 |
-| TC-E2E-HOME-003 | 首页统计指标展示 | 无 | 查看4项统计指标（入驻企业/商机/撮合/校友） | 数据正常展示 | 否 |
-| TC-E2E-HOME-004 | 首页热门标签 | 无 | 点击任一热门标签 | 跳转商机广场并应用该标签筛选 | 否 |
-| TC-E2E-HOME-005 | 首页快捷发布-未登录 | 游客 | 点击"发布采购需求"按钮 | 跳转登录页 | 否 |
-| TC-E2E-HOME-006 | 首页快捷发布-已登录未绑定企业 | 已登录未绑定企业 | 点击"发布采购需求"按钮 | 提示"请先加入或认领企业" | 否 |
-| TC-E2E-HOME-007 | 首页快捷发布-已认证企业 | 已绑定认证企业 | 点击"发布采购需求"按钮 | 弹出发布商机弹窗，默认类型为采购 | 否 |
-| TC-E2E-HOME-008 | 首页智能推荐-冷启动 | 游客/未绑定企业 | 查看推荐商机区域 | 展示最新+热门标签商机 | 否 |
-| TC-E2E-HOME-009 | 首页智能推荐-已认证用户 | 已绑定认证企业用户 | 查看推荐商机区域 | 展示供需互补+标签匹配商机 | 否 |
-| TC-E2E-HOME-010 | 首页新入驻企业展示 | 无 | 查看"新入驻企业"区域 | 展示最近3家认证企业，点击跳转企业详情 | 否 |
-| TC-E2E-HOME-011 | 首页最新动态展示 | 无 | 查看"校友动态"区域 | 展示最近2条动态，点击跳转校友圈 | 否 |
-| TC-E2E-HOME-012 | 全局搜索-有效关键词 | 无 | 输入"自动驾驶"点击搜索 | 跳转搜索结果页 | 否 |
-| TC-E2E-HOME-013 | 全局搜索-空结果 | 无 | 输入极不常见词搜索 | 跳转搜索结果页，显示空结果 |
-
-### 3.4 企业名录页（Enterprise）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-ENT-001 | 企业列表-默认展示 | 无 | 访问企业名录页 | 展示企业卡片列表，分页正常 | 否 |
-| TC-E2E-ENT-002 | 企业列表-行业筛选 | 无 | 选择行业下拉框 | 列表按行业筛选更新 | 否 |
-| TC-E2E-ENT-003 | 企业列表-地区筛选 | 无 | 选择省市区级联 | 列表按地区筛选更新 | 否 |
-| TC-E2E-ENT-004 | 企业列表-标签筛选 | 无 | 点击热门标签 | 列表按标签筛选更新 | 否 |
-| TC-E2E-ENT-005 | 企业列表-关键词搜索 | 无 | 输入企业名称搜索 | 列表按名称模糊搜索 | 否 |
-| TC-E2E-ENT-006 | 企业详情抽屉-已认证企业 | 已登录 | 点击企业卡片"查看名片" | 右侧抽屉展示企业详情+商机Tab | 否 |
-| TC-E2E-ENT-007 | 企业详情抽屉-认领按钮 | 游客/未绑定企业 | 查看未认证企业详情 | 显示"认领该企业"按钮 | 否 |
-| TC-E2E-ENT-008 | 认领企业-提交申请 | 已登录未绑定企业 | 点击认领，填写职务，上传材料，提交 | 创建审核申请，提示"等待审核" | **是** |
-| TC-E2E-ENT-009 | 创建企业-完整流程 | 已登录未绑定企业 | 点击"创建我的企业"，填写全部字段，提交 | 创建待审核企业，提示"等待审核" | 否 |
-| TC-E2E-ENT-010 | 创建企业-缺少必填 | 已登录未绑定企业 | 填写表单时留空必填项，提交 | 提示具体哪个字段缺失 | 否 |
-
-### 3.5 商机广场页（Opportunity）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-OPP-001 | 商机列表-默认展示 | 无 | 访问商机广场页 | 展示商机卡片，类型标签清晰 | 否 |
-| TC-E2E-OPP-002 | 商机列表-类型筛选 | 无 | 点击"我要买"筛选 | 仅展示采购需求 | 否 |
-| TC-E2E-OPP-003 | 商机列表-类型筛选 | 无 | 点击"我能供"筛选 | 仅展示供应能力 | 否 |
-| TC-E2E-OPP-004 | 商机列表-行业品类地区筛选 | 无 | 依次选择行业/品类/地区 | 列表多条件筛选更新 | 否 |
-| TC-E2E-OPP-005 | 商机列表-标签筛选 | 无 | 点击标签筛选 | 列表按标签筛选 | 否 |
-| TC-E2E-OPP-006 | 商机列表-关键词搜索 | 无 | 输入关键词搜索 | 列表按标题搜索 | 否 |
-| TC-E2E-OPP-007 | 发布商机-打开弹窗 | 已绑定认证企业 | 点击"发布商机"按钮 | 弹出发布表单 | **是** |
-| TC-E2E-OPP-008 | 发布商机-选择类型 | 已绑定认证企业 | 在发布弹窗中选择"我要买" | 类型切换为采购 | 否 |
-| TC-E2E-OPP-009 | 发布商机-多级联动 | 已绑定认证企业 | 选择行业/品类/地区 | 三级联动正常回显 | 否 |
-| TC-E2E-OPP-010 | 发布商机-添加标签 | 已绑定认证企业 | 输入标签按回车添加，再删除 | 标签添加/删除正常 | 否 |
-| TC-E2E-OPP-011 | 发布商机-提交成功 | 已绑定认证企业 | 填写完整表单提交 | 发布成功，商机出现在列表 | **是** |
-| TC-E2E-OPP-012 | 发布商机-缺少必填 | 已绑定认证企业 | 留空必填项提交 | 提示具体缺失字段 | 否 |
-| TC-E2E-OPP-013 | 获取联系方式-未登录 | 游客 | 点击商机卡片"获取联系方式" | 跳转登录页 | **是** |
-| TC-E2E-OPP-014 | 获取联系方式-已登录 | 已登录 | 点击"获取联系方式"按钮 | 弹出确认对话框 | **是** |
-| TC-E2E-OPP-015 | 获取联系方式-确认获取 | 已登录已绑定企业 | 确认获取 | 展示脱敏联系方式 | **是** |
-| TC-E2E-OPP-016 | 联系方式-掩码验证 | 已登录 | 未点击获取前查看商机详情 | 联系方式显示为*** | 否 |
-
-### 3.6 校友圈页（Feed）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-FEED-001 | 动态列表-默认展示 | 无 | 访问校友圈页 | 展示动态卡片列表 | 否 |
-| TC-E2E-FEED-002 | 动态列表-图片展示 | 无 | 查看含图片的动态 | 图片网格正确显示（1/2/3列） | 否 |
-| TC-E2E-FEED-003 | 发布动态-打开弹窗 | 已绑定认证企业 | 点击"发布动态"按钮 | 弹出发布表单 | 否 |
-| TC-E2E-FEED-004 | 发布动态-上传图片 | 已绑定认证企业 | 上传图片（边界：1张、9张、超限） | 正确响应图片数量限制 | 否 |
-| TC-E2E-FEED-005 | 发布动态-提交成功 | 已绑定认证企业 | 填写内容提交 | 发布成功，动态出现在列表首位 | 否 |
-| TC-E2E-FEED-006 | 发布动态-仅文字 | 已绑定认证企业 | 仅填写文字无图片提交 | 发布成功 | 否 |
-| TC-E2E-FEED-007 | 发布动态-未绑定企业 | 已登录未绑定企业 | 尝试发布 | 提示"请先加入企业" | 否 |
-
-### 3.7 登录页（Login）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-LOGIN-001 | 短信登录-获取验证码 | 游客 | 输入手机号，点击获取验证码 | 收到短信验证码（模拟） | 否 |
-| TC-E2E-LOGIN-002 | 短信登录-60秒倒计时 | 游客 | 点击获取验证码后 | 按钮显示倒计时，期间不可点击 | 否 |
-| TC-E2E-LOGIN-003 | 短信登录-正确验证码 | 游客 | 输入正确验证码，点击登录 | 登录成功，跳转首页 | 否 |
-| TC-E2E-LOGIN-004 | 短信登录-错误验证码 | 游客 | 输入错误验证码 | 提示"验证码错误" | 否 |
-| TC-E2E-LOGIN-005 | 短信登录-新用户自动注册 | 游客 | 输入未注册手机号+正确验证码 | 自动注册并登录 | 否 |
-| TC-E2E-LOGIN-006 | 切换到密码登录 | 游客 | 点击"密码登录"tab | 表单切换为密码登录 | 否 |
-| TC-E2E-LOGIN-007 | 密码登录-成功 | 游客 | 输入正确账密 | 登录成功 | 否 |
-| TC-E2E-LOGIN-008 | 密码登录-密码错误 | 游客 | 输入错误密码 | 提示"用户名或密码错误" | 否 |
-| TC-E2E-LOGIN-009 | 登录成功跳转 | 游客 | 登录成功后 | 关闭弹窗，页面刷新为登录状态 | 否 |
-
-### 3.8 搜索结果页（Search）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-SCH-001 | 搜索结果-默认Tab | 已登录 | 执行搜索后访问搜索页 | 默认展示"找商机"Tab | 否 |
-| TC-E2E-SCH-002 | 搜索结果-切换Tab | 已登录 | 点击"找企业"Tab | 展示企业搜索结果 | 否 |
-| TC-E2E-SCH-003 | 搜索结果-切换Tab | 已登录 | 点击"看动态"Tab | 展示动态搜索结果 | 否 |
-| TC-E2E-SCH-004 | 搜索结果-商机点击 | 已登录 | 点击商机结果 | 跳转商机详情 | 否 |
-| TC-E2E-SCH-005 | 搜索结果-企业点击 | 已登录 | 点击企业结果 | 跳转企业详情抽屉 | 否 |
-| TC-E2E-SCH-006 | 搜索结果-动态点击 | 已登录 | 点击动态结果 | 跳转动态详情 | 否 |
-
-### 3.9 企业端-企业信息维护（EnterpriseAdmin-Info）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-ENTADM-INFO-001 | 查看不可修改字段 | 企业管理员 | 访问企业信息维护页 | 展示不可修改的企业全称和信用代码 | 否 |
-| TC-E2E-ENTADM-INFO-002 | 修改可编辑字段 | 企业管理员 | 修改Logo/标签/简介后保存 | 保存成功，字段更新 | 否 |
-| TC-E2E-ENTADM-INFO-003 | 上传Logo | 企业管理员 | 更换企业Logo | 新Logo正确展示 | 否 |
-| TC-E2E-ENTADM-INFO-004 | 添加标签 | 企业管理员 | 添加新的业务标签 | 标签正确添加并展示 | 否 |
-| TC-E2E-ENTADM-INFO-005 | 修改简介 | 企业管理员 | 修改企业简介内容 | 内容保存并展示 | 否 |
-
-### 3.10 企业端-员工管理（EnterpriseAdmin-Employee）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-ENTADM-EMP-001 | 员工列表展示 | 企业管理员 | 访问员工管理页 | 展示本企业所有员工 | 否 |
-| TC-E2E-ENTADM-EMP-002 | 新增员工-已注册手机号 | 企业管理员 | 输入已注册手机号+姓名+角色 | 绑定成功，员工出现在列表 | 否 |
-| TC-E2E-ENTADM-EMP-003 | 新增员工-未注册手机号 | 企业管理员 | 输入未注册手机号+姓名+角色 | 创建新账号，初始密码为手机号后6位 | 否 |
-| TC-E2E-ENTADM-EMP-004 | 编辑员工信息 | 企业管理员 | 修改员工姓名和角色后保存 | 更新成功 | 否 |
-| TC-E2E-ENTADM-EMP-005 | 重置密码 | 企业管理员 | 点击员工"重置密码"操作 | 密码重置成功 | 否 |
-| TC-E2E-ENTADM-EMP-006 | 停用员工 | 企业管理员 | 停用某员工账号 | 员工状态变为停用 | 否 |
-| TC-E2E-ENTADM-EMP-007 | 启用员工 | 企业管理员 | 启用已停用员工 | 员工状态变为正常 | 否 |
-| TC-E2E-ENTADM-EMP-008 | 移除员工 | 企业管理员 | 移除某员工 | 解除绑定，账号保留，从列表移除 | 否 |
-| TC-E2E-ENTADM-EMP-009 | 移除-不能移除自己 | 企业管理员 | 尝试移除自己 | 提示"不能移除自己" | 否 |
-| TC-E2E-ENTADM-EMP-010 | 权限控制-普通员工不能访问 | 普通员工 | 尝试访问员工管理页 | 页面无权限访问或菜单不可见 | **是** |
-
-### 3.11 企业端-我的商机（EnterpriseAdmin-Opportunity）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-ENTADM-OPP-001 | 本企业商机列表 | 企业管理员/员工 | 访问我的商机页 | 展示本企业所有商机 | 否 |
-| TC-E2E-ENTADM-OPP-002 | 商机列表-筛选 | 企业管理员 | 选择类型/状态筛选 | 列表按条件筛选 | 否 |
-| TC-E2E-ENTADM-OPP-003 | 查看商机详情 | 企业管理员 | 点击商机查看详情 | 展示完整商机信息 | 否 |
-| TC-E2E-ENTADM-OPP-004 | 下架商机 | 企业管理员 | 对某商机点击下架 | 商机状态变为OFFLINE | 否 |
-| TC-E2E-ENTADM-OPP-005 | 重新上架 | 企业管理员 | 对已下架商机点击上架 | 商机状态恢复ACTIVE | 否 |
-| TC-E2E-ENTADM-OPP-006 | 查看浏览量 | 企业管理员 | 查看商机列表 | 每条商机显示浏览量 | 否 |
-
-### 3.12 平台端-数据大盘（PlatformAdmin-Dashboard）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-PLAT-DASH-001 | 指标卡片展示 | 平台运营 | 访问数据大盘 | 展示4项核心指标卡片 | 否 |
-| TC-E2E-PLAT-DASH-002 | 待办事项-待审核企业 | 平台运营 | 查看待办区域 | 展示待审核企业列表 | 否 |
-| TC-E2E-PLAT-DASH-003 | 点击待审核跳转 | 平台运营 | 点击"去审核"按钮 | 跳转企业审核页 | 否 |
-| TC-E2E-PLAT-DASH-004 | 权限控制-普通员工不能访问 | 普通员工 | 尝试访问数据大盘 | 无权限访问 | 否 |
-
-### 3.13 平台端-企业审核（PlatformAdmin-Audit）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-PLAT-AUDIT-001 | 待审核列表展示 | 平台运营 | 访问企业审核页 | 展示PENDING状态申请 | 否 |
-| TC-E2E-PLAT-AUDIT-002 | 切换审核状态 | 平台运营 | 选择"已通过"/"已驳回"Tab | 列表按状态筛选 | 否 |
-| TC-E2E-PLAT-AUDIT-003 | 审核详情弹窗 | 平台运营 | 点击"审核"按钮 | 弹出审核详情弹窗 | 否 |
-| TC-E2E-PLAT-AUDIT-004 | 审核通过 | 平台运营 | 查看材料后点击"审核通过" | 企业状态变VERIFIED，发送消息 | **是** |
-| TC-E2E-PLAT-AUDIT-005 | 审核驳回-缺少原因 | 平台运营 | 点击"驳回"但不填原因 | 提示"请填写驳回原因" | 否 |
-| TC-E2E-PLAT-AUDIT-006 | 审核驳回-填写原因 | 平台运营 | 填写驳回原因后驳回 | 企业状态变REJECTED，发送消息 | 否 |
-| TC-E2E-PLAT-AUDIT-007 | 权限控制-企业管理员不能访问 | 企业管理员 | 尝试访问审核页 | 无权限访问 | 否 |
-
-### 3.14 平台端-租户管理（PlatformAdmin-Tenant）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-PLAT-TENANT-001 | 企业列表展示 | 超级管理员 | 访问租户管理页 | 展示所有企业列表 | 否 |
-| TC-E2E-PLAT-TENANT-002 | 搜索企业 | 超级管理员 | 输入企业名称搜索 | 返回匹配企业 | 否 |
-| TC-E2E-PLAT-TENANT-003 | 查看成员 | 超级管理员 | 点击企业"成员"按钮 | 弹出成员管理弹窗 | 否 |
-| TC-E2E-PLAT-TENANT-004 | 停用企业 | 超级管理员 | 停用某企业 | 企业停用，账号无法登录 | 否 |
-| TC-E2E-PLAT-TENANT-005 | 启用企业 | 超级管理员 | 启用已停用企业 | 企业恢复，账号可登录 | 否 |
-| TC-E2E-PLAT-TENANT-006 | 权限控制-平台运营不能访问 | 平台运营 | 尝试访问租户管理 | 无权限访问 | 否 |
-
-### 3.15 平台端-商机内容管理（PlatformAdmin-OpportunityManage）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-PLAT-OPP-001 | 商机列表展示 | 平台运营 | 访问商机管理页 | 展示全平台商机 | 否 |
-| TC-E2E-PLAT-OPP-002 | 商机列表-筛选 | 平台运营 | 选择类型/状态筛选 | 列表按条件筛选 | 否 |
-| TC-E2E-PLAT-OPP-003 | 强制下架-缺少原因 | 平台运营 | 点击下架但不填原因 | 提示"请填写原因" | 否 |
-| TC-E2E-PLAT-OPP-004 | 强制下架-填写原因 | 平台运营 | 填写原因后下架 | 商机下架，发布方收到消息 | 否 |
-
-### 3.16 平台端-动态内容管理（PlatformAdmin-FeedManage）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-PLAT-FEED-001 | 动态列表展示 | 平台运营 | 访问动态管理页 | 展示全平台动态 | 否 |
-| TC-E2E-PLAT-FEED-002 | 强制下架 | 平台运营 | 对某动态点击下架 | 动态下架，发布方收到消息 | 否 |
-| TC-E2E-PLAT-FEED-003 | 权限控制 | 普通用户 | 尝试访问动态管理页 | 无权限访问 | 否 |
-
-### 3.17 平台端-基础数据字典（PlatformAdmin-MasterData）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-PLAT-MASTER-001 | 字典树形展示 | 平台运营 | 访问基础数据页 | 按category展示树形结构 | 否 |
-| TC-E2E-PLAT-MASTER-002 | 切换字典分类 | 平台运营 | 点击行业/品类/标签/地区Tab | 切换树形数据 | 否 |
-| TC-E2E-PLAT-MASTER-003 | 新增字典项 | 超级管理员 | 新增一级字典项 | 创建成功，树形更新 | 否 |
-| TC-E2E-PLAT-MASTER-004 | 新增子项 | 超级管理员 | 对某节点新增子项 | 子项创建成功 | 否 |
-| TC-E2E-PLAT-MASTER-005 | 编辑字典项 | 超级管理员 | 修改字典名称 | 更新成功 | 否 |
-| TC-E2E-PLAT-MASTER-006 | 禁用字典项-未被引用 | 超级管理员 | 禁用未被引用的字典项 | 禁用成功 | 否 |
-| TC-E2E-PLAT-MASTER-007 | 禁用字典项-已被引用 | 超级管理员 | 禁用已被商机关联的字典 | 提示"已被引用，无法禁用" | 否 |
-| TC-E2E-PLAT-MASTER-008 | 字典穿透验证 | 超级管理员 | 新增"测试品类"后 | 前台发布商机/企业名录可立即选到 | **是** |
-
-### 3.18 平台端-RBAC（PlatformAdmin-RBAC）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-PLAT-RBAC-001 | 角色列表展示 | 超级管理员 | 访问RBAC页 | 展示所有角色列表 | 否 |
-| TC-E2E-PLAT-RBAC-002 | 查看角色权限 | 超级管理员 | 点击某角色 | 右侧展示权限配置 | 否 |
-| TC-E2E-PLAT-RBAC-003 | 更新角色权限 | 超级管理员 | 勾选/取消权限后保存 | 权限更新成功 | 否 |
-| TC-E2E-PLAT-RBAC-004 | 权限控制-平台运营不能访问 | 平台运营 | 尝试访问RBAC | 无权限访问 | 否 |
-
-### 3.19 平台端-系统设置（PlatformAdmin-Settings）
-
-| 用例ID | 用例名称 | 前置条件 | 操作步骤 | 预期结果 | 是否冒烟 |
-|--------|----------|----------|----------|----------|----------|
-| TC-E2E-PLAT-SET-001 | 基础设置展示 | 超级管理员 | 访问系统设置页 | 展示平台名称、客服热线等 | 否 |
-| TC-E2E-PLAT-SET-002 | 修改平台名称 | 超级管理员 | 修改平台名称后保存 | 保存成功 | 否 |
-| TC-E2E-PLAT-SET-003 | 预留开关验证 | 超级管理员 | 查看预留开关状态 | 开关状态正确显示 | 否 |
+| 语法 | 说明 | 示例 |
+|------|------|------|
+| `${var}` | 引用预定义变量 | `${valid_phone}` |
+| `${PREV_xxx}` | 引用上一个用例提取的参数 | `${PREV_sms_code}` |
+| `${now}` | 当前时间（运行时刻） | `${now} + 5min` |
+| `${today}` | 当前日期 | `${today}` |
+| `${uuid}` | 随机UUID | `${uuid}` |
 
 ---
 
-## 4. 测试用例统计
+## 4. Mock 策略
+
+### 4.1 Mock 层级
+
+| 层级    | Mock对象     | 实现方式                  | 使用场景       |
+| ----- | ---------- | --------------------- | ---------- |
+| L1/L2 | 短信服务 (SMS) | `unittest.mock.patch` | 默认所有短信相关测试 |
+
+
+### 4.2 短信服务 Mock 方案
+
+```python
+# conftest.py
+import pytest
+from unittest.mock import patch, MagicMock
+import re
+from datetime import datetime, timedelta
+
+# 预定义验证码存储（用于验证场景）
+SMS_CODE_STORE = {}
+
+def generate_sms_code():
+    """生成6位数字验证码"""
+    import random
+    return ''.join([str(random.randint(0, 9)) for _ in range(6)])
+
+@pytest.fixture(autouse=True)
+def mock_sms_service(monkeypatch):
+    """Mock短信服务"""
+    def fake_send_sms(phone: str, template: str, **kwargs):
+        code = generate_sms_code()
+        expires_at = datetime.now() + timedelta(minutes=5)
+
+        # 存储验证码用于后续验证
+        SMS_CODE_STORE[phone] = {
+            'code': code,
+            'expires_at': expires_at,
+            'used': False,
+            'type': template
+        }
+
+        # 记录发送次数
+        send_count_key = f"sms:send:count:{phone}"
+        # ... 记录发送次数逻辑
+
+        return {
+            'code': code,
+            'expires_at': expires_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'send_status': True
+        }
+
+    monkeypatch.setattr("app.services.sms.SMSService.send", fake_send_sms)
+    return SMS_CODE_STORE
+
+@pytest.fixture
+def mock_sms_with_limit(monkeypatch):
+    """Mock短信服务 - 带每日次数限制"""
+    daily_limit = {}
+
+    def fake_send_sms(phone: str, template: str, **kwargs):
+        today = datetime.now().strftime('%Y-%m-%d')
+
+        # 检查当日发送次数
+        key = f"{phone}:{today}"
+        count = daily_limit.get(key, 0)
+
+        if count >= 10:
+            raise SMSLimitExceededException(f"每日发送次数已用尽: {count}/10")
+
+        count += 1
+        daily_limit[key] = count
+
+        # 调用真实的发送逻辑或mock
+        return {'code': '123456', 'send_status': True}
+
+    monkeypatch.setattr("app.services.sms.SMSService.send", fake_send_sms)
+    return daily_limit
+
+@pytest.fixture
+def mock_sms_expired(monkeypatch):
+    """Mock短信服务 - 构造过期验证码"""
+    def fake_send_sms(phone: str, template: str, **kwargs):
+        # 创建已过期的验证码记录
+        expired_time = datetime.now() - timedelta(minutes=10)
+
+        with get_db_connection() as conn:
+            cursor.execute("""
+                INSERT INTO sms_codes (phone, code, type, used, created_at, expires_at)
+                VALUES (%s, '888888', %s, 0, %s, %s)
+            """, [phone, template, expired_time, expired_time + timedelta(minutes=5)])
+
+        return {'send_status': True, 'code': '888888'}
+
+    monkeypatch.setattr("app.services.sms.SMSService.send", fake_send_sms)
+```
+
+### 4.3 验证码超时时间计算
+
+验证码超时时间**不写死**，按脚本运行时间动态计算：
+
+```python
+# validators/db_validators.py
+def assert_sms_code_valid(db_record, expected_type):
+    """验证短信验证码记录"""
+    now = datetime.now()
+
+    # 超时时间 = 创建时间 + 5分钟，不写死
+    expected_expires = db_record['created_at'] + timedelta(minutes=5)
+
+    assert db_record['code'].match(r'^\d{6}$'), "验证码应为6位数字"
+    assert db_record['used'] == False, "验证码不应已被使用"
+    assert db_record['expires_at'] > now, "验证码不应已过期"
+    assert db_record['expires_at'] <= expected_expires + timedelta(seconds=1), "超时时间应为5分钟"
+    assert db_record['type'] == expected_type, f"验证码类型应为{expected_type}"
+```
+
+---
+
+## 5. 数据库校验规范
+
+### 5.1 数据库校验时机
+
+| 场景 | 必须进行数据库校验 |
+|------|------------------|
+| 发送验证码 | ✅ 验证码写入、次数记录 |
+| 登录 | ✅ Token写入、用户状态 |
+| 注册 | ✅ 用户创建 |
+| 创建企业 | ✅ 企业记录、关联关系 |
+| 发布商机 | ✅ 商机记录、状态变更 |
+| 审核操作 | ✅ 多表状态联动 |
+| 权限变更 | ✅ 角色表、关联表 |
+
+### 5.2 常用数据库校验SQL
+
+```sql
+-- 校验1: 验证码记录存在且有效
+SELECT id, phone, code, type, used, created_at, expires_at
+FROM sms_codes
+WHERE phone = '${phone}' AND type = '${type}' AND used = 0
+ORDER BY created_at DESC LIMIT 1;
+
+-- 校验2: 验证码已过期（用于异常测试）
+SELECT id, phone, code, expires_at
+FROM sms_codes
+WHERE phone = '${phone}' AND expires_at < NOW() AND used = 0;
+
+-- 校验3: 用户Token记录
+SELECT id, user_id, access_token, refresh_token, expires_at
+FROM auth_tokens
+WHERE user_id = '${user_id}' AND revoked = 0;
+
+-- 校验4: 企业状态流转
+SELECT e.id, e.name, e.auth_status, e.audit_status,
+       u.id as user_id, u.role as user_role
+FROM enterprises e
+JOIN users u ON e.create_user_id = u.id
+WHERE e.id = '${ent_id}';
+
+-- 校验5: 商机联系记录（防重复获取）
+SELECT id, opp_id, user_id, contact_phone, created_at
+FROM opp_contacts
+WHERE opp_id = '${opp_id}' AND user_id = '${user_id}';
+
+-- 校验6: 每日短信发送次数
+SELECT COUNT(*) as send_count
+FROM sms_send_log
+WHERE phone = '${phone}' AND DATE(created_at) = CURDATE();
+```
+
+### 5.3 数据库校验辅助类
+
+```python
+# tests/integration/db/queries.py
+class SmsCodeQueries:
+    """短信验证码相关查询"""
+
+    @staticmethod
+    def find_valid_code(phone: str, code_type: str) -> dict:
+        """查找有效验证码"""
+        return db.query_one("""
+            SELECT * FROM sms_codes
+            WHERE phone = %s AND type = %s AND used = 0 AND expires_at > NOW()
+            ORDER BY created_at DESC LIMIT 1
+        """, [phone, code_type])
+
+    @staticmethod
+    def assert_code_valid(phone: str, code_type: str, expected_code: str = None):
+        """断言验证码有效"""
+        record = SmsCodeQueries.find_valid_code(phone, code_type)
+        assert record is not None, f"找不到有效验证码: {phone}/{code_type}"
+
+        if expected_code:
+            assert record['code'] == expected_code, f"验证码不匹配"
+
+        # 动态计算超时时间
+        expires_at = record['expires_at']
+        created_at = record['created_at']
+        diff_minutes = (expires_at - created_at).total_seconds() / 60
+
+        assert 4.9 <= diff_minutes <= 5.1, f"超时时间应为5分钟，实际: {diff_minutes}分钟"
+        return record
+
+    @staticmethod
+    def find_expired_code(phone: str) -> dict:
+        """查找过期验证码"""
+        return db.query_one("""
+            SELECT * FROM sms_codes
+            WHERE phone = %s AND expires_at < NOW() AND used = 0
+            ORDER BY created_at DESC LIMIT 1
+        """, [phone])
+
+
+class EnterpriseQueries:
+    """企业相关查询"""
+
+    @staticmethod
+    def get_enterprise_with_user(ent_id: int) -> dict:
+        """获取企业及关联用户信息"""
+        return db.query_one("""
+            SELECT e.*, u.id as user_id, u.role as user_role,
+                   u.real_name as user_real_name
+            FROM enterprises e
+            JOIN users u ON e.create_user_id = u.id
+            WHERE e.id = %s
+        """, [ent_id])
+
+    @staticmethod
+    def assert_enterprise_status(ent_id: int, expected_auth_status: str,
+                                 expected_audit_status: str, expected_user_role: str):
+        """断言企业状态"""
+        record = EnterpriseQueries.get_enterprise_with_user(ent_id)
+
+        assert record['auth_status'] == expected_auth_status, \
+            f"企业认证状态应为{expected_auth_status}，实际: {record['auth_status']}"
+        assert record['audit_status'] == expected_audit_status, \
+            f"企业审核状态应为{expected_audit_status}，实际: {record['audit_status']}"
+        assert record['user_role'] == expected_user_role, \
+            f"用户角色应为{expected_user_role}，实际: {record['user_role']}"
+```
+
+---
+
+## 6. 参数关联设计
+
+### 6.1 参数生命周期
+
+```
+用例A执行 → 提取参数 → 存储到context → 用例B引用 → 用例C引用 → ...
+    ↓
+  cleanup → 清除context
+```
+
+### 6.2 参数提取与传递
+
+```python
+# tests/integration/utils/parameter_linker.py
+class ParameterLinker:
+    """参数关联管理器"""
+
+    def __init__(self):
+        self._context = {}
+
+    def extract(self, case_id: str, response: dict, extractors: list):
+        """从响应中提取参数"""
+        for ext in extractors:
+            value = self._get_nested(response, ext['from'])
+            self._context[ext['to']] = value
+            self._context[f"{case_id}:{ext['to']}"] = value  # 带用例前缀
+
+    def get(self, key: str, case_id: str = None) -> any:
+        """获取参数值"""
+        # 优先尝试: case_id:key
+        if case_id:
+            prefixed = f"{case_id}:{key}"
+            if prefixed in self._context:
+                return self._context[prefixed]
+
+        # 其次尝试: key
+        if key in self._context:
+            return self._context[key]
+
+        # 最后尝试: PREV_xxx (上一个用例的值)
+        prev_key = f"PREV_{key}"
+        if prev_key in self._context:
+            return self._context[prev_key]
+
+        raise KeyError(f"参数未找到: {key}")
+
+    def set(self, key: str, value: any):
+        """设置参数值"""
+        self._context[key] = value
+
+    def clear(self):
+        """清空context"""
+        self._context.clear()
+
+# 全局实例
+linker = ParameterLinker()
+```
+
+### 6.3 参数关联使用示例
+
+```yaml
+# 链路测试: TC-API-Chain-001 (完整企业入驻流程)
+test_data:
+  case_001_register:
+    phone: "${test_phone_001}"
+    steps:
+      - action: POST /api/v1/auth/sms/send
+        params: {phone: "${test_phone_001}", type: "register"}
+      - action: POST /api/v1/auth/register
+        params:
+          phone: "${test_phone_001}"
+          code: "${PREV_sms_code}"          # 引用上一步提取的验证码
+          password: "Test123456"
+          username: "测试用户"
+    extractors:
+      - from: response.body.data.user_id
+        to: "${user_id}"
+      - from: response.body.data.access_token
+        to: "${guest_token}"
+
+  case_002_create_enterprise:
+    depends_on: [case_001_register]
+    steps:
+      - action: POST /api/v1/ent/create
+        headers: {Authorization: "Bearer ${guest_token}"}
+        params:
+          name: "测试企业有限公司"
+          credit_code: "${credit_code_unique}"
+    validators:
+      db:
+        - table: enterprises
+          conditions:
+            create_user_id: "${user_id}"
+          fields:
+            audit_status: "PENDING"
+            auth_status: "UNVERIFIED"
+    extractors:
+      - from: response.body.data.enterprise_id
+        to: "${ent_id}"
+
+  case_003_audit_approve:
+    depends_on: [case_002_create_enterprise]
+    steps:
+      - action: POST /api/v1/auth/login/password
+        params: {username: "${plat_admin_username}", password: "${plat_admin_password}"}
+      - action: POST /api/v1/plat-admin/audit/${ent_id}/approve
+        headers: {Authorization: "Bearer ${plat_admin_token}"}
+    validators:
+      db:
+        - table: enterprises
+          conditions: {id: "${ent_id}"}
+          fields:
+            audit_status: "APPROVED"
+            auth_status: "VERIFIED"
+        - table: users
+          conditions: {id: "${user_id}"}
+          fields:
+            role: "ENT_ADMIN"
+```
+
+---
+
+## 7. 测试用例（L1 API）
+
+### 7.1 认证模块（auth）
+
+#### 7.1.1 发送短信验证码
+
+| 用例ID | 用例名称 | 测试场景 | 测试数据 | 操作步骤 | 预期结果 | 验证步骤 |
+|--------|----------|----------|----------|----------|----------|----------|
+| TC-API-auth-001 | 发送登录验证码-成功 | 正例-有效手机号 | phone: `${valid_phone}`<br>type: `login` | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 0 | **API断言**:<br>- data.send_status = true<br>**DB校验**:<br>- sms_codes表: phone=`${valid_phone}`<br>- type=`login`<br>- used=false<br>- code=6位数字<br>- expires_at > now+4min<br>**清理**: 删除验证码记录 |
+| TC-API-auth-002 | 发送登录验证码-超过每日限制 | 反例-10次限制 | phone: `${phone_daily_limit}`<br>type: `login`<br>**Mock**: 注入limit=10 | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 10001<br>message: "当日发送次数已用尽" | **Mock验证**:<br>- 检查daily_limit[phone] >= 10<br>**DB校验**:<br>- sms_send_log表当日count=10 |
+| TC-API-auth-003 | 发送注册验证码-成功 | 正例-新手机号 | phone: `${new_phone}`<br>type: `register` | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 0 | **API断言**:<br>- data.send_status = true<br>**DB校验**:<br>- sms_codes表记录存在<br>- type=`register` |
+| TC-API-auth-004 | 发送注册验证码-手机号已注册 | 反例-手机号重复 | phone: `${registered_phone}`<br>type: `register` | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 10002<br>message: "手机号已注册" | **API断言**:<br>- data.exists = true<br>**DB校验**:<br>- users表有记录 |
+| TC-API-auth-005 | 发送密码重置验证码-成功 | 正例-已注册手机 | phone: `${valid_phone}`<br>type: `password_reset` | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 0 | **API断言**:<br>- data.send_status = true<br>**DB校验**:<br>- sms_codes.type=`password_reset` |
+| TC-API-auth-006 | 发送密码重置验证码-未注册手机 | 反例-手机不存在 | phone: `${nonexistent_phone}`<br>type: `password_reset` | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 10003<br>message: "手机号未注册" | **API断言**:<br>- data.exists = false |
+
+#### 7.1.2 短信验证码登录
+
+| 用例ID | 用例名称 | 测试场景 | 测试数据 | 操作步骤 | 预期结果 | 验证步骤 |
+|--------|----------|----------|----------|----------|----------|----------|
+| TC-API-auth-007 | 短信验证码登录-成功 | 正例-有效验证码 | phone: `${valid_phone}`<br>code: `${sms_code}` | POST /api/v1/auth/login/sms<br>{phone, code} | HTTP 200<br>code: 0<br>含access_token | **API断言**:<br>- data.access_token != null<br>- data.refresh_token != null<br>- data.expires_in = 7200<br>**DB校验**:<br>- sms_codes.used=true<br>- auth_tokens记录存在<br>**参数提取**:<br>- access_token → `${login_token}`<br>- user_id → `${login_user_id}` |
+| TC-API-auth-008 | 短信验证码登录-验证码错误 | 反例-错误验证码 | phone: `${valid_phone}`<br>code: `000000` | POST /api/v1/auth/login/sms<br>{phone, code} | HTTP 200<br>code: 10004<br>message: "验证码无效" | **API断言**:<br>- data.access_token = null<br>**DB校验**:<br>- sms_codes.used保持false |
+| TC-API-auth-009 | 短信验证码登录-验证码过期 | 异常-验证码超时 | phone: `${valid_phone}`<br>code: `${expired_code}`<br>**前置**: 创建过期验证码 | POST /api/v1/auth/login/sms<br>{phone, code} | HTTP 200<br>code: 10005<br>message: "验证码已过期" | **DB校验**:<br>- sms_codes.expires_at < now<br>- sms_codes.used保持false |
+| TC-API-auth-010 | 短信验证码登录-验证码已使用 | 异常-重复使用 | phone: `${valid_phone}`<br>code: `${used_code}`<br>**前置**: 验证码已使用 | POST /api/v1/auth/login/sms<br>{phone, code} | HTTP 200<br>code: 10006<br>message: "验证码已使用" | **DB校验**:<br>- sms_codes.used=true |
+| TC-API-auth-011 | 短信验证码登录-手机号未注册 | 反例-用户不存在 | phone: `${nonexistent_phone}`<br>code: `123456` | POST /api/v1/auth/login/sms<br>{phone, code} | HTTP 200<br>code: 10007<br>message: "用户不存在" | |
+
+#### 7.1.3 账号密码登录
+
+| 用例ID | 用例名称 | 测试场景 | 测试数据 | 操作步骤 | 预期结果 | 验证步骤 |
+|--------|----------|----------|----------|----------|----------|----------|
+| TC-API-auth-012 | 账号密码登录-成功 | 正例-正确密码 | username: `${valid_username}`<br>password: `${valid_password}` | POST /api/v1/auth/login/password<br>{username, password} | HTTP 200<br>code: 0<br>含JWT Token | **API断言**:<br>- data.access_token != null<br>- data.user_id != null<br>**DB校验**:<br>- auth_tokens记录存在 |
+| TC-API-auth-013 | 账号密码登录-密码错误 | 反例-密码错误 | username: `${valid_username}`<br>password: `WrongPass123` | POST /api/v1/auth/login/password<br>{username, password} | HTTP 200<br>code: 10008<br>message: "密码错误" | **API断言**:<br>- data.access_token = null<br>**DB校验**:<br>- auth_tokens无新记录 |
+| TC-API-auth-014 | 账号密码登录-用户不存在 | 反例-用户不存在 | username: `nonexistent_user`<br>password: `AnyPass123` | POST /api/v1/auth/login/password<br>{username, password} | HTTP 200<br>code: 10007<br>message: "用户不存在" | |
+
+#### 7.1.4 Token刷新
+
+| 用例ID | 用例名称 | 测试场景 | 测试数据 | 操作步骤 | 预期结果 | 验证步骤 |
+|--------|----------|----------|----------|----------|----------|----------|
+| TC-API-auth-015 | Token刷新-成功 | 正例-有效refresh_token | refresh_token: `${valid_refresh_token}` | POST /api/v1/auth/token/refresh<br>{refresh_token} | HTTP 200<br>code: 0<br>含新access_token | **API断言**:<br>- data.access_token != 原token<br>- data.refresh_token != 原refresh_token<br>**DB校验**:<br>- 原refresh_token.revoked=true<br>- 新tokens记录存在 |
+| TC-API-auth-016 | Token刷新-token已加入黑名单 | 反例-旧token复用 | refresh_token: `${blacklisted_token}` | POST /api/v1/auth/token/refresh<br>{refresh_token} | HTTP 200<br>code: 10009<br>message: "Token无效" | **DB校验**:<br>- token_blacklist表有记录 |
+| TC-API-auth-017 | Token刷新-token过期 | 反例-超长未刷新 | refresh_token: `${expired_refresh_token}` | POST /api/v1/auth/token/refresh<br>{refresh_token} | HTTP 200<br>code: 10010<br>message: "Token已过期" | **DB校验**:<br>- auth_tokens.expires_at < now |
+
+#### 7.1.5 注册与密码重置
+
+| 用例ID | 用例名称 | 测试场景 | 测试数据 | 操作步骤 | 预期结果 | 验证步骤 |
+|--------|----------|----------|----------|----------|----------|----------|
+| TC-API-auth-018 | 注册账号-成功 | 正例-完整信息 | phone: `${new_phone}`<br>code: `${sms_code}`<br>password: `Test123456`<br>username: `newuser` | POST /api/v1/auth/register<br>{phone, code, password, username} | HTTP 200<br>code: 0<br>含JWT Token | **API断言**:<br>- data.user_id != null<br>- data.access_token != null<br>**DB校验**:<br>- users表: phone=`${new_phone}`<br>- users.role=`GUEST`<br>- sms_codes.used=true<br>**提取**:<br>- user_id → `${new_user_id}` |
+| TC-API-auth-019 | 注册账号-验证码错误 | 反例-验证码错误 | phone: `${new_phone}`<br>code: `000000`<br>password: `Test123456`<br>username: `newuser` | POST /api/v1/auth/register<br>{phone, code, ...} | HTTP 200<br>code: 10004 | **DB校验**:<br>- users表无新记录 |
+| TC-API-auth-020 | 注册账号-手机号已注册 | 反例-手机号重复 | phone: `${registered_phone}`<br>code: `123456`<br>password: `Test123456`<br>username: `newuser` | POST /api/v1/auth/register<br>{phone, code, ...} | HTTP 200<br>code: 10002 | **DB校验**:<br>- users表无新记录 |
+| TC-API-auth-021 | 修改密码-成功 | 正例-有效验证码 | phone: `${valid_phone}`<br>code: `${sms_code}`<br>new_password: `NewPass123` | POST /api/v1/auth/password/reset<br>{phone, code, new_password} | HTTP 200<br>code: 0 | **DB校验**:<br>- users.password已更新<br>- sms_codes.used=true |
+| TC-API-auth-022 | 修改密码-未认证 | 反例-无认证 | phone: `${valid_phone}`<br>code: `123456`<br>new_password: `NewPass123`<br>**前置**: 无效用户 | POST /api/v1/auth/password/reset<br>{phone, code, new_password} | HTTP 200<br>code: 10003 | |
+
+#### 7.1.6 登出与用户信息
+
+| 用例ID | 用例名称 | 测试场景 | 测试数据 | 操作步骤 | 预期结果 | 验证步骤 |
+|--------|----------|----------|----------|----------|----------|----------|
+| TC-API-auth-023 | 登出-成功 | 正例-有效token | Authorization: `Bearer ${valid_token}` | POST /api/v1/auth/logout | HTTP 200<br>code: 0 | **DB校验**:<br>- auth_tokens.revoked=true<br>- refresh_token在黑名单 |
+| TC-API-auth-024 | 登出-无效token | 反例-token无效 | Authorization: `Bearer invalid_token` | POST /api/v1/auth/logout | HTTP 401 | |
+| TC-API-auth-025 | 获取当前用户信息-已登录 | 正例-有效token | Authorization: `Bearer ${valid_token}` | GET /api/v1/auth/me | HTTP 200<br>code: 0<br>含用户信息 | **API断言**:<br>- data.user_id != null<br>- data.phone != null<br>- data.role != null |
+| TC-API-auth-026 | 获取当前用户信息-未登录 | 反例-无token | 无 | GET /api/v1/auth/me | HTTP 401 | |
+
+---
+
+### 7.2 企业名录（ent）- L1 API 测试
+
+#### 7.2.1 企业列表
+
+| 用例ID | 用例名称 | 测试场景 | 测试数据 | 操作步骤 | 预期结果 | 验证步骤 |
+|--------|----------|----------|----------|----------|----------|----------|
+| TC-API-ent-001 | 获取企业列表-成功 | 正例-公开浏览 | page: 1<br>page_size: 10 | GET /api/v1/ent/list | HTTP 200<br>含企业列表 | **API断言**:<br>- data.items[].name != null<br>- data.total > 0 |
+| TC-API-ent-002 | 获取企业列表-按行业筛选 | 正例-筛选条件 | industry_id: 1<br>sub_industry_id: 2 | GET /api/v1/ent/list<br>?industry_id=1&sub_industry_id=2 | HTTP 200<br>仅返回该行业企业 | **API断言**:<br>- 所有items.industry_id=1<br>- 所有items.sub_industry_id=2 |
+| TC-API-ent-003 | 获取企业列表-按认证状态筛选 | 正例-认证企业 | auth_status: VERIFIED | GET /api/v1/ent/list<br>?auth_status=VERIFIED | HTTP 200<br>仅已认证企业 | **API断言**:<br>- 所有items.auth_status=VERIFIED |
+| TC-API-ent-004 | 获取企业列表-关键词搜索 | 正例-搜索 | keyword: "科技" | GET /api/v1/ent/list<br>?keyword=科技 | HTTP 200<br>返回匹配企业 | **API断言**:<br>- items[].name含"科技"<br>  或description含"科技" |
+| TC-API-ent-005 | 获取企业列表-分页 | 边界值-分页 | page: 1<br>page_size: 10 | GET /api/v1/ent/list<br>?page=1&page_size=10 | HTTP 200<br>返回10条 | **API断言**:<br>- len(items) = 10<br>- data.has_more = true |
+| TC-API-ent-006 | 获取企业列表-空结果 | 正例-无匹配 | auth_status: NONEXISTENT | GET /api/v1/ent/list<br>?auth_status=NONEXISTENT | HTTP 200<br>items=[] | **API断言**:<br>- data.items = []<br>- data.total = 0 |
+
+#### 7.2.2 企业详情
+
+| 用例ID | 用例名称 | 测试场景 | 测试数据 | 操作步骤 | 预期结果 | 验证步骤 |
+|--------|----------|----------|----------|----------|----------|----------|
+| TC-API-ent-007 | 获取企业详情-已认证企业 | 正例-完整信息 | ent_id: `${verified_ent_id}` | GET /api/v1/ent/{id} | HTTP 200<br>含商机列表 | **API断言**:<br>- data.contact_phone != null<br>- data.opportunities[]存在<br>**DB校验**:<br>- enterprises.auth_status=VERIFIED |
+| TC-API-ent-008 | 获取企业详情-未认证企业 | 正例-脱敏信息 | ent_id: `${unverified_ent_id}` | GET /api/v1/ent/{id} | HTTP 200<br>联系方式为空 | **API断言**:<br>- data.contact_phone = null<br>- data.opportunities = [] |
+| TC-API-ent-009 | 获取企业详情-企业不存在 | 反例-ID无效 | ent_id: 999999 | GET /api/v1/ent/999999 | HTTP 404<br>code: 20001 | |
+
+#### 7.2.3 企业认领与创建
+
+| 用例ID | 用例名称 | 测试场景 | 测试数据 | 操作步骤 | 预期结果 | 验证步骤 |
+|--------|----------|----------|----------|----------|----------|----------|
+| TC-API-ent-010 | 认领企业-成功 | 正例-未认领企业 | credit_code: `${unclaimed_code}`<br>Authorization: `Bearer ${user_token}` | POST /api/v1/ent/claim<br>{credit_code, ...} | HTTP 200<br>code: 0<br>audit_status=PENDING | **API断言**:<br>- data.ent_id != null<br>- data.audit_status=PENDING<br>**DB校验**:<br>- enterprises.audit_status=PENDING<br>- enterprises.create_user_id=当前用户 |
+| TC-API-ent-011 | 认领企业-已认领 | 反例-重复认领 | credit_code: `${claimed_code}` | POST /api/v1/ent/claim<br>{credit_code, ...} | HTTP 200<br>code: 20002<br>message: "企业已被认领" | **DB校验**:<br>- enterprises.create_user_id != 当前用户 |
+| TC-API-ent-012 | 创建企业-成功 | 正例-新企业 | name: "新企业"<br>credit_code: `${unique_code}`<br>Authorization: `Bearer ${user_token}` | POST /api/v1/ent/create<br>{name, credit_code, ...} | HTTP 200<br>code: 0<br>待审核 | **API断言**:<br>- data.ent_id != null<br>**DB校验**:<br>- enterprises.name="新企业"<br>- enterprises.audit_status=PENDING |
+| TC-API-ent-013 | 创建企业-信用代码重复 | 反例-代码已存在 | credit_code: `${existing_code}` | POST /api/v1/ent/create<br>{credit_code: existing_code} | HTTP 200<br>code: 20003<br>message: "统一社会信用代码已存在" | **DB校验**:<br>- 仅1条enterprise记录 |
+
+---
+
+### 7.3 复杂链路测试
+
+#### TC-API-Chain-001: 完整企业入驻流程
+
+| 阶段 | 用例 | 操作 | 预期结果 | DB验证 |
+|------|------|------|----------|--------|
+| 1.注册 | TC-API-auth-018 | POST /auth/register | 成功，返回user_id, token | users.role=GUEST |
+| 2.创建企业 | TC-API-ent-012 | POST /ent/create<br>Header: Bearer ${token} | 成功，返回ent_id, audit_status=PENDING | enterprises.audit_status=PENDING<br>enterprises.auth_status=UNVERIFIED |
+| 3.平台登录 | TC-API-auth-012 | POST /auth/login/password<br>(plat_admin) | 成功，返回admin_token | — |
+| 4.审核通过 | TC-API-platadmin-006 | POST /plat-admin/audit/{ent_id}/approve<br>Header: Bearer ${admin_token} | 成功 | enterprises.audit_status=APPROVED<br>enterprises.auth_status=VERIFIED |
+| 5.用户角色变更 | — | 审核通过后自动触发 | — | users.role=ENT_ADMIN |
+| 6.发布商机 | TC-API-opp-009 | POST /opp/publish<br>Header: Bearer ${user_token} | 成功 | opportunities.status=PUBLISHED |
+
+**验证点**:
+- 步骤4后: `EnterpriseQueries.assert_enterprise_status(ent_id, 'VERIFIED', 'APPROVED', 'ENT_ADMIN')`
+- 步骤6前: 用户已具备企业管理员权限，可正常发布商机
+
+#### TC-API-Chain-002: Token刷新链路
+
+| 阶段 | 用例 | 操作 | 预期结果 | DB验证 |
+|------|------|------|----------|--------|
+| 1.登录 | TC-API-auth-007 | POST /auth/login/sms | 成功，返回tokens | auth_tokens.expires_at = now+2h |
+| 2.刷新Token | TC-API-auth-015 | POST /auth/token/refresh | 成功，返回新tokens | 原refresh_token.revoked=true |
+| 3.使用旧refresh | TC-API-auth-016 | POST /auth/token/refresh<br>(用旧token) | 失败，Token无效 | token_blacklist有记录 |
+| 4.使用新refresh | TC-API-auth-015 | POST /auth/token/refresh<br>(用新token) | 成功 | — |
+
+---
+
+## 8. 测试用例（L2 E2E）
+
+### 8.1 E2E 用例模板
+
+```yaml
+用例ID: TC-E2E-{序号}
+用例名称: {描述}
+前置条件:
+  - 已登录 / 已认证用户 / 已创建企业 / ...
+操作步骤:
+  - step: 1
+    action: 点击元素 / 输入文本 / API调用
+    selector: "#login-phone" / "登录按钮"
+    value: "${phone}"
+  - step: 2
+    action: API调用
+    method: POST
+    url: /api/v1/auth/sms/send
+    body: {phone: "${phone}"}
+预期结果:
+  - 页面跳转到首页
+  - 显示用户头像
+截图:
+  - TC-E2E-xxx-步骤1-登录成功.png
+  - TC-E2E-xxx-步骤2-进入首页.png
+```
+
+### 8.2 冒烟测试用例
+
+| 用例ID | 用例名称 | 冒烟 | 操作步骤 | 预期结果 | 截图 |
+|--------|----------|:----:|----------|----------|------|
+| TC-E2E-001 | 短信验证码登录 | ✅ | 1. 打开登录页<br>2. 输入手机号<br>3. 点击获取验证码<br>4. 输入验证码(123456)<br>5. 点击登录 | 登录成功，跳转首页，显示用户信息 | ✅ |
+| TC-E2E-002 | 账号密码登录 | ✅ | 1. 打开登录页<br>2. 输入用户名/密码<br>3. 点击登录 | 登录成功，跳转首页 | ✅ |
+| TC-E2E-003 | 注册新账号 | ✅ | 1. 打开注册页<br>2. 输入手机号/验证码/密码/用户名<br>3. 点击注册 | 注册成功，自动登录 | ✅ |
+| TC-E2E-004 | 浏览企业名录 | ✅ | 1. 首页点击"企业名录"<br>2. 筛选行业/省份<br>3. 点击企业查看详情 | 显示企业列表和详情 | ✅ |
+| TC-E2E-005 | 认领企业 | ✅ | 1. 搜索未认领企业<br>2. 点击"认领"<br>3. 填写认证信息<br>4. 提交认证 | 提交成功，等待审核 | ✅ |
+| TC-E2E-006 | 发布商机 | ✅ | 1. 进入企业工作台<br>2. 点击"商机管理"<br>3. 点击"发布商机"<br>4. 填写商机信息<br>5. 提交发布 | 商机发布成功 | ✅ |
+| TC-E2E-007 | 获取商机联系方式 | ✅ | 1. 商机广场浏览商机<br>2. 点击"查看详情"<br>3. 点击"获取联系方式" | 显示联系方式 | ✅ |
+| TC-E2E-008 | 发布动态 | ✅ | 1. 进入校友圈<br>2. 点击"发布动态"<br>3. 填写内容并上传图片<br>4. 提交发布 | 动态发布成功 | ✅ |
+| TC-E2E-009 | 企业管理员添加员工 | ✅ | 1. 进入企业工作台<br>2. 点击"员工管理"<br>3. 点击"添加员工"<br>4. 填写员工信息<br>5. 提交添加 | 员工添加成功 | ✅ |
+| TC-E2E-010 | 企业管理员编辑企业信息 | ✅ | 1. 进入企业工作台<br>2. 点击"企业信息"<br>3. 编辑企业简介<br>4. 保存修改 | 信息更新成功 | ✅ |
+| TC-E2E-011 | 平台运营审核企业 | ✅ | 1. 进入管理后台<br>2. 点击"企业审核"<br>3. 查看待审核企业<br>4. 点击"通过" | 企业审核通过 | ✅ |
+| TC-E2E-013 | 全局搜索功能 | ✅ | 1. 首页搜索框输入关键词<br>2. 点击搜索 | 显示搜索结果 | ✅ |
+| TC-E2E-015 | 登出功能 | ✅ | 1. 点击用户头像<br>2. 点击"退出登录" | 退出登录，跳转登录页 | ✅ |
+
+### 8.3 核心功能测试用例
+
+| 用例ID | 用例名称 | 操作步骤 | 预期结果 | 截图 |
+|--------|----------|----------|----------|------|
+| TC-E2E-012 | 平台运营下架商机 | 1. 进入管理后台<br>2. 点击"商机内容管理"<br>3. 选择商机并下架 | 商机已下架 | ✅ |
+| TC-E2E-014 | 消息通知查看 | 1. 点击顶部铃铛图标<br>2. 查看最近通知<br>3. 点击单条查看详情<br>4. 点击"全部已读" | 通知显示并标记已读 | ✅ |
+| TC-E2E-016 | Token自动刷新 | 1. 登录系统<br>2. 等待access_token即将过期<br>3. 继续操作 | 操作不中断，Token自动刷新 | ✅ |
+| TC-E2E-017 | 登录失败-验证码错误 | 1. 打开登录页<br>2. 输入手机号<br>3. 获取验证码<br>4. 输入错误验证码<br>5. 点击登录 | 提示"验证码错误" | ✅ |
+| TC-E2E-018 | 登录失败-密码错误 | 1. 打开登录页<br>2. 输入错误密码<br>3. 点击登录 | 提示"密码错误" | ✅ |
+| TC-E2E-019 | 发布商机-未绑定企业 | 1. 未认领企业<br>2. 进入企业工作台<br>3. 点击"发布商机" | 提示"请先认领或创建企业" | ✅ |
+| TC-E2E-020 | 访问管理后台-无权限 | 1. 已登录企业用户<br>2. 尝试访问管理后台URL | 提示"权限不足" | ✅ |
+
+---
+
+## 9. 测试用例统计
 
 | 模块 | L1 API | L2 E2E | 合计 |
 |------|--------|--------|------|
-| 认证 (auth_app) | 16 | 9 | 25 |
-| 宣传页 (public) | 2 | 2 | 4 |
-| 注册页 (register) | 0 | 2 | 2 |
-| 企业 (ent) | 28 | 10 | 38 |
-| 商机 (opp) | 28 | 16 | 44 |
-| 动态 (feed) | 16 | 7 | 23 |
-| 企业端管理 (ent-admin) | 20 | 16 | 36 |
-| 平台端管理 (plat-admin) | 37 | 18 | 55 |
-| 搜索 (search) | 6 | 6 | 12 |
-| 安全测试 | 6 | 0 | 6 |
-| **合计** | **159** | **88** | **247** |
+| 认证模块（auth） | 26 | 5 | 31 |
+| 公共接口（public） | 1 | 0 | 1 |
+| 企业名录（ent） | 13 | 2 | 15 |
+| 商机广场（opp） | 16 | 2 | 18 |
+| 校友圈（feed） | 10 | 1 | 11 |
+| 企业工作台（ent-admin） | 23 | 3 | 26 |
+| 平台管理（plat-admin） | 28 | 3 | 31 |
+| 搜索（search） | 3 | 1 | 4 |
+| 消息通知（msg） | 7 | 1 | 8 |
+| 复杂链路 | 2 | 0 | 2 |
+| **合计** | **129** | **18** | **147** |
 
 ---
 
-## 5. 测试环境要求
+## 10. 测试环境要求
 
 | 项目 | 要求 |
 |------|------|
-| 操作系统 | Windows 10 Pro / macOS / Ubuntu 22.04 |
+| 操作系统 | Windows 10 Pro |
 | Python | 3.11+ |
 | Node.js | 18+ |
-| 数据库 | MySQL 8.0+（独立测试库，禁止使用生产库 RL-DV-0005） |
 | Django | 4.2+ |
-| Vue | 3.4+ |
-| 测试框架 | pytest + Playwright |
-| 容器 | Docker Compose（可选，用于全量环境测试） |
-
-### 5.1 测试数据要求
-
-- 独立测试数据集，不依赖生产数据
-- 预置测试企业（认证/未认证状态）
-- 预置测试用户（各角色）
-- 预置测试商机和动态
+| MySQL | 8.0+ |
+| 数据库 | 独立测试库 `xlt_test`，禁止使用生产库（RL-DV-0005） |
+| 测试数据 | 独立测试数据集，通过 fixtures 预置 |
+| 前端 | Vue3 + Element Plus 开发服务器 |
+| 浏览器 | Chrome/Edge（E2E 测试） |
 
 ---
 
-## 6. 截图规范
+## 11. 测试执行计划
 
-| 项目 | 规范 |
-|------|------|
-| 截图时机 | 功能响应后截图 |
-| 成功场景 | 截取成功后的界面（如登录成功 → 主界面） |
-| 失败场景 | 截取错误提示界面（如登录失败 → "密码错误"提示） |
-| 命名格式 | `{用例ID}-{结果}[-{详情}].png` |
-| 存放位置 | `tests/e2e/screenshots/{YYYY-MM-DD_HHMMSS}/` |
+### 11.1 M4 测试阶段执行顺序
 
-### 6.1 截图命名示例
+1. **测试环境部署**（M4 进入时）
+   - 部署独立测试数据库 `xlt_test`
+   - 执行 Django migrations
+   - 加载 fixtures 基础数据
 
-```
-TC-E2E-001-成功-认领审核通过.png
-TC-E2E-002-成功-商机发布成功.png
-TC-API-AUTH-002-失败-验证码错误.png
-TC-API-SEC-001-成功-XSS转义验证.png
-```
+2. **L1 API 测试**（优先执行）
+   - 按模块执行：认证 → 企业 → 商机 → 校友圈 → 企业工作台 → 平台管理 → 搜索 → 消息
+   - 链路测试单独执行（TC-API-Chain-001, TC-API-Chain-002）
+   - 发现 bug 则记录并继续执行后续测试
 
----
+3. **L2 E2E 测试**（L1 API 全部通过后执行）
+   - 冒烟测试用例优先执行
+   - 核心流程全部通过后执行剩余用例
 
-## 7. 执行计划
+### 11.2 Bug 修复流程
 
-| 阶段 | 任务 | 依赖 |
-|------|------|------|
-| M4 阶段启动 | 环境就绪检查 | M3 开发完成 |
-| L1 API 测试 | 执行全部 152 个 API 用例 | 环境就绪 |
-| L1 失败用例修复 | Bug 修复 + 复测 | L1 测试完成 |
-| L2 E2E 测试 | 执行全部 82 个 E2E 用例 | L1 通过 |
-| L2 失败用例修复 | Bug 修复 + 复测 | L2 测试完成 |
-| QA 审查 | CHK 签字 + TEST-REPORT 归档 | L1+L2 100% 通过 |
+- E2E 测试发现 bug 时，触发 `/m3-subagent-development` 进行修复
+- 修复完成后重新执行相关测试用例
 
 ---
 
-## 8. 修订历史
+## 12. 准出条件
 
-| 版本 | 日期 | 修订人 | 修订内容 |
-|------|------|--------|----------|
-| v1.0 | 2026-04-02 | Tester | 初始版本 |
-| v1.1 | 2026-04-03 | Tester | 对齐 PRD v1.1：新增宣传页和注册页测试用例，API 50接口157用例，E2E 19个页面88用例 |
+| 检查项 | 要求 |
+|--------|------|
+| L1 API 测试用例执行率 | 100% |
+| L1 API 测试用例通过率 | 100% |
+| L2 E2E 测试用例执行率 | 100% |
+| L2 E2E 测试用例通过率 | 100% |
+| 数据库校验覆盖率 | 100%（涉及数据持久化的接口） |
+| Mock使用覆盖率 | 100%（外部服务调用） |
+| 测试报告 | 包含实际执行结果、截图、数据库验证结果 |
+| QA 签署 | 报告末尾有 QA 审查结论 |
 
 ---
 
