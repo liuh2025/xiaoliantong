@@ -1,5 +1,10 @@
 import request from './request'
 
+// POST /auth/register/
+export function register(phone, code, password) {
+  return request.post('/auth/register/', { phone, code, password })
+}
+
 // POST /auth/sms/send/
 export function sendSmsCode(phone, type) {
   return request.post('/auth/sms/send/', { phone, type })

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { smsLogin, passwordLogin, getUserInfo, logout as logoutApi } from '../api/auth'
+import { smsLogin, passwordLogin, getUserInfo, logout as logoutApi, register as registerApi } from '../api/auth'
 import { clearAuth } from '../api/request'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -16,6 +16,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function loginBySms(phone, code, rememberMe = false) {
     const { data } = await smsLogin(phone, code, rememberMe)
+    _setTokens(data.data)
+    await fetchUser()
+  }
+
+  async function register(phone, code, password) {
+    const { data } = await registerApi(phone, code, password)
     _setTokens(data.data)
     await fetchUser()
   }
@@ -62,6 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
     enterpriseId,
     hasEnterprise,
     loginBySms,
+    register,
     loginByPassword,
     fetchUser,
     logout,

@@ -197,8 +197,6 @@ const rules = {
 }
 
 // --- Send SMS ---
-// The SMS login endpoint auto-registers new users,
-// so for registration we use type='login' to send the SMS code.
 async function handleSendSms() {
   if (!isPhoneValid.value) {
     ElMessage.warning('请先输入正确的手机号')
@@ -207,7 +205,7 @@ async function handleSendSms() {
 
   try {
     sendingSms.value = true
-    await sendSmsCode(form.value.phone, 'login')
+    await sendSmsCode(form.value.phone, 'register')
     ElMessage.success('验证码已发送')
     countdown.start()
   } catch (error) {
@@ -218,16 +216,14 @@ async function handleSendSms() {
   }
 }
 
-// --- Register (SMS login with auto-registration) ---
+// --- Register ---
 async function handleRegister() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
 
   loading.value = true
   try {
-    // The SMS login endpoint auto-registers new users.
-    // Using loginBySms here effectively registers + logs in.
-    await authStore.loginBySms(form.value.phone, form.value.code, false)
+    await authStore.register(form.value.phone, form.value.code, form.value.password)
     ElMessage.success('注册成功')
     router.push('/')
   } catch (error) {
