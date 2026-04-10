@@ -68,6 +68,23 @@ class SmsLoginSerializer(serializers.Serializer):
         return value
 
 
+class RegisterSerializer(serializers.Serializer):
+    """用户注册请求的序列化器"""
+    phone = serializers.CharField(max_length=11)
+    code = serializers.CharField(max_length=6, min_length=6)
+    password = serializers.CharField(min_length=8, max_length=20)
+
+    def validate_phone(self, value):
+        if not re.match(r'^1[3-9]\d{9}$', value):
+            raise serializers.ValidationError("手机号格式不正确")
+        return value
+
+    def validate_code(self, value):
+        if not re.match(r'^\d{6}$', value):
+            raise serializers.ValidationError("验证码必须为6位数字")
+        return value
+
+
 class PasswordLoginSerializer(serializers.Serializer):
     """密码登录请求的序列化器"""
     phone = serializers.CharField(max_length=11)

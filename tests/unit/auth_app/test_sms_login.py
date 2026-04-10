@@ -51,9 +51,8 @@ class TestSmsLoginAPI:
         assert data['data']['role_code'] == 'enterprise_admin'
         assert isinstance(data['data']['permissions'], list)
 
-    def test_register_new_user_success(self):
-        """新手机号 - 自动注册，创建User和UserProfile(role_code=guest)"""
-        # 不创建User，模拟新用户
+    def test_unregistered_user_rejected(self):
+        """未注册用户 - 登录被拒绝，返回'用户未注册'"""
         AuthSmsCode.objects.create(
             phone=self.phone,
             code='654321',
@@ -66,24 +65,12 @@ class TestSmsLoginAPI:
             'code': '654321',
         })
 
-        assert response.status_code == status.HTTP_200_OK
-        data = response.data
-        assert data['code'] == 0
-
-        # 验证User被创建
-        user = User.objects.get(username=self.phone)
-        assert user is not None
-
-        # 验证UserProfile被信号自动创建，role_code=guest
-        profile = user.ent_user_profile
-        assert profile.role_code == 'guest'
-
-        # 验证返回数据
-        assert data['data']['user_id'] == user.id
-        assert data['data']['role_code'] == 'guest'
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert '未注册' in response.data['message']
 
     def test_sms_code_marked_as_used_after_login(self):
         """验证码使用后标记 used_at，防止重用"""
+        User.objects.create_user(username=self.phone, password='')
         AuthSmsCode.objects.create(
             phone=self.phone,
             code='111111',
@@ -109,6 +96,7 @@ class TestSmsLoginAPI:
         import jwt as pyjwt
         from django.conf import settings
 
+        User.objects.create_user(username=self.phone, password='')
         AuthSmsCode.objects.create(
             phone=self.phone,
             code='222222',
@@ -139,6 +127,7 @@ class TestSmsLoginAPI:
 
     def test_remember_me_false_default(self):
         """不传 remember_me 时使用默认短期 refresh_token"""
+        User.objects.create_user(username=self.phone, password='')
         AuthSmsCode.objects.create(
             phone=self.phone,
             code='333333',
@@ -296,6 +285,7 @@ class TestSmsLoginAPI:
 
     def test_code_one_second_before_expiry(self):
         """验证码在过期前1秒仍然有效"""
+        User.objects.create_user(username=self.phone, password='')
         expire_at = self.now + timedelta(seconds=1)
         AuthSmsCode.objects.create(
             phone=self.phone,
@@ -313,6 +303,7 @@ class TestSmsLoginAPI:
 
     def test_multiple_valid_codes_use_latest(self):
         """同一个手机号有多条有效验证码时，匹配到的是最新一条"""
+        User.objects.create_user(username=self.phone, password='')
         AuthSmsCode.objects.create(
             phone=self.phone,
             code='111111',

@@ -16,7 +16,7 @@ from .serializers import (
     SmsSendSerializer, SmsLoginSerializer, PasswordLoginSerializer,
     PasswordResetVerifySerializer, PasswordResetSerializer,
     LogoutSerializer, CustomTokenRefreshSerializer,
-    CurrentUserInfoSerializer,
+    CurrentUserInfoSerializer, RegisterSerializer,
 )
 
 
@@ -129,11 +129,14 @@ class SmsLoginView(views.APIView):
         sms_record.used_at = now
         sms_record.save()
 
-        # 获取或创建用户（手机号作为 username）
-        user, created = User.objects.get_or_create(
-            username=phone,
-            defaults={},  # 新用户使用默认值
-        )
+        # 仅允许已注册用户登录
+        try:
+            user = User.objects.get(username=phone)
+        except User.DoesNotExist:
+            return Response(
+                {'code': 400, 'message': '用户未注册'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # 获取 UserProfile（由信号自动创建）
         profile = user.ent_user_profile
@@ -179,6 +182,80 @@ class SmsLoginView(views.APIView):
             return perm_list
         except Exception:
             return []
+
+
+class RegisterView(views.APIView):
+    """用户注册接口 POST /auth/register/"""
+    permission_classes = []
+
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {'code': 400, 'message': '参数错误', 'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        phone = serializer.validated_data['phone']
+        code = serializer.validated_data['code']
+        password = serializer.validated_data['password']
+
+        now = timezone.now()
+
+        # 检查用户是否已注册
+        if User.objects.filter(username=phone).exists():
+            return Response(
+                {'code': 400, 'message': '该手机号已注册'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 验证短信验证码（type='register'）
+        sms_record = (
+            AuthSmsCode.objects
+            .filter(phone=phone, type='register', used_at__isnull=True, expire_at__gt=now)
+            .order_by('-created_at')
+            .first()
+        )
+
+        if sms_record is None:
+            return Response(
+                {'code': 400, 'message': '验证码无效或已过期'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if sms_record.code != code:
+            return Response(
+                {'code': 400, 'message': '验证码错误'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 标记验证码为已使用
+        sms_record.used_at = now
+        sms_record.save()
+
+        # 创建用户（设置密码）
+        user = User.objects.create_user(username=phone, password=password)
+        # UserProfile 由信号自动创建
+
+        # 生成 JWT Token（注册后自动登录）
+        refresh = RefreshToken.for_user(user)
+        profile = user.ent_user_profile
+        refresh['role_code'] = profile.role_code
+
+        permissions = SmsLoginView._get_user_permissions(user, profile)
+        refresh['permissions'] = permissions
+
+        return Response({
+            'code': 0,
+            'message': '注册成功',
+            'data': {
+                'access_token': str(refresh.access_token),
+                'refresh_token': str(refresh),
+                'user_id': user.id,
+                'role_code': profile.role_code,
+                'permissions': permissions,
+            },
+        }, status=status.HTTP_201_CREATED)
 
 
 # ==================== 常量定义 ====================
