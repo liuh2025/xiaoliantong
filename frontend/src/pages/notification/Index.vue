@@ -2,7 +2,7 @@
   <div class="notification-page">
     <!-- Header -->
     <div class="notif-header">
-      <h2>消息通知</h2>
+      <h2>通知消息</h2>
       <el-button type="primary" text :disabled="!hasUnread" @click="handleMarkAllRead">
         全部已读
       </el-button>
@@ -18,13 +18,18 @@
           :class="{ unread: !notif.is_read }"
           @click="handleMarkRead(notif)"
         >
-          <div class="notif-dot" :class="{ active: !notif.is_read }" />
+          <div class="notif-icon" :class="getNotifIconClass(notif)">
+            {{ getNotifIconEmoji(notif) }}
+          </div>
           <div class="notif-body">
-            <div class="notif-title-row">
-              <span class="notif-title">{{ notif.title }}</span>
+            <div class="notif-title">{{ notif.title }}</div>
+            <p class="notif-content">{{ notif.content }}</p>
+            <div class="notif-meta">
+              <el-tag v-if="getNotifTag(notif)" :type="getNotifTag(notif).type" size="small" class="notif-tag">
+                {{ getNotifTag(notif).label }}
+              </el-tag>
               <span class="notif-time">{{ notif.created_at }}</span>
             </div>
-            <p class="notif-content">{{ notif.content }}</p>
           </div>
         </div>
       </div>
@@ -101,6 +106,31 @@ async function handleMarkAllRead() {
 onMounted(() => {
   loadNotifications()
 })
+
+function getNotifIconClass(notif) {
+  const title = notif.title || ''
+  if (title.includes('通过审核') || title.includes('已通过')) return 'audit-approved'
+  if (title.includes('未通过') || title.includes('拒绝') || title.includes('驳回')) return 'audit-rejected'
+  if (title.includes('查看请求') || title.includes('联系方式') || title.includes('商机')) return 'contact-received'
+  return 'system'
+}
+
+function getNotifIconEmoji(notif) {
+  const title = notif.title || ''
+  if (title.includes('通过审核') || title.includes('已通过')) return '✓'
+  if (title.includes('未通过') || title.includes('拒绝') || title.includes('驳回')) return '✕'
+  if (title.includes('查看请求') || title.includes('联系方式') || title.includes('商机')) return '📞'
+  return '⚙'
+}
+
+function getNotifTag(notif) {
+  const title = notif.title || ''
+  if (title.includes('通过审核') || title.includes('已通过')) return { label: '审核通过', type: 'success' }
+  if (title.includes('未通过') || title.includes('拒绝') || title.includes('驳回')) return { label: '审核未通过', type: 'danger' }
+  if (title.includes('查看请求') || title.includes('联系方式') || title.includes('商机')) return { label: '商机查看', type: '' }
+  if (title.includes('系统')) return { label: '系统通知', type: 'info' }
+  return null
+}
 </script>
 
 <style scoped>
@@ -136,9 +166,14 @@ onMounted(() => {
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-light);
   cursor: pointer;
   transition: background-color 0.15s;
+}
+
+.notif-item:last-child {
+  border-bottom: none;
 }
 
 .notif-item:hover {
@@ -146,20 +181,38 @@ onMounted(() => {
 }
 
 .notif-item.unread {
-  background-color: var(--color-primary-bg);
+  background-color: rgba(30, 136, 229, 0.03);
 }
 
-.notif-dot {
-  width: 8px;
-  height: 8px;
+.notif-icon {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--color-border);
-  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
   flex-shrink: 0;
 }
 
-.notif-dot.active {
-  background: var(--color-primary);
+.notif-icon.audit-approved {
+  background: rgba(76, 175, 80, 0.1);
+  color: var(--color-success);
+}
+
+.notif-icon.audit-rejected {
+  background: rgba(244, 67, 54, 0.1);
+  color: var(--color-error);
+}
+
+.notif-icon.contact-received {
+  background: rgba(30, 136, 229, 0.1);
+  color: var(--color-primary);
+}
+
+.notif-icon.system {
+  background: rgba(158, 158, 158, 0.1);
+  color: #9e9e9e;
 }
 
 .notif-body {
@@ -167,23 +220,26 @@ onMounted(() => {
   min-width: 0;
 }
 
-.notif-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-xs);
+.notif-title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  margin-bottom: 4px;
 }
 
-.notif-title {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
+.notif-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.notif-tag {
+  font-size: 0.6875rem;
 }
 
 .notif-time {
-  font-size: var(--font-size-xs);
+  font-size: 0.75rem;
   color: var(--color-text-placeholder);
-  flex-shrink: 0;
 }
 
 .notif-content {

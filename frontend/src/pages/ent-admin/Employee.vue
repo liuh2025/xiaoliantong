@@ -4,13 +4,40 @@
       <template #header>
         <div class="card-header">
           <span>员工管理</span>
-          <el-button type="primary" @click="openCreateDialog">新增员工</el-button>
+          <el-button type="primary" @click="openCreateDialog">邀请/新增员工</el-button>
         </div>
       </template>
 
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索员工姓名或手机号"
+          clearable
+          style="width: 300px"
+          @clear="fetchData"
+          @keyup.enter="fetchData"
+        >
+          <template #prefix>
+            <el-icon><span>🔍</span></el-icon>
+          </template>
+        </el-input>
+        <el-button type="primary" @click="fetchData">搜索</el-button>
+      </div>
+
       <el-table :data="employees" v-loading="loading" empty-text="暂无员工数据">
-        <el-table-column prop="username" label="用户名" min-width="120" />
-        <el-table-column prop="phone" label="手机号" min-width="130" />
+        <el-table-column prop="username" label="姓名" min-width="100">
+          <template #default="{ row }">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;flex-shrink:0;">
+                {{ (row.username || '?').charAt(0) }}
+              </div>
+              {{ row.username }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="position" label="职位" min-width="100" />
+        <el-table-column prop="phone" label="手机号(登录账号)" min-width="140" />
         <el-table-column prop="role_code" label="角色" min-width="120">
           <template #default="{ row }">
             <el-tag :type="row.role_code === 'enterprise_admin' ? 'danger' : ''">
@@ -59,6 +86,12 @@
       destroy-on-close
     >
       <el-form :model="dialogForm" label-width="80px">
+        <el-form-item v-if="!isEdit" label="姓名" required>
+          <el-input v-model="dialogForm.name" placeholder="请输入员工姓名" />
+        </el-form-item>
+        <el-form-item v-if="!isEdit" label="职位" required>
+          <el-input v-model="dialogForm.position" placeholder="请输入职位" />
+        </el-form-item>
         <el-form-item v-if="!isEdit" label="手机号" required>
           <el-input v-model="dialogForm.phone" placeholder="请输入手机号" maxlength="11" />
         </el-form-item>
@@ -67,6 +100,9 @@
             <el-option label="普通员工" value="employee" />
             <el-option label="管理员" value="enterprise_admin" />
           </el-select>
+        </el-form-item>
+        <el-form-item v-if="!isEdit" label="状态">
+          <el-switch v-model="dialogForm.is_active" active-text="启用" inactive-text="停用" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -100,9 +136,14 @@ const dialogSaving = ref(false)
 const isEdit = ref(false)
 const editId = ref(null)
 const dialogForm = ref({
+  name: '',
+  position: '',
   phone: '',
   role_code: 'employee',
+  is_active: true,
 })
+
+const searchKeyword = ref('')
 
 const roleLabelMap = {
   enterprise_admin: '管理员',
@@ -131,7 +172,7 @@ async function fetchData() {
 function openCreateDialog() {
   isEdit.value = false
   editId.value = null
-  dialogForm.value = { phone: '', role_code: 'employee' }
+  dialogForm.value = { name: '', position: '', phone: '', role_code: 'employee', is_active: true }
   dialogVisible.value = true
 }
 
@@ -234,6 +275,12 @@ onMounted(fetchData)
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .pagination-wrap {

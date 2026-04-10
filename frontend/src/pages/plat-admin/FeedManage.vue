@@ -25,8 +25,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="created_at" label="发布时间" min-width="170" />
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
+            <el-button size="small" @click="openDetailDialog(row)">查看详情</el-button>
             <el-button
               v-if="row.status === 'active'"
               size="small"
@@ -66,6 +67,28 @@
         <el-button type="danger" :loading="submitting" @click="submitOffline">确认下线</el-button>
       </template>
     </el-dialog>
+
+    <!-- Detail Dialog -->
+    <el-dialog v-model="detailVisible" title="动态详情" width="600px" destroy-on-close>
+      <el-descriptions v-if="detailRow" :column="1" border>
+        <el-descriptions-item label="发布人">{{ detailRow.publisher_name }}</el-descriptions-item>
+        <el-descriptions-item label="所属企业">{{ detailRow.enterprise_name || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="detailRow.status === 'active' ? 'success' : 'info'" size="small">
+            {{ detailRow.status === 'active' ? '正常' : '已下线' }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="发布时间">{{ detailRow.created_at }}</el-descriptions-item>
+        <el-descriptions-item label="动态内容">
+          <div style="white-space:pre-wrap;line-height:1.6;">{{ detailRow.content }}</div>
+        </el-descriptions-item>
+        <el-descriptions-item v-if="detailRow.images && detailRow.images.length" label="图片">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <img v-for="(img, idx) in detailRow.images" :key="idx" :src="img" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />
+          </div>
+        </el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
   </div>
 </template>
 
@@ -85,6 +108,14 @@ const offlineVisible = ref(false)
 const submitting = ref(false)
 const currentRow = ref(null)
 const offlineForm = ref({ reason: '' })
+
+const detailVisible = ref(false)
+const detailRow = ref(null)
+
+function openDetailDialog(row) {
+  detailRow.value = row
+  detailVisible.value = true
+}
 
 async function fetchData() {
   loading.value = true

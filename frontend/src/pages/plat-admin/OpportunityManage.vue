@@ -77,9 +77,26 @@
             {{ detail.status === 'active' ? '上线' : '下线' }}
           </el-tag>
         </el-descriptions-item>
+        <el-descriptions-item label="行业">{{ detail.industry_name || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="地区">{{ detail.region_name || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="标签">
+          <template v-if="detail.tags && detail.tags.length">
+            <el-tag v-for="tag in detail.tags" :key="tag" size="small" type="info" style="margin-right:4px;">{{ tag }}</el-tag>
+          </template>
+          <span v-else>-</span>
+        </el-descriptions-item>
         <el-descriptions-item label="浏览量">{{ detail.view_count }}</el-descriptions-item>
         <el-descriptions-item label="创建时间">{{ detail.created_at }}</el-descriptions-item>
-        <el-descriptions-item label="详情描述">{{ detail.description || '暂无' }}</el-descriptions-item>
+        <el-descriptions-item label="详情描述">
+          <div style="white-space:pre-wrap;line-height:1.6;">{{ detail.description || '暂无' }}</div>
+        </el-descriptions-item>
+        <el-descriptions-item label="联系信息">
+          <div v-if="detail.contact_name || detail.contact_phone">
+            <p v-if="detail.contact_name">联系人：{{ detail.contact_name }}</p>
+            <p v-if="detail.contact_phone">电话：{{ detail.contact_phone }}</p>
+          </div>
+          <span v-else>-</span>
+        </el-descriptions-item>
       </el-descriptions>
     </el-drawer>
 

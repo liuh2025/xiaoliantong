@@ -26,8 +26,9 @@
         </el-table-column>
         <el-table-column prop="view_count" label="浏览量" width="90" />
         <el-table-column prop="created_at" label="创建时间" min-width="170" />
-        <el-table-column label="操作" min-width="220" fixed="right">
+        <el-table-column label="操作" min-width="300" fixed="right">
           <template #default="{ row }">
+            <el-button size="small" @click="openContactLogDialog(row)">查看联系方式记录</el-button>
             <el-button size="small" @click="openEditDialog(row)">编辑</el-button>
             <el-button
               v-if="row.status === 'active'"
@@ -62,34 +63,131 @@
     <el-dialog
       v-model="dialogVisible"
       :title="isEdit ? '编辑商机' : '发布商机'"
-      width="600px"
+      width="700px"
       destroy-on-close
     >
-      <el-form :model="dialogForm" label-width="80px">
-        <el-form-item label="标题" required>
-          <el-input v-model="dialogForm.title" placeholder="请输入商机标题" />
+      <el-form :model="dialogForm" label-width="100px">
+        <el-form-item label="商机类型" required>
+          <el-radio-group v-model="dialogForm.type" :disabled="isEdit">
+            <el-radio value="buy">我要买</el-radio>
+            <el-radio value="supply">我能供</el-radio>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="类型" required>
-          <el-select v-model="dialogForm.type" placeholder="请选择类型" style="width: 100%">
-            <el-option label="采购" value="buy" />
-            <el-option label="供应" value="supply" />
+        <el-form-item label="商机标题" required>
+          <el-input v-model="dialogForm.title" placeholder="请输入商机标题（最多30字）" maxlength="30" show-word-limit />
+        </el-form-item>
+        <el-form-item label="一级行业" required>
+          <el-select
+            v-model="dialogForm.industry_1"
+            placeholder="请选择一级行业"
+            style="width: 100%"
+            @change="onDialogIndustryChange"
+          >
+            <el-option
+              v-for="item in industryOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
           </el-select>
         </el-form-item>
-        <el-form-item label="详情描述">
+        <el-form-item label="二级行业">
+          <el-select
+            v-model="dialogForm.industry_2"
+            placeholder="请选择二级行业"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in subIndustryOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="业务品类">
+          <el-select
+            v-model="dialogForm.category"
+            placeholder="请选择业务品类"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in categoryOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="省份">
+          <el-select
+            v-model="dialogForm.province"
+            placeholder="请选择省份"
+            style="width: 100%"
+            @change="onDialogProvinceChange"
+          >
+            <el-option
+              v-for="item in provinceOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="城市">
+          <el-select
+            v-model="dialogForm.city"
+            placeholder="请选择城市"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in cityOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="业务标签">
+          <el-select
+            v-model="dialogForm.tags"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            placeholder="输入标签后回车"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="详情描述" required>
           <el-input
             v-model="dialogForm.description"
             type="textarea"
             :rows="4"
-            placeholder="请输入商机详情"
+            placeholder="请输入商机详情（至少20字）"
           />
-        </el-form-item>
-        <el-form-item label="联系方式">
-          <el-input v-model="dialogForm.contact" placeholder="请输入联系方式" />
         </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="dialogSaving" @click="submitDialog">确定</el-button>
+        <el-button type="primary" :loading="dialogSaving" @click="submitDialog">{{ isEdit ? '保存' : '立即发布' }}</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- Contact Log Dialog -->
+    <el-dialog
+      v-model="contactLogVisible"
+      title="联系方式获取记录"
+      width="600px"
+      destroy-on-close
+    >
+      <el-table :data="contactLogs" v-loading="contactLogLoading" empty-text="暂无获取记录">
+        <el-table-column prop="user_name" label="获取人" min-width="100" />
+        <el-table-column prop="user_enterprise" label="所属企业" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="created_at" label="获取时间" min-width="170" />
+      </el-table>
+      <template #footer>
+        <el-button @click="contactLogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
   </div>
@@ -104,6 +202,7 @@ import {
   offlineMyOpportunity,
   republishMyOpportunity,
 } from '../../api/entAdmin'
+import { getDictIndustry, getDictCategory, getDictRegion } from '../../api/enterprise'
 
 const loading = ref(false)
 const opportunities = ref([])
@@ -118,9 +217,63 @@ const editId = ref(null)
 const dialogForm = ref({
   title: '',
   type: 'buy',
+  industry_1: '',
+  industry_2: '',
+  category: '',
+  province: '',
+  city: '',
+  tags: [],
   description: '',
-  contact: '',
 })
+
+const industryOptions = ref([])
+const subIndustryOptions = ref([])
+const categoryOptions = ref([])
+const provinceOptions = ref([])
+const cityOptions = ref([])
+
+const contactLogVisible = ref(false)
+const contactLogLoading = ref(false)
+const contactLogs = ref([])
+
+async function loadDictData() {
+  try {
+    const [indRes, catRes, regRes] = await Promise.all([
+      getDictIndustry({ parent_id: '' }),
+      getDictCategory(),
+      getDictRegion({ parent_id: '' }),
+    ])
+    if (indRes.data.code === 200) industryOptions.value = indRes.data.data || []
+    if (catRes.data.code === 200) categoryOptions.value = catRes.data.data || []
+    if (regRes.data.code === 200) provinceOptions.value = regRes.data.data || []
+  } catch {
+    // silent
+  }
+}
+
+async function onDialogIndustryChange(val) {
+  dialogForm.value.industry_2 = ''
+  subIndustryOptions.value = []
+  if (!val) return
+  try {
+    const { data: res } = await getDictIndustry({ parent_id: val })
+    if (res.code === 200) subIndustryOptions.value = res.data || []
+  } catch {
+    // silent
+  }
+}
+
+async function onDialogProvinceChange(val) {
+  dialogForm.value.city = ''
+  cityOptions.value = []
+  if (!val) return
+  try {
+    const { data: res } = await getDictRegion({ parent_id: val })
+    if (res.code === 200) cityOptions.value = res.data || []
+  } catch {
+    // silent
+  }
+}
 
 async function fetchData() {
   loading.value = true
@@ -140,7 +293,19 @@ async function fetchData() {
 function openCreateDialog() {
   isEdit.value = false
   editId.value = null
-  dialogForm.value = { title: '', type: 'buy', description: '', contact: '' }
+  dialogForm.value = {
+    title: '',
+    type: 'buy',
+    industry_1: '',
+    industry_2: '',
+    category: '',
+    province: '',
+    city: '',
+    tags: [],
+    description: '',
+  }
+  subIndustryOptions.value = []
+  cityOptions.value = []
   dialogVisible.value = true
 }
 
@@ -150,9 +315,17 @@ function openEditDialog(row) {
   dialogForm.value = {
     title: row.title || '',
     type: row.type || 'buy',
+    industry_1: row.industry_id || '',
+    industry_2: row.sub_industry_id || '',
+    category: row.category_id || '',
+    province: row.province_id || '',
+    city: row.city_id || '',
+    tags: row.tags || [],
     description: row.description || '',
-    contact: row.contact || '',
   }
+  // Load sub-options if parent is set
+  if (row.industry_id) onDialogIndustryChange(row.industry_id)
+  if (row.province_id) onDialogProvinceChange(row.province_id)
   dialogVisible.value = true
 }
 
@@ -161,9 +334,15 @@ async function submitDialog() {
     ElMessage.warning('请输入商机标题')
     return
   }
+  if (!isEdit.value && dialogForm.value.description && dialogForm.value.description.length < 20) {
+    ElMessage.warning('详情描述至少20字')
+    return
+  }
   dialogSaving.value = true
   try {
-    const { data: res } = await updateMyOpportunity(editId.value, dialogForm.value)
+    const payload = { ...dialogForm.value }
+    if (isEdit.value) delete payload.type
+    const { data: res } = await updateMyOpportunity(editId.value, payload)
     if (res.code === 200) {
       ElMessage.success(isEdit.value ? '更新成功' : '发布成功')
       dialogVisible.value = false
@@ -216,7 +395,15 @@ async function handleRepublish(row) {
   }
 }
 
-onMounted(fetchData)
+function openContactLogDialog(row) {
+  contactLogs.value = row.contact_logs || []
+  contactLogVisible.value = true
+}
+
+onMounted(() => {
+  loadDictData()
+  fetchData()
+})
 </script>
 
 <style scoped>

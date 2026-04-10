@@ -47,11 +47,17 @@
     </el-card>
 
     <!-- Approve Dialog -->
-    <el-dialog v-model="approveVisible" title="审核通过" width="480px" destroy-on-close>
-      <el-form :model="approveForm" label-width="80px">
-        <el-form-item label="企业名称">
-          <span>{{ currentRow?.name }}</span>
-        </el-form-item>
+    <el-dialog v-model="approveVisible" title="审核通过" width="600px" destroy-on-close>
+      <div v-if="currentRow" class="audit-detail">
+        <h4 style="margin-bottom:12px;">企业信息</h4>
+        <el-descriptions :column="2" border size="small">
+          <el-descriptions-item label="企业名称">{{ currentRow.name }}</el-descriptions-item>
+          <el-descriptions-item label="信用代码">{{ currentRow.credit_code }}</el-descriptions-item>
+          <el-descriptions-item label="法定代表人">{{ currentRow.legal_representative }}</el-descriptions-item>
+          <el-descriptions-item label="申请时间">{{ currentRow.created_at }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <el-form :model="approveForm" label-width="80px" style="margin-top:16px;">
         <el-form-item label="备注">
           <el-input v-model="approveForm.reason" type="textarea" :rows="3" placeholder="可选填写通过备注" />
         </el-form-item>
@@ -63,11 +69,17 @@
     </el-dialog>
 
     <!-- Reject Dialog -->
-    <el-dialog v-model="rejectVisible" title="审核拒绝" width="480px" destroy-on-close>
-      <el-form :model="rejectForm" label-width="80px">
-        <el-form-item label="企业名称">
-          <span>{{ currentRow?.name }}</span>
-        </el-form-item>
+    <el-dialog v-model="rejectVisible" title="审核拒绝" width="600px" destroy-on-close>
+      <div v-if="currentRow" class="audit-detail">
+        <h4 style="margin-bottom:12px;">企业信息</h4>
+        <el-descriptions :column="2" border size="small">
+          <el-descriptions-item label="企业名称">{{ currentRow.name }}</el-descriptions-item>
+          <el-descriptions-item label="信用代码">{{ currentRow.credit_code }}</el-descriptions-item>
+          <el-descriptions-item label="法定代表人">{{ currentRow.legal_representative }}</el-descriptions-item>
+          <el-descriptions-item label="申请时间">{{ currentRow.created_at }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <el-form :model="rejectForm" label-width="80px" style="margin-top:16px;">
         <el-form-item label="拒绝原因" required>
           <el-input v-model="rejectForm.reason" type="textarea" :rows="3" placeholder="请填写拒绝原因" />
         </el-form-item>

@@ -9,7 +9,7 @@
         :class="{ active: activeTab === 'sms' }"
         @click="activeTab = 'sms'"
       >
-        短信登录
+        短信验证码登录
       </button>
       <button
         class="login-tab"
@@ -55,7 +55,7 @@
         </div>
       </el-form-item>
       <el-form-item>
-        <el-checkbox v-model="smsForm.rememberMe">记住登录状态</el-checkbox>
+        <el-checkbox v-model="smsForm.rememberMe">7天内免登录</el-checkbox>
       </el-form-item>
       <el-form-item>
         <el-button
@@ -64,7 +64,7 @@
           :loading="loading"
           @click="handleSmsLogin"
         >
-          登录
+          登 录
         </el-button>
       </el-form-item>
     </el-form>
@@ -101,7 +101,7 @@
       </el-form-item>
       <el-form-item>
         <div class="password-form-actions">
-          <el-checkbox v-model="passwordForm.rememberMe">记住登录状态</el-checkbox>
+          <el-checkbox v-model="passwordForm.rememberMe">7天内免登录</el-checkbox>
           <el-link type="primary" :underline="false" @click="showForgotDialog = true">
             忘记密码？
           </el-link>
@@ -114,7 +114,7 @@
           :loading="loading"
           @click="handlePasswordLogin"
         >
-          登录
+          登 录
         </el-button>
       </el-form-item>
     </el-form>
@@ -128,7 +128,7 @@
     <!-- Forgot Password Dialog -->
     <el-dialog
       v-model="showForgotDialog"
-      title="重置密码"
+      title="忘记密码"
       width="400px"
       :close-on-click-modal="false"
       destroy-on-close
@@ -184,7 +184,7 @@
           <el-input
             v-model="forgotResetForm.password"
             :type="showNewPassword ? 'text' : 'password'"
-            placeholder="请输入新密码（6-20位）"
+            placeholder="8-20位，字母数字组合"
             :prefix-icon="Lock"
           >
             <template #suffix>
@@ -295,7 +295,7 @@ const passwordRules = {
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度为6-20位', trigger: 'blur' },
+    { min: 8, max: 20, message: '密码长度为8-20位', trigger: 'blur' },
   ],
 }
 
@@ -336,7 +336,7 @@ const forgotVerifyRules = {
 const forgotResetRules = {
   password: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度为6-20位', trigger: 'blur' },
+    { min: 8, max: 20, message: '密码长度为8-20位', trigger: 'blur' },
   ],
   confirmPassword: [
     { required: true, message: '请确认新密码', trigger: 'blur' },

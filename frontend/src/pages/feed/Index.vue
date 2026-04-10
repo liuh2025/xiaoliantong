@@ -1,34 +1,42 @@
 <template>
   <div class="feed-page">
-    <!-- Header with Create Button -->
-    <div class="feed-header">
-      <h2>校友圈</h2>
-      <el-button type="primary" @click="handleCreate">发布动态</el-button>
+    <!-- Page Header -->
+    <div class="feeds-page-header">
+      <div>
+        <h1 class="feeds-title">校友圈</h1>
+        <p class="feeds-subtitle">校友动态、资讯、合作机会</p>
+      </div>
+      <el-button type="primary" @click="handleCreate">+ 发布动态</el-button>
     </div>
 
     <!-- Feed List -->
     <div v-loading="loading">
       <div v-if="feeds.length" class="feed-list">
         <div v-for="feed in feeds" :key="feed.id" class="feed-card">
-          <div class="feed-card-header">
-            <div class="feed-author-info">
-              <span class="feed-author">{{ feed.publisher_name }}</span>
-              <span v-if="feed.enterprise_name" class="feed-ent">{{ feed.enterprise_name }}</span>
+          <div class="feed-author-section">
+            <div class="feed-author-avatar" :style="{ background: getAvatarColor(feed.publisher_name) }">
+              {{ feed.publisher_name ? feed.publisher_name.charAt(0) : '?' }}
             </div>
-            <span class="feed-time">{{ feed.created_at }}</span>
+            <div class="feed-author-info">
+              <div class="feed-author-name">
+                {{ feed.publisher_name }}
+                <el-tag v-if="getTitleBadge(feed)" :type="getTitleBadge(feed).type" size="small" class="title-badge">
+                  {{ getTitleBadge(feed).label }}
+                </el-tag>
+              </div>
+              <div class="feed-author-company" v-if="feed.enterprise_name">{{ feed.enterprise_name }}</div>
+            </div>
+            <div class="feed-time">{{ feed.created_at }}</div>
           </div>
           <div class="feed-content">{{ feed.content }}</div>
-          <div v-if="feed.images && feed.images.length" class="feed-images">
+          <div v-if="feed.images && feed.images.length" :class="['feed-images-grid', getImageGridClass(feed.images.length)]">
             <img
-              v-for="(img, idx) in feed.images.slice(0, 3)"
+              v-for="(img, idx) in feed.images.slice(0, 9)"
               :key="idx"
               :src="img"
               class="feed-image"
               @click="previewImage(feed.images, idx)"
             />
-            <span v-if="feed.images.length > 3" class="image-more">
-              +{{ feed.images.length - 3 }}
-            </span>
           </div>
         </div>
       </div>
@@ -197,8 +205,36 @@ async function submitCreate() {
 }
 
 function previewImage(images, index) {
-  // Simple preview - in production use ElImageViewer
   window.open(images[index], '_blank')
+}
+
+const avatarColors = ['#1E88E5', '#4CAF50', '#FF9800', '#9C27B0', '#3F51B5', '#00BCD4', '#F44336', '#795548']
+function getAvatarColor(name) {
+  if (!name) return avatarColors[0]
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return avatarColors[Math.abs(hash) % avatarColors.length]
+}
+
+const titleBadgeMap = [
+  { keywords: ['CEO', '总经理', '总裁'], label: 'CEO', type: 'success' },
+  { keywords: ['教授', '博导', '院长'], label: '教授', type: '' },
+  { keywords: ['总监', 'CTO', 'CFO', 'COO'], label: '总监', type: 'warning' },
+  { keywords: ['博士', '研究员'], label: '博士', type: 'danger' },
+]
+function getTitleBadge(feed) {
+  const title = feed.publisher_title || ''
+  if (!title) return null
+  for (const badge of titleBadgeMap) {
+    if (badge.keywords.some(k => title.includes(k))) return badge
+  }
+  return { label: title, type: 'info' }
+}
+
+function getImageGridClass(count) {
+  if (count === 1) return 'cols-1'
+  if (count === 2) return 'cols-2'
+  return 'cols-3'
 }
 
 onMounted(() => {
@@ -208,21 +244,27 @@ onMounted(() => {
 
 <style scoped>
 .feed-page {
-  max-width: 700px;
+  max-width: 800px;
   margin: 0 auto;
   padding-bottom: var(--spacing-2xl);
 }
 
-.feed-header {
+.feeds-page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--spacing-lg);
 }
 
-.feed-header h2 {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
+.feeds-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.feeds-subtitle {
+  color: var(--color-text-placeholder);
+  font-size: 0.9375rem;
 }
 
 .feed-list {
@@ -233,72 +275,102 @@ onMounted(() => {
 
 .feed-card {
   background: var(--color-white);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
 }
 
-.feed-card-header {
+.feed-author-section {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: var(--spacing-md);
 }
 
-.feed-author-info {
+.feed-author-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: white;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
-.feed-author {
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-base);
+.feed-author-info {
+  flex: 1;
+  min-width: 0;
 }
 
-.feed-ent {
-  font-size: var(--font-size-sm);
-  color: var(--color-primary);
+.feed-author-name {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-badge {
+  font-size: 0.6875rem;
+}
+
+.feed-author-company {
+  font-size: 0.8125rem;
+  color: var(--color-text-placeholder);
+  margin-top: 2px;
 }
 
 .feed-time {
-  font-size: var(--font-size-xs);
+  font-size: 0.75rem;
   color: var(--color-text-placeholder);
+  flex-shrink: 0;
 }
 
 .feed-content {
-  font-size: var(--font-size-base);
-  line-height: 1.7;
+  font-size: 0.9375rem;
+  line-height: 1.8;
   color: var(--color-text-primary);
   white-space: pre-wrap;
 }
 
-.feed-images {
-  display: flex;
-  gap: var(--spacing-sm);
+.feed-images-grid {
+  display: grid;
+  gap: 8px;
   margin-top: var(--spacing-md);
-  flex-wrap: wrap;
-  position: relative;
+}
+
+.feed-images-grid.cols-1 {
+  grid-template-columns: 1fr;
+}
+
+.feed-images-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.feed-images-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.feed-images-grid.cols-1 .feed-image {
+  aspect-ratio: 16 / 9;
+}
+
+.feed-images-grid:not(.cols-1) .feed-image {
+  aspect-ratio: 1;
 }
 
 .feed-image {
-  width: 120px;
-  height: 120px;
+  width: 100%;
   object-fit: cover;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   cursor: pointer;
+  transition: opacity 0.2s;
 }
 
-.image-more {
-  width: 120px;
-  height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-  color: var(--color-white);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-lg);
+.feed-image:hover {
+  opacity: 0.9;
 }
 
 .pagination-wrap {

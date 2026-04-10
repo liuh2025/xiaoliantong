@@ -40,7 +40,7 @@
         <el-input
           v-model="form.password"
           :type="showPassword ? 'text' : 'password'"
-          placeholder="请设置密码（6-20位）"
+          placeholder="请设置登录密码（8-20位）"
           :prefix-icon="Lock"
         >
           <template #suffix>
@@ -78,7 +78,7 @@
       <el-form-item prop="agreement">
         <el-checkbox v-model="form.agreement">
           我已阅读并同意
-          <el-link type="primary" :underline="false">《用户协议》</el-link>
+          <el-link type="primary" :underline="false">《校链通用户协议》</el-link>
           和
           <el-link type="primary" :underline="false">《隐私政策》</el-link>
         </el-checkbox>
@@ -91,7 +91,7 @@
           :loading="loading"
           @click="handleRegister"
         >
-          注册
+          立即注册
         </el-button>
       </el-form-item>
     </el-form>
@@ -167,7 +167,7 @@ const rules = {
   ],
   password: [
     { required: true, message: '请设置密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度为6-20位', trigger: 'blur' },
+    { min: 8, max: 20, message: '密码长度为8-20位', trigger: 'blur' },
   ],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
