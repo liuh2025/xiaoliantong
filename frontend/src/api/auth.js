@@ -1,18 +1,18 @@
 import request from './request'
 
-// POST /auth/sms/send
+// POST /auth/sms/send/
 export function sendSmsCode(phone, type) {
-  return request.post('/auth/sms/send', { phone, type })
+  return request.post('/auth/sms/send/', { phone, type })
 }
 
-// POST /auth/sms/login
+// POST /auth/sms/login/
 export function smsLogin(phone, code, remember_me = false) {
-  return request.post('/auth/sms/login', { phone, code, remember_me })
+  return request.post('/auth/sms/login/', { phone, code, remember_me })
 }
 
-// POST /auth/login/password
+// POST /auth/login/password/
 export function passwordLogin(phone, password, remember_me = false) {
-  return request.post('/auth/login/password', { phone, password, remember_me })
+  return request.post('/auth/login/password/', { phone, password, remember_me })
 }
 
 // POST /auth/password/reset/verify
@@ -30,9 +30,9 @@ export function getUserInfo() {
   return request.get('/auth/me')
 }
 
-// POST /auth/token/refresh
+// POST /auth/refresh
 export function refreshToken(refresh) {
-  return request.post('/auth/token/refresh', { refresh })
+  return request.post('/auth/refresh', { refresh })
 }
 
 // POST /auth/logout

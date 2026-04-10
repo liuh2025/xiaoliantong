@@ -46,10 +46,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function _setTokens(tokenData) {
-    accessToken.value = tokenData.access || ''
-    refreshToken.value = tokenData.refresh || ''
-    localStorage.setItem('access_token', tokenData.access || '')
-    localStorage.setItem('refresh_token', tokenData.refresh || '')
+    accessToken.value = tokenData.access_token || ''
+    refreshToken.value = tokenData.refresh_token || ''
+    localStorage.setItem('access_token', tokenData.access_token || '')
+    localStorage.setItem('refresh_token', tokenData.refresh_token || '')
   }
 
   return {
