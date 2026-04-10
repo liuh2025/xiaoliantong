@@ -19,7 +19,7 @@ def _create_admin_with_enterprise(username='admin_user'):
     )
     ent = Enterprise(
         name='Test Enterprise',
-        credit_code=f'91110000MA{username[:5]:0<8}1X',
+        credit_code=f'91{username[:4]:0<6}1X',
         legal_representative='Zhang San',
         business_license='https://example.com/license.jpg',
         industry_id=1,

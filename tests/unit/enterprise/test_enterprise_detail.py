@@ -16,7 +16,7 @@ def _build_enterprise(**overrides):
     """Helper to build a valid Enterprise dict with sensible defaults."""
     defaults = {
         'name': 'Test Enterprise Co., Ltd.',
-        'credit_code': '91110000MA01ABCD1X',
+        'credit_code': '91MA01ABCD1234X',
         'legal_representative': 'Zhang San',
         'business_license': 'https://example.com/license/test.jpg',
         'industry_id': 1,
@@ -100,7 +100,7 @@ class TestEnterpriseDetailAPI:
         profile.save()
         ent = _create_enterprise(
             name='Full Info Corp',
-            credit_code='91110000MA01ABCD1X',
+            credit_code='91MA01ABCD1234X',
             logo_url='https://example.com/logo.png',
             legal_representative='Li Si',
             business_license='https://example.com/license.jpg',
@@ -120,7 +120,7 @@ class TestEnterpriseDetailAPI:
         # Verify all DESN fields are present
         assert item['id'] == ent.id
         assert item['name'] == 'Full Info Corp'
-        assert item['credit_code'] == '91110000MA01ABCD1X'
+        assert item['credit_code'] == '91MA01ABCD1234X'
         assert item['logo_url'] == 'https://example.com/logo.png'
         assert item['legal_representative'] == 'Li Si'
         assert item['business_license'] == 'https://example.com/license.jpg'
@@ -187,7 +187,7 @@ class TestEnterpriseDetailAPI:
         """UNCLAIMED enterprise: sensitive fields are desensitized."""
         ent = _create_enterprise(
             name='Unclaimed Corp',
-            credit_code='91110000MA01ABCD1X',
+            credit_code='91MA01ABCD1234X',
             logo_url='https://example.com/logo.png',
             legal_representative='Secret Name',
             business_license='https://example.com/license.jpg',
@@ -232,7 +232,7 @@ class TestEnterpriseDetailAPI:
         """REJECTED enterprise: sensitive fields are desensitized."""
         ent = _create_enterprise(
             name='Rejected Corp',
-            credit_code='91110000MA01REJ01X',
+            credit_code='91MA01REJ01234X',
             legal_representative='Secret Person',
             auth_status=Enterprise.AuthStatus.REJECTED,
         )

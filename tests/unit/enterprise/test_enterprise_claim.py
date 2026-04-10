@@ -16,7 +16,7 @@ def _create_unclaimed_enterprise(**overrides):
     """Helper to create and return an UNCLAIMED Enterprise."""
     defaults = {
         'name': 'Unclaimed Corp',
-        'credit_code': '91110000MA01ABCD1X',
+        'credit_code': '91MA01ABCD1234X',
         'legal_representative': 'Zhang San',
         'business_license': 'https://example.com/license.jpg',
         'industry_id': 1,

@@ -14,7 +14,7 @@ def _build_enterprise(**overrides):
     """Helper to build a valid Enterprise dict with sensible defaults."""
     defaults = {
         'name': 'Test Enterprise Co., Ltd.',
-        'credit_code': '91110000MA01ABCD1X',
+        'credit_code': '91MA01ABCD1234X',
         'legal_representative': 'Zhang San',
         'business_license': 'https://example.com/license/test.jpg',
         'industry_id': 1,
@@ -40,7 +40,7 @@ def _create_batch(count, **overrides):
     for i in range(count):
         defaults = {
             'name': f'Enterprise {i:03d}',
-            'credit_code': f'91110000MA{i:08d}1X',
+            'credit_code': f'91MA{i:06d}1X',
         }
         defaults.update(overrides)
         enterprises.append(_create_enterprise(**defaults))
@@ -85,7 +85,7 @@ class TestEnterpriseListAPI:
         """Verified enterprise returns all required fields with values."""
         _create_enterprise(
             name='Full Info Corp',
-            credit_code='91110000MA01ABCD1X',
+            credit_code='91MA01ABCD1234X',
             logo_url='https://example.com/logo.png',
             industry_id=1,
             sub_industry_id=101,
@@ -101,7 +101,7 @@ class TestEnterpriseListAPI:
         item = items[0]
         assert item['id'] is not None
         assert item['name'] == 'Full Info Corp'
-        assert item['credit_code'] == '91110000MA01ABCD1X'
+        assert item['credit_code'] == '91MA01ABCD1234X'
         assert item['logo_url'] == 'https://example.com/logo.png'
         assert item['industry_name'] == ''
         assert item['sub_industry_name'] == ''

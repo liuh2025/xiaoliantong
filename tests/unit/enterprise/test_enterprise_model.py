@@ -12,7 +12,7 @@ def _build_enterprise(**overrides):
     """Helper to build a valid Enterprise dict with sensible defaults."""
     defaults = {
         'name': 'Test Enterprise Co., Ltd.',
-        'credit_code': '91110000MA01ABCD1X',
+        'credit_code': '91MA01ABCD1234X',
         'legal_representative': 'Zhang San',
         'business_license': 'https://example.com/license/test.jpg',
         'industry_id': 1,
@@ -44,7 +44,7 @@ class TestEnterpriseModel:
         ent.save()
         assert ent.id is not None
         assert ent.name == 'Test Enterprise Co., Ltd.'
-        assert ent.credit_code == '91110000MA01ABCD1X'
+        assert ent.credit_code == '91MA01ABCD1234X'
         assert ent.legal_representative == 'Zhang San'
         assert ent.business_license == 'https://example.com/license/test.jpg'
         assert ent.industry_id == 1
@@ -85,9 +85,9 @@ class TestEnterpriseModel:
 
     def test_credit_code_must_be_unique(self):
         """credit_code has a unique constraint; duplicate raises IntegrityError."""
-        _create_enterprise(credit_code='91110000MA01ABCD1X')
+        _create_enterprise(credit_code='91MA01ABCD1234X')
         with pytest.raises(IntegrityError):
-            _create_enterprise(credit_code='91110000MA01ABCD1X')
+            _create_enterprise(credit_code='91MA01ABCD1234X')
 
     def test_name_is_required(self):
         """name field is required; saving without it should raise error."""
