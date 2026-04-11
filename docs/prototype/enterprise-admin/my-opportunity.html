@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的商机管理 - 校链通</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        .enterprise-admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .enterprise-sidebar {
+            width: 200px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            padding-top: 64px;
+        }
+
+        .enterprise-nav {
+            padding: var(--spacing-md);
+        }
+
+        .enterprise-nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: 2px;
+            text-decoration: none;
+        }
+
+        .enterprise-nav-item:hover {
+            background: var(--bg-main);
+            color: var(--text-primary);
+        }
+
+        .enterprise-nav-item.active {
+            background: rgba(30, 136, 229, 0.1);
+            color: var(--primary);
+        }
+
+        .enterprise-main {
+            flex: 1;
+            margin-left: 200px;
+            padding: var(--spacing-xl);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .opp-item {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            gap: var(--spacing-lg);
+        }
+
+        .opp-type {
+            flex-shrink: 0;
+            width: 70px;
+            height: 70px;
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6875rem;
+            font-weight: 600;
+        }
+
+        .opp-type.buy {
+            background: rgba(255, 107, 0, 0.1);
+            color: var(--accent-buy);
+        }
+
+        .opp-type.supply {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--accent-supply);
+        }
+
+        .opp-content {
+            flex: 1;
+        }
+
+        .opp-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .opp-tags {
+            display: flex;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .opp-meta {
+            display: flex;
+            gap: var(--spacing-lg);
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .opp-status {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: var(--spacing-sm);
+        }
+
+        .status-tag {
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+        }
+
+        .status-tag.active {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+        }
+
+        .status-tag.offline {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--danger);
+        }
+
+        .status-tag.pending {
+            background: rgba(255, 193, 7, 0.1);
+            color: #F59E00;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" style="position:fixed;top:0;left:0;right:0;z-index:100;">
+        <div class="header-inner">
+            <div class="logo">
+                <span>🏛️</span>
+                <span>校链通</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-item">首页</a>
+                <a href="opportunity.html" class="nav-item">商机广场</a>
+                <a href="enterprise.html" class="nav-item">企业名录</a>
+                <a href="feeds.html" class="nav-item">校友圈</a>
+            </nav>
+            <div class="header-actions">
+                <div class="notification-wrapper" style="position:relative;">
+                    <button class="icon-btn" id="notificationBtn" onclick="toggleNotificationDropdown()">🔔<span class="badge" id="unreadBadge">3</span></button>
+                    <div class="notification-dropdown" id="notificationDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:360px;max-width:400px;z-index:1000;margin-top:8px;">
+                        <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-weight:600;font-size:0.9375rem;">通知消息</span>
+                            <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.8125rem;cursor:pointer;">全部已读</button>
+                        </div>
+                        <div class="notification-list" style="max-height:320px;overflow-y:auto;">
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(1)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业已通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您的企业"威蓝智能科技"已通过审核，现在可以发布商...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">10分钟前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:#f8f9fa;" onclick="goToNotify(2)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您的商机收到了新的查看请求</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">比亚迪汽车工业查看了您发布的"采购10万套智能座舱显示屏"</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">2小时前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(3)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业未通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您申请的企业"上海威蓝智能科技"因"证明材料不清晰"未通过审...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">1天前</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding:10px 16px;text-align:center;border-top:1px solid #eee;">
+                            <a href="../notification.html" style="color:var(--primary);font-size:0.8125rem;text-decoration:none;">查看全部通知</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-menu">
+                    <div class="avatar" style="background:var(--success);">李</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="enterprise-admin-layout">
+        <!-- Sidebar -->
+        <aside class="enterprise-sidebar">
+            <div class="enterprise-nav">
+                <a href="enterprise-info.html" class="enterprise-nav-item">
+                    <span>🏢</span> 维护信息
+                </a>
+                <a href="employee.html" class="enterprise-nav-item">
+                    <span>👥</span> 员工管理
+                </a>
+                <a href="my-opportunity.html" class="enterprise-nav-item active">
+                    <span>📋</span> 商机管理
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="enterprise-main">
+            <div class="page-header">
+                <h2 class="page-title">本企业商机管理</h2>
+                <button class="btn btn-primary" onclick="showToast('请前往商机广场发布新商机')">
+                    <span>+</span> 帮员工发商机
+                </button>
+            </div>
+
+            <div class="filter-row">
+                <select class="form-select" style="width:150px;">
+                    <option value="">全部类型</option>
+                    <option value="buy">我要买</option>
+                    <option value="supply">我能供</option>
+                </select>
+                <select class="form-select" style="width:150px;">
+                    <option value="">全部状态</option>
+                    <option value="active">生效中</option>
+                    <option value="offline">已下架</option>
+                    <option value="pending">待审核</option>
+                </select>
+                <input type="text" class="form-input" placeholder="搜索商机标题..." style="flex:1;max-width:300px;">
+                <button class="btn btn-outline">搜索</button>
+            </div>
+
+            <!-- Opportunity List -->
+            <div class="opp-item">
+                <div class="opp-type buy">
+                    <span>🛒</span>
+                    我要买
+                </div>
+                <div class="opp-content">
+                    <h3 class="opp-title">寻车规级毫米波雷达供应商</h3>
+                    <div class="opp-tags">
+                        <span class="tag tag-primary">毫米波雷达</span>
+                        <span class="tag tag-primary">车规级</span>
+                    </div>
+                    <div class="opp-meta">
+                        <span>发布人：张三</span>
+                        <span>发布时间：2026-04-01 10:30</span>
+                        <span>浏览量：128</span>
+                    </div>
+                </div>
+                <div class="opp-status">
+                    <span class="status-tag active">生效中</span>
+                    <div class="action-btns">
+                        <button class="btn btn-sm btn-outline" onclick="showEditModal(1, '寻车规级毫米波雷达供应商', 'buy')">编辑</button>
+                        <button class="btn btn-sm btn-outline" onclick="handleOffline(1)">下架</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="opp-item">
+                <div class="opp-type supply">
+                    <span>📦</span>
+                    我能供
+                </div>
+                <div class="opp-content">
+                    <h3 class="opp-title">提供L4级自动驾驶算法定制服务</h3>
+                    <div class="opp-tags">
+                        <span class="tag tag-primary">自动驾驶</span>
+                        <span class="tag tag-primary">算法定制</span>
+                    </div>
+                    <div class="opp-meta">
+                        <span>发布人：李四</span>
+                        <span>发布时间：2026-03-28 14:20</span>
+                        <span>浏览量：256</span>
+                    </div>
+                </div>
+                <div class="opp-status">
+                    <span class="status-tag active">生效中</span>
+                    <div class="action-btns">
+                        <button class="btn btn-sm btn-outline" onclick="showEditModal(2, '提供L4级自动驾驶算法定制服务', 'supply')">编辑</button>
+                        <button class="btn btn-sm btn-outline" onclick="handleOffline(2)">下架</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="opp-item" style="opacity:0.7;">
+                <div class="opp-type buy">
+                    <span>🛒</span>
+                    我要买
+                </div>
+                <div class="opp-content">
+                    <h3 class="opp-title">采购自动驾驶测试数据标注服务</h3>
+                    <div class="opp-tags">
+                        <span class="tag">数据标注</span>
+                        <span class="tag">测试数据</span>
+                    </div>
+                    <div class="opp-meta">
+                        <span>发布人：王五</span>
+                        <span>发布时间：2026-03-20 09:15</span>
+                        <span>浏览量：89</span>
+                    </div>
+                </div>
+                <div class="opp-status">
+                    <span class="status-tag offline">已下架</span>
+                    <div class="action-btns">
+                        <button class="btn btn-sm btn-outline" onclick="showEditModal(3, '采购自动驾驶测试数据标注服务', 'buy')">编辑</button>
+                        <button class="btn btn-sm btn-primary" onclick="handleRepublish(3)">重新发布</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <div class="pagination-item disabled"><</div>
+                <div class="pagination-item active">1</div>
+                <div class="pagination-item">2</div>
+                <div class="pagination-item">></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Edit Opportunity Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal" style="max-width:600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑商机</h3>
+                <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">商机类型</label>
+                    <div style="display:flex;gap:var(--spacing-md);">
+                        <span class="tag tag-buy" id="editTypeLabel" style="padding:8px 16px;font-size:0.9375rem;">我要买</span>
+                        <span style="font-size:0.8125rem;color:var(--text-muted);line-height:36px;">类型发布后不可修改</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">商机标题</label>
+                    <input type="text" class="form-input" id="editTitle" placeholder="请输入商机标题，30字以内" maxlength="30">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">一级行业</label>
+                        <select class="form-select" id="editIndustry1">
+                            <option value="">选择行业</option>
+                            <option value="1">智能网联</option>
+                            <option value="2">新能源汽车</option>
+                            <option value="3">汽车零部件</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">二级行业</label>
+                        <select class="form-select" id="editIndustry2">
+                            <option value="">选择子行业</option>
+                            <option value="1">自动驾驶</option>
+                            <option value="2">ADAS域控制器</option>
+                            <option value="3">车规级芯片</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">业务品类</label>
+                        <select class="form-select" id="editCategory">
+                            <option value="">请选择品类</option>
+                            <option value="1">自动驾驶算法</option>
+                            <option value="2">车规级芯片</option>
+                            <option value="3">动力电池</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">所在地区</label>
+                        <div style="display:flex;gap:var(--spacing-sm);">
+                            <select class="form-select" id="editProvince" style="flex:1;">
+                                <option value="">省份</option>
+                                <option value="1">上海市</option>
+                                <option value="2">广东省</option>
+                                <option value="3">北京市</option>
+                            </select>
+                            <select class="form-select" id="editCity" style="flex:1;">
+                                <option value="">城市</option>
+                                <option value="1">深圳市</option>
+                                <option value="2">广州市</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">业务标签</label>
+                    <input type="text" class="form-input" id="editTagInput" placeholder="输入标签按回车，可添加多个" onkeydown="if(event.key==='Enter'){addTagEdit();event.preventDefault();}">
+                    <div id="tagListEdit" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">详细描述</label>
+                    <textarea class="form-input" id="editDescription" rows="4" placeholder="请详细描述您的需求或供应能力，不少于20字"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('editModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleEditSave()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEditId = null;
+        let editTags = [];
+
+        function showEditModal(id, title, type) {
+            currentEditId = id;
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editTypeLabel').textContent = type === 'buy' ? '我要买' : '我能供';
+            document.getElementById('editTypeLabel').className = type === 'buy' ? 'tag tag-buy' : 'tag tag-supply';
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function addTagEdit() {
+            const input = document.getElementById('editTagInput');
+            const tag = input.value.trim();
+            if (tag && !editTags.includes(tag)) {
+                editTags.push(tag);
+                renderEditTags();
+            }
+            input.value = '';
+        }
+
+        function renderEditTags() {
+            const container = document.getElementById('tagListEdit');
+            container.innerHTML = editTags.map(t => `
+                <span class="tag" style="display:inline-flex;align-items:center;gap:4px;">
+                    ${t}
+                    <span onclick="removeTagEdit('${t}')" style="cursor:pointer;">×</span>
+                </span>
+            `).join('');
+        }
+
+        function removeTagEdit(tag) {
+            editTags = editTags.filter(t => t !== tag);
+            renderEditTags();
+        }
+
+        function handleEditSave() {
+            const title = document.getElementById('editTitle').value.trim();
+            if (!title) {
+                showToast('请输入商机标题', 'error');
+                return;
+            }
+            closeModal('editModal');
+            showToast('商机信息已保存', 'success');
+        }
+
+        function handleOffline(id) {
+            showToast('已下架', 'success');
+        }
+
+        function handleRepublish(id) {
+            showToast('重新发布成功', 'success');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function showToast(message, type = 'default') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'success' ? ' toast-success' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function markAllRead() {
+            document.getElementById('unreadBadge').style.display = 'none';
+            showToast('已全部已读', 'success');
+        }
+
+        function goToNotify(id) {
+            window.location.href = '../notification.html';
+        }
+
+        document.addEventListener('click', function(e) {
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if (!e.target.closest('.notification-wrapper')) {
+                notifDropdown.style.display = 'none';
+            }
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

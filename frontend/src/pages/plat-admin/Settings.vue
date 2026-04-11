@@ -12,7 +12,7 @@
         </div>
       </template>
 
-      <el-empty v-if="!loading && settings.length === 0" description="暂无系统设置" />
+      <el-empty v-if="!loading && displaySettings.length === 0" description="暂无系统设置" />
 
       <el-descriptions v-else :column="1" border>
         <el-descriptions-item

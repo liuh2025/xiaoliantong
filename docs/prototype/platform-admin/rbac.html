@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账号与角色权限 - 校链通</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 220px; background: #1a1f36; color: white; position: fixed; top: 0; bottom: 0; left: 0; }
+        .admin-sidebar-header { padding: var(--spacing-lg); border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; font-size: 1.125rem; }
+        .admin-nav { padding: var(--spacing-md); }
+        .admin-nav-section { margin-bottom: var(--spacing-lg); }
+        .admin-nav-section-title { font-size: 0.6875rem; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: var(--spacing-sm) var(--spacing-md); }
+        .admin-nav-item { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-md); color: rgba(255,255,255,0.7); font-size: 0.9375rem; cursor: pointer; transition: all var(--transition-fast); margin-bottom: 2px; text-decoration: none; }
+        .admin-nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .admin-nav-item.active { background: var(--primary); color: white; }
+        .admin-main { flex: 1; margin-left: 220px; background: var(--bg-main); }
+        .admin-header { background: var(--bg-card); padding: var(--spacing-md) var(--spacing-xl); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .admin-breadcrumb { display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-muted); font-size: 0.875rem; }
+        .admin-breadcrumb span { color: var(--text-primary); }
+        .admin-content { padding: var(--spacing-xl); }
+        .rbac-layout { display: grid; grid-template-columns: 200px 1fr; gap: var(--spacing-xl); }
+        .role-list { background: var(--bg-card); border-radius: var(--radius-lg); padding: var(--spacing-lg); box-shadow: var(--shadow-sm); }
+        .role-item { padding: var(--spacing-md); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); margin-bottom: var(--spacing-xs); display: flex; align-items: center; gap: var(--spacing-sm); }
+        .role-item:hover { background: var(--bg-main); }
+        .role-item.active { background: rgba(30, 136, 229, 0.1); color: var(--primary); }
+        .role-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; color: white; }
+        .role-icon.super { background: #e74c3c; }
+        .role-icon.operator { background: #3498db; }
+        .role-icon.enterprise { background: #27ae60; }
+        .role-icon.employee { background: #f39c12; }
+        .role-icon.guest { background: #95a5a6; }
+        .role-name { font-weight: 500; margin-bottom: 1px; font-size: 0.875rem; }
+        .role-desc { font-size: 0.6875rem; color: var(--text-muted); }
+        .permission-panel { background: var(--bg-card); border-radius: var(--radius-lg); padding: var(--spacing-xl); box-shadow: var(--shadow-sm); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); padding-bottom: var(--spacing-md); border-bottom: 1px solid var(--border-light); }
+        .panel-header h4 { margin: 0; font-size: 1rem; }
+        .subsystem-block { margin-bottom: var(--spacing-xl); }
+        .subsystem-title { font-weight: 600; font-size: 0.875rem; padding: var(--spacing-sm) var(--spacing-md); background: var(--bg-main); border-radius: var(--radius-md); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm); }
+        .subsystem-title .tag { font-size: 0.625rem; padding: 2px 6px; border-radius: 4px; font-weight: normal; }
+        .tag-xlt { background: #e8f5e9; color: #27ae60; }
+        .tag-ent { background: #e3f2fd; color: #2196f3; }
+        .tag-admin { background: #fff3e0; color: #ff9800; }
+        .module-block { margin-bottom: var(--spacing-lg); padding-left: var(--spacing-md); }
+        .module-title { font-weight: 500; font-size: 0.8125rem; color: var(--text-secondary); margin-bottom: var(--spacing-sm); padding-left: var(--spacing-sm); border-left: 2px solid var(--primary); }
+        .perm-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+        .perm-table th { text-align: left; padding: var(--spacing-sm) var(--spacing-md); background: var(--bg-main); border-bottom: 1px solid var(--border-light); font-weight: 500; color: var(--text-muted); }
+        .perm-table td { padding: var(--spacing-xs) var(--spacing-md); border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+        .perm-table tr:last-child td { border-bottom: none; }
+        .perm-table .checkbox-col { width: 40px; text-align: center; }
+        .perm-table .checkbox-col input { width: 16px; height: 16px; cursor: pointer; }
+        .perm-table .name-col { width: 180px; }
+        .perm-table .api-col { font-family: monospace; font-size: 0.75rem; color: var(--text-muted); word-break: break-all; }
+        .perm-table .check-icon { color: #27ae60; font-weight: bold; }
+        .perm-table .cross-icon { color: #e0e0e0; }
+        .note-text { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header"><span>🏛️</span> 校链通管理后台</div>
+            <nav class="admin-nav">
+                <div class="admin-nav-section"><div class="admin-nav-section-title">数据中心</div><a href="dashboard.html" class="admin-nav-item"><span>📊</span> 数据大盘</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">企业管理</div><a href="audit.html" class="admin-nav-item"><span>✅</span> 企业入驻审核</a><a href="tenant.html" class="admin-nav-item"><span>🏢</span> 企业(租户)管理</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">内容管理</div><a href="opportunity-manage.html" class="admin-nav-item"><span>📋</span> 商机内容管理</a><a href="feeds-manage.html" class="admin-nav-item"><span>📱</span> 动态内容管理</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">系统管理</div><a href="master-data.html" class="admin-nav-item"><span>📚</span> 基础数据字典</a><a href="rbac.html" class="admin-nav-item active"><span>🔐</span> 账号与角色权限</a><a href="settings.html" class="admin-nav-item"><span>⚙️</span> 系统设置</a></div>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <header class="admin-header"><div class="admin-breadcrumb">首页 <span>/</span> 系统管理 <span>/</span> 账号与角色权限</div><div style="display:flex;align-items:center;gap:var(--spacing-md);"><span style="font-size:0.875rem;color:var(--text-muted);">管理员：张总</span><div class="avatar" style="width:32px;height:32px;font-size:0.875rem;background:var(--primary);">张</div></div></header>
+            <div class="admin-content">
+                <div class="rbac-layout">
+                    <div class="role-list">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--spacing-md);">
+                            <h4 style="margin:0;font-size:0.875rem;">角色列表</h4>
+                            <button class="btn btn-sm btn-primary" onclick="showToast('暂不支持新增角色')" style="font-size:0.6875rem;padding:4px 8px;">+ 新增</button>
+                        </div>
+                        <div class="role-item" onclick="selectRole('super_admin')">
+                            <div class="role-icon super">超</div>
+                            <div><div class="role-name">超级管理员</div><div class="role-desc">平台最高权限</div></div>
+                        </div>
+                        <div class="role-item" onclick="selectRole('platform_operator')">
+                            <div class="role-icon operator">运</div>
+                            <div><div class="role-name">平台运营</div><div class="role-desc">内容审核维护</div></div>
+                        </div>
+                        <div class="role-item active" onclick="selectRole('enterprise_admin')">
+                            <div class="role-icon enterprise">管</div>
+                            <div><div class="role-name">企业管理员</div><div class="role-desc">企业管理发布</div></div>
+                        </div>
+                        <div class="role-item" onclick="selectRole('employee')">
+                            <div class="role-icon employee">员</div>
+                            <div><div class="role-name">普通员工</div><div class="role-desc">商机动态管理</div></div>
+                        </div>
+                        <div class="role-item" onclick="selectRole('guest')">
+                            <div class="role-icon guest">游</div>
+                            <div><div class="role-name">游客</div><div class="role-desc">公开浏览</div></div>
+                        </div>
+                    </div>
+                    <div class="permission-panel" id="permissionPanel"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script>
+        // 权限配置数据
+        const permissionConfig = {
+            super_admin: {
+                name: '超级管理员',
+                permissions: {
+                    xlt: ['all'],
+                    ent: ['all'],
+                    admin: ['all']
+                }
+            },
+            platform_operator: {
+                name: '平台运营',
+                permissions: {
+                    xlt: ['all'],
+                    ent: ['view'],
+                    admin: ['stats', 'audit', 'tenant', 'content_opp', 'content_feed', 'master_data']
+                }
+            },
+            enterprise_admin: {
+                name: '企业管理员',
+                permissions: {
+                    xlt: ['view'],
+                    ent: ['all'],
+                    admin: []
+                }
+            },
+            employee: {
+                name: '普通员工',
+                permissions: {
+                    xlt: ['view'],
+                    ent: ['opp_manage', 'feed_manage', 'contact'],
+                    admin: []
+                }
+            },
+            guest: {
+                name: '游客',
+                permissions: {
+                    xlt: ['view'],
+                    ent: ['view'],
+                    admin: []
+                }
+            }
+        };
+
+        // 权限矩阵定义
+        const permissionMatrix = {
+            xlt: { // 校链通系统（公开）
+                title: '校链通系统',
+                tag: 'xlt',
+                modules: {
+                    首页: [
+                        { id: 'stats', name: '平台统计数字', api: 'GET /api/v1/public/stats', perm: 'xlt' },
+                        { id: 'recommended', name: '推荐商机列表', api: 'GET /api/v1/opp/opportunity/recommended', perm: 'xlt' },
+                        { id: 'newest_ent', name: '新入驻企业', api: 'GET /api/v1/ent/enterprise/newest', perm: 'xlt' },
+                        { id: 'newest_feed', name: '校友动态', api: 'GET /api/v1/feed/feed/newest', perm: 'xlt' },
+                        { id: 'notifications', name: '通知消息', api: 'GET /api/v1/msg/notifications/recent', perm: 'xlt' }
+                    ],
+                    商机广场: [
+                        { id: 'opp_list', name: '商机列表', api: 'GET /api/v1/opp/opportunity', perm: 'xlt' },
+                        { id: 'opp_detail', name: '商机详情', api: 'GET /api/v1/opp/opportunity/{id}', perm: 'xlt' },
+                        { id: 'opp_publish', name: '发布商机', api: 'POST /api/v1/opp/opportunity', perm: 'xlt' },
+                        { id: 'opp_contact', name: '获取联系方式', api: 'POST /api/v1/opp/opportunity/{id}/contact', perm: 'xlt' }
+                    ],
+                    企业名录: [
+                        { id: 'ent_list', name: '企业列表', api: 'GET /api/v1/ent/enterprise', perm: 'xlt' },
+                        { id: 'ent_detail', name: '企业详情', api: 'GET /api/v1/ent/enterprise/{id}', perm: 'xlt' },
+                        { id: 'ent_claim', name: '认领企业', api: 'POST /api/v1/ent/enterprise/claim', perm: 'xlt' },
+                        { id: 'ent_apply', name: '申请入驻', api: 'POST /api/v1/ent/enterprise/apply', perm: 'xlt' },
+                        { id: 'ent_auth', name: '企业认证', api: 'POST /api/v1/ent/enterprise/auth', perm: 'xlt' }
+                    ],
+                    校友圈: [
+                        { id: 'feed_list', name: '动态列表', api: 'GET /api/v1/feed/feed', perm: 'xlt' },
+                        { id: 'feed_detail', name: '动态详情', api: 'GET /api/v1/feed/feed/{id}', perm: 'xlt' },
+                        { id: 'feed_publish', name: '发布动态', api: 'POST /api/v1/feed/feed', perm: 'xlt' }
+                    ],
+                    搜索: [
+                        { id: 'search', name: '全局搜索', api: 'GET /api/v1/search', perm: 'xlt' }
+                    ],
+                    认证相关: [
+                        { id: 'sms_send', name: '发送验证码', api: 'POST /api/v1/auth/sms/send', perm: 'xlt' },
+                        { id: 'sms_verify', name: '验证验证码', api: 'POST /api/v1/auth/sms/verify', perm: 'xlt' },
+                        { id: 'register', name: '注册账号', api: 'POST /api/v1/auth/register', perm: 'xlt' },
+                        { id: 'login', name: '登录', api: 'POST /api/v1/auth/login', perm: 'xlt' },
+                        { id: 'logout', name: '退出登录', api: 'POST /api/v1/auth/logout', perm: 'xlt' },
+                        { id: 'me', name: '当前用户信息', api: 'GET /api/v1/auth/me', perm: 'xlt' },
+                        { id: 'password_change', name: '修改密码', api: 'PUT /api/v1/auth/password', perm: 'xlt' }
+                    ]
+                }
+            },
+            ent: { // 企业工作台
+                title: '企业工作台',
+                tag: 'ent',
+                modules: {
+                    企业信息: [
+                        { id: 'ent_info_get', name: '获取企业信息', api: 'GET /api/v1/ent-admin/enterprise', perm: 'ent' },
+                        { id: 'ent_info_update', name: '更新企业信息', api: 'PUT /api/v1/ent-admin/enterprise', perm: 'ent' }
+                    ],
+                    员工管理: [
+                        { id: 'emp_list', name: '员工列表', api: 'GET /api/v1/ent-admin/employees', perm: 'ent' },
+                        { id: 'emp_add', name: '新增员工', api: 'POST /api/v1/ent-admin/employees', perm: 'ent' },
+                        { id: 'emp_edit', name: '编辑员工', api: 'PUT /api/v1/ent-admin/employees/{id}', perm: 'ent' },
+                        { id: 'emp_reset_pwd', name: '重置密码', api: 'POST /api/v1/ent-admin/employees/{id}/reset-password', perm: 'ent' },
+                        { id: 'emp_unbind', name: '解绑员工', api: 'POST /api/v1/ent-admin/employees/{id}/unbind', perm: 'ent' }
+                    ],
+                    商机管理: [
+                        { id: 'opp_manage', name: '本企业商机列表', api: 'GET /api/v1/ent-admin/my-opportunities', perm: 'ent' },
+                        { id: 'opp_update', name: '编辑商机', api: 'PUT /api/v1/opp/opportunity/{id}', perm: 'ent' },
+                        { id: 'opp_delete', name: '删除商机', api: 'DELETE /api/v1/opp/opportunity/{id}', perm: 'ent' }
+                    ],
+                    联系记录: [
+                        { id: 'contact', name: '联系记录列表', api: 'GET /api/v1/ent-admin/contact-records', perm: 'ent' }
+                    ],
+                    动态管理: [
+                        { id: 'feed_manage', name: '本企业动态列表', api: 'GET /api/v1/ent-admin/my-feeds', perm: 'ent' },
+                        { id: 'feed_update', name: '编辑动态', api: 'PUT /api/v1/feed/feed/{id}', perm: 'ent' },
+                        { id: 'feed_delete', name: '删除动态', api: 'DELETE /api/v1/feed/feed/{id}', perm: 'ent' }
+                    ]
+                }
+            },
+            admin: { // 管理后台
+                title: '管理后台',
+                tag: 'admin',
+                modules: {
+                    数据中心: [
+                        { id: 'stats_overview', name: '统计概览', api: 'GET /api/v1/plat-admin/stats/overview', perm: 'admin', subPerm: 'stats' },
+                        { id: 'stats_trend', name: '趋势数据', api: 'GET /api/v1/plat-admin/stats/trend', perm: 'admin', subPerm: 'stats' }
+                    ],
+                    企业审核: [
+                        { id: 'audit_list', name: '待审核列表', api: 'GET /api/v1/plat-admin/audit/enterprise', perm: 'admin', subPerm: 'audit' },
+                        { id: 'audit_detail', name: '审核详情', api: 'GET /api/v1/plat-admin/audit/enterprise/{id}', perm: 'admin', subPerm: 'audit' },
+                        { id: 'audit_verify', name: '审核通过', api: 'PUT /api/v1/plat-admin/audit/enterprise/{id}/verify', perm: 'admin', subPerm: 'audit' },
+                        { id: 'audit_reject', name: '审核驳回', api: 'PUT /api/v1/plat-admin/audit/enterprise/{id}/reject', perm: 'admin', subPerm: 'audit' }
+                    ],
+                    企业租户: [
+                        { id: 'tenant_list', name: '企业列表', api: 'GET /api/v1/plat-admin/tenant/enterprise', perm: 'admin', subPerm: 'tenant' },
+                        { id: 'tenant_toggle', name: '启用/禁用企业', api: 'PUT /api/v1/plat-admin/tenant/enterprise/{id}/toggle-status', perm: 'admin', subPerm: 'tenant' },
+                        { id: 'tenant_member_list', name: '成员列表', api: 'GET /api/v1/plat-admin/tenant/enterprise/{id}/member', perm: 'admin', subPerm: 'tenant' },
+                        { id: 'tenant_member_add', name: '新增成员', api: 'POST /api/v1/plat-admin/tenant/enterprise/{id}/member', perm: 'admin', subPerm: 'tenant' },
+                        { id: 'tenant_member_edit', name: '编辑成员', api: 'PUT /api/v1/plat-admin/tenant/member/{id}', perm: 'admin', subPerm: 'tenant' },
+                        { id: 'tenant_member_reset', name: '重置密码', api: 'POST /api/v1/plat-admin/tenant/member/{id}/reset-password', perm: 'admin', subPerm: 'tenant' },
+                        { id: 'tenant_member_unbind', name: '解绑成员', api: 'POST /api/v1/plat-admin/tenant/member/{id}/unbind', perm: 'admin', subPerm: 'tenant' }
+                    ],
+                    商机内容: [
+                        { id: 'content_opp_list', name: '商机列表', api: 'GET /api/v1/plat-admin/content/opportunity', perm: 'admin', subPerm: 'content_opp' },
+                        { id: 'content_opp_detail', name: '商机详情', api: 'GET /api/v1/plat-admin/content/opportunity/{id}', perm: 'admin', subPerm: 'content_opp' },
+                        { id: 'content_opp_offline', name: '强制下架', api: 'PUT /api/v1/plat-admin/content/opportunity/{id}/offline', perm: 'admin', subPerm: 'content_opp' }
+                    ],
+                    动态内容: [
+                        { id: 'content_feed_list', name: '动态列表', api: 'GET /api/v1/plat-admin/content/feed', perm: 'admin', subPerm: 'content_feed' },
+                        { id: 'content_feed_detail', name: '动态详情', api: 'GET /api/v1/plat-admin/content/feed/{id}', perm: 'admin', subPerm: 'content_feed' },
+                        { id: 'content_feed_offline', name: '强制下架', api: 'PUT /api/v1/plat-admin/content/feed/{id}/offline', perm: 'admin', subPerm: 'content_feed' }
+                    ],
+                    基础数据: [
+                        { id: 'master_data_tree', name: '字典树', api: 'GET /api/v1/plat-admin/master-data/tree', perm: 'admin', subPerm: 'master_data' },
+                        { id: 'master_data_list', name: '字典列表', api: 'GET /api/v1/plat-admin/master-data', perm: 'admin', subPerm: 'master_data' },
+                        { id: 'master_data_add', name: '新增字典项', api: 'POST /api/v1/plat-admin/master-data', perm: 'admin', subPerm: 'master_data' },
+                        { id: 'master_data_update', name: '更新字典项', api: 'PUT /api/v1/plat-admin/master-data/{id}', perm: 'admin', subPerm: 'master_data' },
+                        { id: 'master_data_toggle', name: '启用/禁用', api: 'PUT /api/v1/plat-admin/master-data/{id}/toggle-status', perm: 'admin', subPerm: 'master_data' },
+                        { id: 'master_data_cat', name: '按类别查询', api: 'GET /api/v1/plat-admin/master-data/category/{category}', perm: 'admin', subPerm: 'master_data' },
+                        { id: 'master_data_region_tree', name: '行政区划树', api: 'GET /api/v1/plat-admin/master-data/region/tree', perm: 'admin', subPerm: 'master_data' },
+                        { id: 'master_data_region_child', name: '下级区划', api: 'GET /api/v1/plat-admin/master-data/region/{id}/children', perm: 'admin', subPerm: 'master_data' }
+                    ],
+                    账号权限: [
+                        { id: 'users_list', name: '用户列表', api: 'GET /api/v1/plat-admin/users', perm: 'admin', subPerm: 'rbac', superOnly: true },
+                        { id: 'users_detail', name: '用户详情', api: 'GET /api/v1/plat-admin/users/{id}', perm: 'admin', subPerm: 'rbac', superOnly: true },
+                        { id: 'users_update', name: '编辑用户', api: 'PUT /api/v1/plat-admin/users/{id}', perm: 'admin', subPerm: 'rbac', superOnly: true },
+                        { id: 'users_reset_pwd', name: '重置密码', api: 'POST /api/v1/plat-admin/users/{id}/reset-password', perm: 'admin', subPerm: 'rbac', superOnly: true },
+                        { id: 'roles_list', name: '角色列表', api: 'GET /api/v1/plat-admin/roles', perm: 'admin', subPerm: 'rbac', superOnly: true },
+                        { id: 'roles_add', name: '新增角色', api: 'POST /api/v1/plat-admin/roles', perm: 'admin', subPerm: 'rbac', superOnly: true },
+                        { id: 'roles_update', name: '编辑角色', api: 'PUT /api/v1/plat-admin/roles/{id}', perm: 'admin', subPerm: 'rbac', superOnly: true },
+                        { id: 'roles_perm', name: '更新权限', api: 'PUT /api/v1/plat-admin/roles/{id}/permissions', perm: 'admin', subPerm: 'rbac', superOnly: true },
+                        { id: 'roles_toggle', name: '启用/禁用角色', api: 'PUT /api/v1/plat-admin/roles/{id}/toggle-status', perm: 'admin', subPerm: 'rbac', superOnly: true }
+                    ],
+                    系统设置: [
+                        { id: 'settings_get', name: '获取设置', api: 'GET /api/v1/plat-admin/settings', perm: 'admin', subPerm: 'settings', superOnly: true },
+                        { id: 'settings_update', name: '更新设置', api: 'PUT /api/v1/plat-admin/settings', perm: 'admin', subPerm: 'settings', superOnly: true }
+                    ]
+                }
+            }
+        };
+
+        function selectRole(roleId) {
+            document.querySelectorAll('.role-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            renderPermissionPanel(roleId);
+        }
+
+        function hasPermission(roleId, item) {
+            const rolePerm = permissionConfig[roleId];
+            const p = rolePerm.permissions;
+
+            // 超级管理员拥有所有权限
+            if (p.xlt.includes('all') && p.ent.includes('all') && p.admin.includes('all')) return true;
+
+            // 检查是否属于某个子系统
+            if (item.perm === 'xlt') {
+                if (p.xlt.includes('all')) return true;
+                if (p.xlt.includes('view') && !item.name.includes('发布') && !item.name.includes('认领') && !item.name.includes('认证')) return true;
+                return p.xlt.includes(item.id);
+            }
+
+            if (item.perm === 'ent') {
+                if (p.ent.includes('all')) return true;
+                if (p.ent.includes('view') && (item.name.includes('列表') || item.name.includes('详情'))) return true;
+                return p.ent.includes(item.id);
+            }
+
+            if (item.perm === 'admin') {
+                // 平台运营不能访问超级管理员专属
+                if (item.superOnly && roleId !== 'super_admin') return false;
+                if (p.admin.includes('all')) return true;
+                if (item.subPerm && p.admin.includes(item.subPerm)) return true;
+            }
+
+            return false;
+        }
+
+        function renderPermissionPanel(roleId) {
+            const config = permissionConfig[roleId];
+            const panel = document.getElementById('permissionPanel');
+
+            let html = `
+                <div class="panel-header">
+                    <h4>「${config.name}」- 功能权限矩阵</h4>
+                    <button class="btn btn-primary btn-sm" onclick="showToast('权限配置已保存')">保存配置</button>
+                </div>
+            `;
+
+            // 遍历子系统
+            for (const [sysKey, sys] of Object.entries(permissionMatrix)) {
+                html += `
+                    <div class="subsystem-block">
+                        <div class="subsystem-title">
+                            ${sys.title}
+                            <span class="tag tag-${sys.tag}">${sys.tag === 'xlt' ? '校链通' : sys.tag === 'ent' ? '企业工作台' : '管理后台'}</span>
+                        </div>
+                `;
+
+                // 遍历模块
+                for (const [modName, items] of Object.entries(sys.modules)) {
+                    html += `
+                        <div class="module-block">
+                            <div class="module-title">${modName}</div>
+                            <table class="perm-table">
+                                <thead>
+                                    <tr>
+                                        <th class="checkbox-col"></th>
+                                        <th class="name-col">功能</th>
+                                        <th>API URL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    for (const item of items) {
+                        const checked = hasPermission(roleId, item);
+                        const isDisabled = !checked && roleId === 'super_admin' ? '' : (roleId === 'platform_operator' && item.superOnly ? 'disabled' : '');
+                        const checkIcon = checked ? '✓' : '○';
+                        const iconClass = checked ? 'check-icon' : 'cross-icon';
+
+                        html += `
+                            <tr>
+                                <td class="checkbox-col">
+                                    <input type="checkbox" ${checked ? 'checked' : ''} ${isDisabled} onchange="showToast('配置已修改')">
+                                </td>
+                                <td class="name-col">
+                                    <span class="${iconClass}">${checkIcon}</span>
+                                    ${item.name}
+                                    ${item.superOnly ? '<span style="color:#ff9800;font-size:0.625rem;margin-left:4px;">[超管]</span>' : ''}
+                                </td>
+                                <td class="api-col">${item.api}</td>
+                            </tr>
+                        `;
+                    }
+
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+            }
+
+            // 添加说明
+            html += `
+                <div style="margin-top:var(--spacing-lg);padding:var(--spacing-md);background:var(--bg-main);border-radius:var(--radius-md);font-size:0.75rem;color:var(--text-muted);">
+                    <strong>说明：</strong>
+                    <ul style="margin:8px 0 0 0;padding-left:20px;">
+                        <li>消息通知API（站内信）根据当前登录用户的接收人自动过滤，无需配置</li>
+                        <li>注册、登录、验证码等API为公共接口，无需配置</li>
+                        <li><span style="color:#ff9800;">[超管]</span> 标记的API仅超级管理员可访问</li>
+                        <li>功能权限配置保存在后端，前端仅做展示</li>
+                    </ul>
+                </div>
+            `;
+
+            panel.innerHTML = html;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show toast-success';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // 初始化
+        renderPermissionPanel('enterprise_admin');
+    </script>
+</body>
+</html>

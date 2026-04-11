@@ -13,18 +13,18 @@
       </el-tabs>
 
       <el-table :data="list" v-loading="loading" empty-text="暂无审核数据">
-        <el-table-column prop="name" label="企业名称" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="enterprise_name" label="企业名称" min-width="180" show-overflow-tooltip />
         <el-table-column prop="credit_code" label="统一社会信用代码" min-width="200" />
         <el-table-column prop="legal_representative" label="法定代表人" min-width="120" />
-        <el-table-column prop="auth_status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="statusType(row.auth_status)">{{ statusLabel(row.auth_status) }}</el-tag>
+            <el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="created_at" label="申请时间" min-width="170" />
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <template v-if="row.auth_status === 'pending'">
+            <template v-if="row.status === 'pending'">
               <el-button size="small" type="success" @click="openApproveDialog(row)">通过</el-button>
               <el-button size="small" type="danger" @click="openRejectDialog(row)">拒绝</el-button>
             </template>

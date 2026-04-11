@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基础数据字典 - 校链通</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 220px; background: #1a1f36; color: white; position: fixed; top: 0; bottom: 0; left: 0; overflow-y: auto; }
+        .admin-sidebar-header { padding: var(--spacing-lg); border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; font-size: 1.125rem; }
+        .admin-nav { padding: var(--spacing-md); }
+        .admin-nav-section { margin-bottom: var(--spacing-lg); }
+        .admin-nav-section-title { font-size: 0.6875rem; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: var(--spacing-sm) var(--spacing-md); letter-spacing: 0.5px; }
+        .admin-nav-item { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-md); color: rgba(255,255,255,0.7); font-size: 0.9375rem; cursor: pointer; transition: all var(--transition-fast); margin-bottom: 2px; text-decoration: none; }
+        .admin-nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .admin-nav-item.active { background: var(--primary); color: white; }
+        .admin-main { flex: 1; margin-left: 220px; background: var(--bg-main); }
+        .admin-header { background: var(--bg-card); padding: var(--spacing-md) var(--spacing-xl); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .admin-breadcrumb { display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-muted); font-size: 0.875rem; }
+        .admin-breadcrumb span { color: var(--text-primary); }
+        .admin-content { padding: var(--spacing-xl); }
+        .content-tabs { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); border-bottom: 1px solid var(--border); padding-bottom: var(--spacing-md); }
+        .content-tab { padding: var(--spacing-sm) var(--spacing-lg); border-radius: var(--radius-md); font-size: 0.875rem; cursor: pointer; transition: all var(--transition-fast); }
+        .content-tab:hover { background: var(--bg-main); }
+        .content-tab.active { background: var(--primary); color: white; }
+        .tree-item { padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); display: flex; align-items: center; justify-content: space-between; }
+        .tree-item:hover { background: var(--bg-main); }
+        .tree-item.active { background: rgba(30, 136, 229, 0.1); color: var(--primary); }
+        .tree-children { padding-left: var(--spacing-xl); }
+        .tree-actions { display: flex; gap: var(--spacing-sm); opacity: 0; transition: opacity var(--transition-fast); }
+        .tree-item:hover .tree-actions { opacity: 1; }
+        .tree-item.disabled { opacity: 0.5; }
+        .tree-item.disabled > div > span:last-child { text-decoration: line-through; color: var(--text-muted); }
+        .tag-item { display:inline-flex; align-items:center; gap: 6px; padding: 4px 10px; background: var(--bg-main); border-radius: var(--radius-sm); font-size: 0.8125rem; margin: 4px 4px 4px 0; }
+        .tag-item .remove-tag { cursor: pointer; color: var(--text-muted); font-size: 0.75rem; }
+        .tag-item .remove-tag:hover { color: var(--danger); }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header"><span>🏛️</span> 校链通管理后台</div>
+            <nav class="admin-nav">
+                <div class="admin-nav-section"><div class="admin-nav-section-title">数据中心</div><a href="dashboard.html" class="admin-nav-item"><span>📊</span> 数据大盘</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">企业管理</div><a href="audit.html" class="admin-nav-item"><span>✅</span> 企业入驻审核</a><a href="tenant.html" class="admin-nav-item"><span>🏢</span> 企业(租户)管理</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">内容管理</div><a href="opportunity-manage.html" class="admin-nav-item"><span>📋</span> 商机内容管理</a><a href="feeds-manage.html" class="admin-nav-item"><span>📱</span> 动态内容管理</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">系统管理</div><a href="master-data.html" class="admin-nav-item active"><span>📚</span> 基础数据字典</a><a href="rbac.html" class="admin-nav-item"><span>🔐</span> 账号与角色权限</a><a href="settings.html" class="admin-nav-item"><span>⚙️</span> 系统设置</a></div>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <header class="admin-header"><div class="admin-breadcrumb">首页 <span>/</span> 系统管理 <span>/</span> 基础数据字典</div><div style="display:flex;align-items:center;gap:var(--spacing-md);"><span style="font-size:0.875rem;color:var(--text-muted);">管理员：张总</span><div class="avatar" style="width:32px;height:32px;font-size:0.875rem;background:var(--primary);">张</div></div></header>
+            <div class="admin-content">
+                <div class="content-tabs">
+                    <div class="content-tab active" onclick="switchTab('industry')">行业分类</div>
+                    <div class="content-tab" onclick="switchTab('category')">业务品类</div>
+                    <div class="content-tab" onclick="switchTab('tag')">业务标签</div>
+                    <div class="content-tab" onclick="switchTab('region')">行政区划</div>
+                </div>
+                <div id="tabContent"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="editModalTitle">编辑</h3>
+                <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" id="editNameLabel">名称</label>
+                    <input type="text" class="form-input" id="editName" placeholder="请输入名称">
+                </div>
+                <div class="form-group" id="editCodeGroup">
+                    <label class="form-label">编码</label>
+                    <input type="text" class="form-input" id="editCode" placeholder="请输入编码">
+                </div>
+                <div class="form-group" id="editSortGroup">
+                    <label class="form-label">排序</label>
+                    <input type="number" class="form-input" id="editSort" placeholder="数字越小越靠前" value="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('editModal')">取消</button>
+                <button class="btn btn-primary" onclick="confirmEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="addModalTitle">新增</h3>
+                <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" id="addParentGroup" style="display:none;">
+                    <label class="form-label">上级</label>
+                    <input type="text" class="form-input" id="addParentName" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" id="addNameLabel">名称</label>
+                    <input type="text" class="form-input" id="addName" placeholder="请输入名称">
+                </div>
+                <div class="form-group" id="addCodeGroup">
+                    <label class="form-label">编码</label>
+                    <input type="text" class="form-input" id="addCode" placeholder="请输入编码">
+                </div>
+                <div class="form-group" id="addSortGroup">
+                    <label class="form-label">排序</label>
+                    <input type="number" class="form-input" id="addSort" placeholder="数字越小越靠前" value="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('addModal')">取消</button>
+                <button class="btn btn-primary" onclick="confirmAdd()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ----- Data -----
+        const data = {
+            industry: {
+                name: '行业分类',
+                hasParent: true,
+                hasCode: false,
+                items: [
+                    { id: 1, name: '智能网联', sort_order: 1, is_active: true, children: [
+                        { id: 11, name: '自动驾驶算法', sort_order: 1, is_active: true },
+                        { id: 12, name: '智能座舱系统', sort_order: 2, is_active: true },
+                        { id: 13, name: '车联网技术', sort_order: 3, is_active: true }
+                    ]},
+                    { id: 2, name: '新能源汽车', sort_order: 2, is_active: true, children: [
+                        { id: 21, name: '动力电池', sort_order: 1, is_active: true },
+                        { id: 22, name: '电驱动系统', sort_order: 2, is_active: true },
+                        { id: 23, name: '充电基础设施', sort_order: 3, is_active: true }
+                    ]},
+                    { id: 3, name: '汽车电子', sort_order: 3, is_active: true, children: [
+                        { id: 31, name: 'MCU芯片', sort_order: 1, is_active: true },
+                        { id: 32, name: '域控制器', sort_order: 2, is_active: true },
+                        { id: 33, name: '传感器', sort_order: 3, is_active: true }
+                    ]},
+                    { id: 4, name: '智能制造', sort_order: 4, is_active: true, children: [
+                        { id: 41, name: '工业机器人', sort_order: 1, is_active: true },
+                        { id: 42, name: '激光焊接', sort_order: 2, is_active: true },
+                        { id: 43, name: '质量检测', sort_order: 3, is_active: false }
+                    ]}
+                ]
+            },
+            category: {
+                name: '业务品类',
+                hasParent: false,
+                hasCode: false,
+                items: [
+                    { id: 101, name: '汽车电子', sort_order: 1, is_active: true },
+                    { id: 102, name: '汽车零部件', sort_order: 2, is_active: true },
+                    { id: 103, name: '新能源设备', sort_order: 3, is_active: true },
+                    { id: 104, name: '智能制造装备', sort_order: 4, is_active: true },
+                    { id: 105, name: '材料及化工', sort_order: 5, is_active: true },
+                    { id: 106, name: '贸易及服务', sort_order: 6, is_active: true }
+                ]
+            },
+            tag: {
+                name: '业务标签',
+                hasParent: false,
+                hasCode: false,
+                items: [
+                    { id: 201, name: '专精特新', sort_order: 1, is_active: true },
+                    { id: 202, name: '高新技术企业', sort_order: 2, is_active: true },
+                    { id: 203, name: '上市公司', sort_order: 3, is_active: true },
+                    { id: 204, name: '世界500强', sort_order: 4, is_active: true },
+                    { id: 205, name: '中国500强', sort_order: 5, is_active: true },
+                    { id: 206, name: '民营企业500强', sort_order: 6, is_active: true },
+                    { id: 207, name: '瞪羚企业', sort_order: 7, is_active: true },
+                    { id: 208, name: '独角兽企业', sort_order: 8, is_active: true },
+                    { id: 209, name: '国产替代', sort_order: 9, is_active: true },
+                    { id: 210, name: '出口供应', sort_order: 10, is_active: true },
+                    { id: 211, name: 'OEM配套', sort_order: 11, is_active: true },
+                    { id: 212, name: '研发合作', sort_order: 12, is_active: true },
+                    { id: 213, name: '产能合作', sort_order: 13, is_active: true },
+                    { id: 214, name: '渠道合作', sort_order: 14, is_active: true }
+                ]
+            },
+            region: {
+                name: '行政区划',
+                hasParent: true,
+                hasCode: true,
+                items: [
+                    { id: 301, name: '北京市', code: 'BJ', sort_order: 1, is_active: true, children: [
+                        { id: 311, name: '东城区', code: 'BJ_DC', sort_order: 1, is_active: true },
+                        { id: 312, name: '西城区', code: 'BJ_XC', sort_order: 2, is_active: true },
+                        { id: 313, name: '朝阳区', code: 'BJ_CY', sort_order: 3, is_active: true },
+                        { id: 314, name: '海淀区', code: 'BJ_HD', sort_order: 4, is_active: true }
+                    ]},
+                    { id: 302, name: '上海市', code: 'SH', sort_order: 2, is_active: true, children: [
+                        { id: 321, name: '黄浦区', code: 'SH_HP', sort_order: 1, is_active: true },
+                        { id: 322, name: '徐汇区', code: 'SH_XH', sort_order: 2, is_active: true },
+                        { id: 323, name: '浦东新区', code: 'SH_PD', sort_order: 3, is_active: true }
+                    ]},
+                    { id: 303, name: '广东省', code: 'GD', sort_order: 3, is_active: true, children: [
+                        { id: 331, name: '广州市', code: 'GD_GZ', sort_order: 1, is_active: true },
+                        { id: 332, name: '深圳市', code: 'GD_SZ', sort_order: 2, is_active: true },
+                        { id: 333, name: '佛山市', code: 'GD_FS', sort_order: 3, is_active: true }
+                    ]},
+                    { id: 304, name: '江苏省', code: 'JS', sort_order: 4, is_active: true, children: [
+                        { id: 341, name: '南京市', code: 'JS_NJ', sort_order: 1, is_active: true },
+                        { id: 342, name: '苏州市', code: 'JS_SZ', sort_order: 2, is_active: true },
+                        { id: 343, name: '无锡市', code: 'JS_WX', sort_order: 3, is_active: true }
+                    ]},
+                    { id: 305, name: '浙江省', code: 'ZJ', sort_order: 5, is_active: true, children: [
+                        { id: 351, name: '杭州市', code: 'ZJ_HZ', sort_order: 1, is_active: true },
+                        { id: 352, name: '宁波市', code: 'ZJ_NB', sort_order: 2, is_active: true },
+                        { id: 353, name: '嘉兴市', code: 'ZJ_JX', sort_order: 3, is_active: true }
+                    ]},
+                    { id: 306, name: '四川省', code: 'SC', sort_order: 6, is_active: true, children: [
+                        { id: 361, name: '成都市', code: 'SC_CD', sort_order: 1, is_active: true },
+                        { id: 362, name: '绵阳市', code: 'SC_MY', sort_order: 2, is_active: true }
+                    ]},
+                    { id: 307, name: '湖北省', code: 'HB', sort_order: 7, is_active: true, children: [
+                        { id: 371, name: '武汉市', code: 'HB_WH', sort_order: 1, is_active: true },
+                        { id: 372, name: '宜昌市', code: 'HB_YC', sort_order: 2, is_active: true }
+                    ]}
+                ]
+            }
+        };
+
+        let currentTab = 'industry';
+        let currentItem = null;
+        let currentParent = null;
+
+        // ----- Render -----
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            render();
+        }
+
+        function render() {
+            const cfg = data[currentTab];
+            let html = `<div style="display:flex;justify-content:flex-end;margin-bottom:var(--spacing-md);">
+                <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ 新增${cfg.name}</button>
+            </div>`;
+
+            if (currentTab === 'tag') {
+                // Tag: flat chip display
+                html += '<div style="display:flex;flex-wrap:wrap;padding:var(--spacing-md);background:var(--bg-card);border-radius:var(--radius-lg);">';
+                cfg.items.forEach(item => {
+                    html += `<div class="tag-item ${item.is_active ? '' : 'disabled'}">
+                        <span>${item.name}</span>
+                        <span class="remove-tag" onclick="toggleStatus('tag', ${item.id})">${item.is_active ? '禁用' : '启用'}</span>
+                    </div>`;
+                });
+                html += '</div>';
+            } else if (cfg.hasParent) {
+                // Tree: industry or region
+                html += '<div style="background:var(--bg-card);border-radius:var(--radius-lg);padding:var(--spacing-md);">';
+                cfg.items.forEach(item => {
+                    const expandIcon = item.children && item.children.length ? '📁' : '📄';
+                    const childHtml = item.children && item.children.length
+                        ? `<div class="tree-children">${item.children.map(child => renderTreeItem(child, true)).join('')}</div>`
+                        : '';
+                    html += `<div class="tree-item ${item.is_active ? '' : 'disabled'}">
+                        <div style="display:flex;align-items:center;gap:var(--spacing-sm);">
+                            <span style="color:var(--text-muted);">${expandIcon}</span>
+                            <span>${item.name}</span>${item.code ? `<span style="color:var(--text-muted);font-size:0.75rem;">（${item.code}）</span>` : ''}
+                        </div>
+                        <div class="tree-actions">
+                            <button class="btn btn-sm btn-outline" onclick="openEditModal('${item.id}')">编辑</button>
+                            ${item.children && item.children.length ? `<button class="btn btn-sm btn-outline" onclick="openAddSubModal('${item.id}')">新增子项</button>` : ''}
+                            <button class="btn btn-sm btn-outline" onclick="toggleStatus('${item.id}')">${item.is_active ? '禁用' : '启用'}</button>
+                        </div>
+                    </div>${childHtml}`;
+                });
+                html += '</div>';
+            } else {
+                // Flat list: category
+                html += '<div style="background:var(--bg-card);border-radius:var(--radius-lg);padding:var(--spacing-md);">';
+                cfg.items.forEach(item => {
+                    html += `<div class="tree-item ${item.is_active ? '' : 'disabled'}">
+                        <div style="display:flex;align-items:center;gap:var(--spacing-sm);">
+                            <span style="color:var(--text-muted);">📄</span>
+                            <span>${item.name}</span>
+                        </div>
+                        <div class="tree-actions">
+                            <button class="btn btn-sm btn-outline" onclick="openEditModal('${item.id}')">编辑</button>
+                            <button class="btn btn-sm btn-outline" onclick="toggleStatus('${item.id}')">${item.is_active ? '禁用' : '启用'}</button>
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+            }
+            document.getElementById('tabContent').innerHTML = html;
+        }
+
+        function renderTreeItem(item, isChild) {
+            const cls = isChild ? 'tree-item' : 'tree-item';
+            return `<div class="${cls} ${item.is_active ? '' : 'disabled'}">
+                <div style="display:flex;align-items:center;gap:var(--spacing-sm);">
+                    <span style="color:var(--text-muted);">${isChild ? (item.name === item.parent?.children?.slice(-1)[0]?.name ? '└─' : '├─') : ''}</span>
+                    <span>${item.name}</span>${item.code ? `<span style="color:var(--text-muted);font-size:0.75rem;">（${item.code}）</span>` : ''}
+                </div>
+                <div class="tree-actions">
+                    <button class="btn btn-sm btn-outline" onclick="openEditModal('${item.id}')">编辑</button>
+                    <button class="btn btn-sm btn-outline" onclick="toggleStatus('${item.id}')">${item.is_active ? '禁用' : '启用'}</button>
+                </div>
+            </div>`;
+        }
+
+        // ----- Actions -----
+        function openEditModal(id) {
+            const cfg = data[currentTab];
+            let item = null, parent = null;
+            if (cfg.hasParent) {
+                item = cfg.items.find(i => i.id == id);
+                if (!item) {
+                    for (const p of cfg.items) {
+                        if (p.children) {
+                            const c = p.children.find(ch => ch.id == id);
+                            if (c) { parent = p; item = c; break; }
+                        }
+                    }
+                }
+            } else {
+                item = cfg.items.find(i => i.id == id);
+            }
+            currentItem = item;
+            currentParent = parent;
+            document.getElementById('editModalTitle').textContent = `编辑${cfg.name}`;
+            document.getElementById('editName').value = item.name;
+            document.getElementById('editCodeGroup').style.display = cfg.hasCode ? 'block' : 'none';
+            if (cfg.hasCode) document.getElementById('editCode').value = item.code || '';
+            document.getElementById('editSort').value = item.sort_order || 0;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function openAddModal() {
+            const cfg = data[currentTab];
+            currentItem = null;
+            currentParent = null;
+            document.getElementById('addModalTitle').textContent = `新增${cfg.name}`;
+            document.getElementById('addParentGroup').style.display = 'none';
+            document.getElementById('addName').value = '';
+            document.getElementById('addCode').value = '';
+            document.getElementById('addSort').value = '0';
+            document.getElementById('addCodeGroup').style.display = cfg.hasCode ? 'block' : 'none';
+            document.getElementById('addSortGroup').style.display = cfg.hasParent ? 'none' : 'block';
+            document.getElementById('addModal').classList.add('active');
+        }
+
+        function openAddSubModal(parentId) {
+            const cfg = data[currentTab];
+            const parent = cfg.items.find(i => i.id == parentId);
+            currentItem = null;
+            currentParent = parent;
+            document.getElementById('addModalTitle').textContent = `新增${cfg.name}子项`;
+            document.getElementById('addParentGroup').style.display = 'block';
+            document.getElementById('addParentName').value = parent.name;
+            document.getElementById('addName').value = '';
+            document.getElementById('addCode').value = '';
+            document.getElementById('addSort').value = '0';
+            document.getElementById('addCodeGroup').style.display = cfg.hasCode ? 'block' : 'none';
+            document.getElementById('addSortGroup').style.display = 'none';
+            document.getElementById('addModal').classList.add('active');
+        }
+
+        function confirmEdit() {
+            const name = document.getElementById('editName').value.trim();
+            if (!name) { showToast('请输入名称', ''); return; }
+            const cfg = data[currentTab];
+            if (cfg.hasCode) currentItem.code = document.getElementById('editCode').value.trim();
+            currentItem.name = name;
+            currentItem.sort_order = parseInt(document.getElementById('editSort').value) || 0;
+            closeModal('editModal');
+            render();
+            showToast('保存成功', 'success');
+        }
+
+        function confirmAdd() {
+            const name = document.getElementById('addName').value.trim();
+            if (!name) { showToast('请输入名称', ''); return; }
+            const cfg = data[currentTab];
+            const newId = Math.max(...cfg.items.map(i => i.id), ...(cfg.items.flatMap(i => i.children || []).map(c => c.id || 0))) + 1;
+            const newItem = {
+                id: newId,
+                name: name,
+                sort_order: parseInt(document.getElementById('addSort').value) || 0,
+                is_active: true
+            };
+            if (cfg.hasCode) newItem.code = document.getElementById('addCode').value.trim();
+            if (currentParent) {
+                if (!currentParent.children) currentParent.children = [];
+                currentParent.children.push(newItem);
+            } else {
+                cfg.items.push(newItem);
+            }
+            closeModal('addModal');
+            render();
+            showToast('新增成功', 'success');
+        }
+
+        function toggleStatus(id) {
+            const cfg = data[currentTab];
+            let item = null, parent = null;
+            if (typeof id === 'string' && id.match(/^\d+$/)) id = parseInt(id);
+            if (typeof id === 'number') {
+                for (const p of cfg.items) {
+                    if (p.id === id) { item = p; break; }
+                    if (p.children) {
+                        const c = p.children.find(ch => ch.id === id);
+                        if (c) { item = c; parent = p; break; }
+                    }
+                }
+            }
+            if (item) {
+                item.is_active = !item.is_active;
+                render();
+                showToast(item.is_active ? '已启用' : '已禁用', 'success');
+            }
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show toast-success';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); }));
+
+        // Init
+        render();
+    </script>
+</body>
+</html>

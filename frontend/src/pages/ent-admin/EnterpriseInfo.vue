@@ -14,7 +14,7 @@
 
       <el-empty v-if="!loading && !enterprise" description="暂无企业信息" />
 
-      <el-descriptions v-else :column="2" border>
+      <el-descriptions v-else-if="enterprise" :column="2" border>
         <el-descriptions-item label="企业名称" :span="2">
           {{ enterprise.name }}
         </el-descriptions-item>

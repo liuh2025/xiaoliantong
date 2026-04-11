@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校友圈 - 校链通</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <style>
+        .feeds-header {
+            background: var(--bg-card);
+            padding: var(--spacing-xl) 0;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .feeds-header-inner {
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .feeds-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .feeds-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+        }
+
+        .feeds-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .feed-card-full {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .feed-author-section {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .feed-author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .feed-author-info {
+            flex: 1;
+        }
+
+        .feed-author-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .feed-author-company {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .feed-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .feed-text {
+            font-size: 0.9375rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .feed-images-grid {
+            display: grid;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .feed-images-grid.cols-1 {
+            grid-template-columns: 1fr;
+        }
+
+        .feed-images-grid.cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .feed-images-grid.cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .feed-images-grid img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: opacity var(--transition-fast);
+        }
+
+        .feed-images-grid img:hover {
+            opacity: 0.9;
+        }
+
+        .feed-images-grid.cols-1 img {
+            aspect-ratio: 16/9;
+        }
+
+        .feed-actions {
+            display: flex;
+            gap: var(--spacing-xl);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .feed-action {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+
+        .feed-action:hover {
+            color: var(--primary);
+        }
+
+        .feed-action .icon {
+            font-size: 1.125rem;
+        }
+
+        .publish-box {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .publish-input {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .publish-input textarea {
+            flex: 1;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            font-size: 0.9375rem;
+            font-family: inherit;
+            resize: none;
+            min-height: 80px;
+            transition: border-color var(--transition-fast);
+        }
+
+        .publish-input textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .publish-input textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .publish-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--spacing-md);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .publish-tools {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .publish-tool {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+
+        .publish-tool:hover {
+            color: var(--primary);
+        }
+
+        .tag-reminder {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span>🏛️</span>
+                <span>校链通</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-item">首页</a>
+                <a href="opportunity.html" class="nav-item">商机广场</a>
+                <a href="enterprise.html" class="nav-item">企业名录</a>
+                <a href="feeds.html" class="nav-item active">校友圈</a>
+            </nav>
+            <div class="header-actions">
+                <div class="search-box" onclick="goToSearch()">
+                    <span class="icon">🔍</span>
+                    <input type="text" placeholder="搜索供需、企业、校友..." id="headerSearchInput">
+                </div>
+                <div class="notification-wrapper" style="position:relative;">
+                    <button class="icon-btn" id="notificationBtn" onclick="toggleNotificationDropdown()">🔔<span class="badge" id="unreadBadge">3</span></button>
+                    <div class="notification-dropdown" id="notificationDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:360px;max-width:400px;z-index:1000;margin-top:8px;">
+                        <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-weight:600;font-size:0.9375rem;">通知消息</span>
+                            <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.8125rem;cursor:pointer;">全部已读</button>
+                        </div>
+                        <div class="notification-list" style="max-height:320px;overflow-y:auto;">
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(1)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业已通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您的企业"威蓝智能科技"已通过审核，现在可以发布商...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">10分钟前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:#f8f9fa;" onclick="goToNotify(2)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您的商机收到了新的查看请求</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">比亚迪汽车工业查看了您发布的"采购10万套智能座舱显示屏"</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">2小时前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(3)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业未通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您申请的企业"上海威蓝智能科技"因"证明材料不清晰"未通过审...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">1天前</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding:10px 16px;text-align:center;border-top:1px solid #eee;">
+                            <a href="notification.html" style="color:var(--primary);font-size:0.8125rem;text-decoration:none;">查看全部通知</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-menu" onclick="toggleUserMenu()">
+                    <div class="avatar">登</div>
+                    <div class="user-dropdown">▼</div>
+                    <div class="user-menu-dropdown" id="userMenuDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:180px;padding:8px 0;z-index:1000;margin-top:8px;">
+                        <a href="enterprise-admin/enterprise-info.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:0.875rem;">企业工作台</a>
+                        <a href="platform-admin/dashboard.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:0.875rem;">管理后台</a>
+                        <div style="border-top:1px solid #eee;margin:8px 0;"></div>
+                        <a href="login.html" style="display:block;padding:10px 16px;color:#999;text-decoration:none;font-size:0.875rem;">退出登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Feeds Header -->
+    <div class="feeds-header">
+        <div class="feeds-header-inner">
+            <div>
+                <h1 class="feeds-title">校友圈</h1>
+                <p class="feeds-subtitle">校友动态、资讯、合作机会</p>
+            </div>
+            <button class="btn btn-primary" onclick="showPublishModal()">
+                <span>+</span> 发布动态
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="feeds-content">
+
+            <!-- Feed List -->
+            <div class="feed-list">
+                <!-- Feed 1 -->
+                <div class="feed-card-full">
+                    <div class="feed-author-section">
+                        <div class="feed-author-avatar" style="background:var(--primary);">李</div>
+                        <div class="feed-author-info">
+                            <div class="feed-author-name">
+                                李威
+                                <span class="badge badge-success" style="font-size:0.6875rem;">CEO</span>
+                            </div>
+                            <div class="feed-author-company">上海威蓝智能科技有限公司</div>
+                        </div>
+                        <div class="feed-time">1小时前</div>
+                    </div>
+                    <div class="feed-text">
+                        我们公司最新研发的L4级自动驾驶域控制器已通过全部车规级认证，即日起接受定制化需求。有兴趣的校友请私信联系。
+                    </div>
+                    <div class="feed-images-grid cols-2">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' fill='%23e0e0e0'%3E%3Crect width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='sans-serif' font-size='12'%3E产品图片1%3C/text%3E%3C/svg%3E" alt="产品图片">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' fill='%23e0e0e0'%3E%3Crect width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='sans-serif' font-size='12'%3E产品图片2%3C/text%3E%3C/svg%3E" alt="产品图片">
+                    </div>
+                </div>
+
+                <!-- Feed 2 -->
+                <div class="feed-card-full">
+                    <div class="feed-author-section">
+                        <div class="feed-author-avatar" style="background:var(--success);">王</div>
+                        <div class="feed-author-info">
+                            <div class="feed-author-name">
+                                王教授
+                                <span class="badge badge-info" style="font-size:0.6875rem;">教授</span>
+                            </div>
+                            <div class="feed-author-company">燕山大学汽车学院</div>
+                        </div>
+                        <div class="feed-time">3小时前</div>
+                    </div>
+                    <div class="feed-text">
+                        【活动通知】2026年春季新能源汽车校友论坛将于5月在深圳举办，诚邀各位校友参加。报名请私信或发送邮件至 alumni@ysu.edu.cn。论坛将围绕"智能电动化趋势下的供应链协同创新"主题展开，欢迎提交论文摘要。
+                    </div>
+                </div>
+
+                <!-- Feed 3 -->
+                <div class="feed-card-full">
+                    <div class="feed-author-section">
+                        <div class="feed-author-avatar" style="background:#FF9800;">张</div>
+                        <div class="feed-author-info">
+                            <div class="feed-author-name">
+                                张总
+                                <span class="badge badge-success" style="font-size:0.6875rem;">采购总监</span>
+                            </div>
+                            <div class="feed-author-company">比亚迪汽车工业有限公司</div>
+                        </div>
+                        <div class="feed-time">5小时前</div>
+                    </div>
+                    <div class="feed-text">
+                        公司正在寻找优质的车规级毫米波雷达供应商，要求：
+                        <br>1. 产品需通过AEC-Q100认证
+                        <br>2. 有量产经验优先
+                        <br>3. 具备ISO 26262功能安全认证
+                        <br>有兴趣的校友请私信联系！
+                    </div>
+                </div>
+
+                <!-- Feed 4 -->
+                <div class="feed-card-full">
+                    <div class="feed-author-section">
+                        <div class="feed-author-avatar" style="background:#9C27B0;">赵</div>
+                        <div class="feed-author-info">
+                            <div class="feed-author-name">
+                                赵博士
+                                <span class="badge badge-warning" style="font-size:0.6875rem;">技术总监</span>
+                            </div>
+                            <div class="feed-author-company">地平线机器人技术</div>
+                        </div>
+                        <div class="feed-time">昨天</div>
+                    </div>
+                    <div class="feed-text">
+                        我们最新一代征程6系列芯片正式发布！支持L2+到L4级自动驾驶，搭载自研贝叶斯架构，BPU算力密度再创新高。欢迎汽车产业链校友交流合作！
+                    </div>
+                    <div class="feed-images-grid cols-1">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='225' fill='%23e0e0e0'%3E%3Crect width='400' height='225'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='sans-serif' font-size='12'%3E芯片产品图%3C/text%3E%3C/svg%3E" alt="芯片产品">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load More -->
+            <div style="text-align:center;padding:var(--spacing-xl);">
+                <button class="btn btn-outline" onclick="loadMoreFeeds()">加载更多</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Publish Modal -->
+    <div class="modal-overlay" id="publishModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">发布动态</h3>
+                <button class="modal-close" onclick="closeModal('publishModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <textarea class="form-input" rows="6" placeholder="分享您的最新动态、新产品、合作机会..." style="min-height:150px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">上传图片（最多9张）</label>
+                    <div style="border:2px dashed var(--border);border-radius:var(--radius-md);padding:var(--spacing-xl);text-align:center;color:var(--text-muted);cursor:pointer;">
+                        <div style="font-size:2rem;margin-bottom:var(--spacing-sm);">📷</div>
+                        <p>点击或拖拽上传图片</p>
+                        <p style="font-size:0.75rem;margin-top:var(--spacing-xs);">支持 JPG、PNG，建议尺寸 750x750</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('publishModal')">取消</button>
+                <button class="btn btn-primary" onclick="handlePublish()">发布</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentPage = 1;
+
+        function goToSearch() {
+            const keyword = document.getElementById('headerSearchInput').value || '自动驾驶';
+            window.location.href = 'search.html?keyword=' + encodeURIComponent(keyword);
+        }
+
+        function showPublishModal() {
+            document.getElementById('publishModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function handlePublish() {
+            const content = document.querySelector('#publishModal textarea').value;
+            if (!content.trim()) {
+                showToast('请输入动态内容', 'error');
+                return;
+            }
+            // API: POST /feed/feed { content, images[] }
+            console.log('发布动态:', content);
+            closeModal('publishModal');
+            showToast('发布成功', 'success');
+        }
+
+        // 加载更多
+        function loadMoreFeeds() {
+            currentPage++;
+            // API: GET /feed/feed?page={currentPage}&page_size=20
+            console.log('加载更多, page:', currentPage);
+            showToast('加载成功', 'success');
+        }
+
+        function showToast(message, type = 'default') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'success' ? ' toast-success' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenuDropdown');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function markAllRead() {
+            document.getElementById('unreadBadge').style.display = 'none';
+            showToast('已全部已读', 'success');
+        }
+
+        function goToNotify(id) {
+            document.getElementById('notificationDropdown').style.display = 'none';
+            window.location.href = 'notification.html';
+        }
+
+        document.addEventListener('click', function(e) {
+            const userMenu = document.getElementById('userMenuDropdown');
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if (!e.target.closest('.user-menu')) {
+                userMenu.style.display = 'none';
+            }
+            if (!e.target.closest('.notification-wrapper')) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>

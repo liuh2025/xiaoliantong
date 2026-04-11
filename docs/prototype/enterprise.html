@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业名录 - 校链通</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <style>
+        /* 企业名录头部 */
+        .enterprise-header {
+            background: var(--bg-card);
+            padding: var(--spacing-xl) 0;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .enterprise-header-inner {
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .enterprise-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .enterprise-header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .enterprise-header-left p {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+        }
+
+        .enterprise-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        /* 内容布局 */
+        .content-layout {
+            display: flex;
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+            gap: var(--spacing-lg);
+        }
+
+        /* 筛选侧边栏 */
+        .filter-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+        }
+
+        .filter-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .filter-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-group-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+        }
+
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background var(--transition-fast);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .filter-option:hover {
+            background: var(--bg-main);
+        }
+
+        .filter-option.active {
+            background: rgba(30, 136, 229, 0.1);
+            color: var(--primary);
+        }
+
+        .filter-option input {
+            display: none;
+        }
+
+        .filter-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .filter-option.active .filter-checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* 级联选择器 */
+        .cascader-wrapper {
+            position: relative;
+        }
+
+        .cascader-tags {
+            min-height: 36px;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+            background: white;
+            transition: border-color var(--transition-fast);
+        }
+
+        .cascader-tags:hover {
+            border-color: var(--primary);
+        }
+
+        .cascader-tags.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.1);
+        }
+
+        .cascader-placeholder {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .cascader-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+        }
+
+        .cascader-tag .remove {
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .cascader-tag .remove:hover {
+            opacity: 1;
+        }
+
+        .cascader-tag-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px 4px 2px 8px;
+            background: rgba(30, 136, 229, 0.1);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--primary);
+        }
+
+        .cascader-tag-group .remove {
+            cursor: pointer;
+            padding: 0 2px;
+            opacity: 0.7;
+        }
+
+        .cascader-tag-group .remove:hover {
+            opacity: 1;
+        }
+
+        .cascader-panel {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 100;
+            margin-top: 4px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .cascader-panel.active {
+            display: block;
+        }
+
+        .cascader-menu-wrapper {
+            display: flex;
+        }
+
+        .cascader-menu {
+            min-width: 140px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 8px 0;
+            border-right: 1px solid var(--border);
+        }
+
+        .cascader-menu:last-child {
+            border-right: none;
+        }
+
+        .cascader-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            transition: background var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .cascader-item:hover {
+            background: var(--bg-main);
+        }
+
+        .cascader-item.active {
+            background: rgba(30, 136, 229, 0.08);
+            color: var(--primary);
+        }
+
+        .cascader-item .checkbox {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .cascader-item.active .checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .cascader-item .arrow {
+            margin-left: auto;
+            font-size: 0.625rem;
+            color: var(--text-muted);
+        }
+
+        .cascader-empty-tip {
+            padding: 24px 16px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* 已选条件摘要 */
+        .filter-summary {
+            background: var(--bg-main);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .filter-summary-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .filter-summary-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .filter-summary-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .filter-summary-tag .remove {
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .filter-summary-tag .remove:hover {
+            color: var(--danger);
+        }
+
+        /* 热门标签 */
+        .hot-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: var(--spacing-sm);
+        }
+
+        .hot-tag {
+            padding: 4px 10px;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+        }
+
+        .hot-tag:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .hot-tag.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* 企业列表 */
+        .enterprise-main {
+            flex: 1;
+        }
+
+        .result-count {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .result-count strong {
+            color: var(--text-primary);
+        }
+
+        .enterprise-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-lg);
+        }
+
+        .enterprise-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .enterprise-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .enterprise-card-top {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .enterprise-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .enterprise-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .enterprise-name {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .verified-badge {
+            color: var(--success);
+            font-size: 0.875rem;
+        }
+
+        .enterprise-field {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .enterprise-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .enterprise-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .enterprise-meta {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .enterprise-action {
+            font-size: 0.8125rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-xl);
+        }
+
+        .pagination-item {
+            min-width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .pagination-item:hover:not(.disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .pagination-item.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .pagination-item.disabled {
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span>🏛️</span>
+                <span>校链通</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-item">首页</a>
+                <a href="opportunity.html" class="nav-item">商机广场</a>
+                <a href="enterprise.html" class="nav-item active">企业名录</a>
+                <a href="feeds.html" class="nav-item">校友圈</a>
+            </nav>
+            <div class="header-actions">
+                <div class="search-box" onclick="goToSearch()">
+                    <span class="icon">🔍</span>
+                    <input type="text" placeholder="搜索供需、企业、校友..." id="headerSearchInput">
+                </div>
+                <div class="notification-wrapper" style="position:relative;">
+                    <button class="icon-btn" id="notificationBtn" onclick="toggleNotificationDropdown()">🔔<span class="badge" id="unreadBadge">3</span></button>
+                    <div class="notification-dropdown" id="notificationDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:360px;max-width:400px;z-index:1000;margin-top:8px;">
+                        <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-weight:600;font-size:0.9375rem;">通知消息</span>
+                            <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.8125rem;cursor:pointer;">全部已读</button>
+                        </div>
+                        <div class="notification-list" style="max-height:320px;overflow-y:auto;">
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(1)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业已通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您的企业"威蓝智能科技"已通过审核，现在可以发布商...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">10分钟前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:#f8f9fa;" onclick="goToNotify(2)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您的商机收到了新的查看请求</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">比亚迪汽车工业查看了您发布的"采购10万套智能座舱显示屏"</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">2小时前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(3)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业未通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您申请的企业"上海威蓝智能科技"因"证明材料不清晰"未通过审...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">1天前</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding:10px 16px;text-align:center;border-top:1px solid #eee;">
+                            <a href="notification.html" style="color:var(--primary);font-size:0.8125rem;text-decoration:none;">查看全部通知</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-menu" onclick="toggleUserMenu()">
+                    <div class="avatar">登</div>
+                    <div class="user-dropdown">▼</div>
+                    <div class="user-menu-dropdown" id="userMenuDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:180px;padding:8px 0;z-index:1000;margin-top:8px;">
+                        <a href="enterprise-admin/enterprise-info.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:0.875rem;">企业工作台</a>
+                        <a href="platform-admin/dashboard.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:0.875rem;">管理后台</a>
+                        <div style="border-top:1px solid #eee;margin:8px 0;"></div>
+                        <a href="login.html" style="display:block;padding:10px 16px;color:#999;text-decoration:none;font-size:0.875rem;">退出登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Enterprise Header -->
+    <div class="enterprise-header">
+        <div class="enterprise-header-inner">
+            <div class="enterprise-header-top">
+                <div class="enterprise-header-left">
+                    <h1>企业名录</h1>
+                    <p>结构化校友企业名片，快速定位合作伙伴</p>
+                </div>
+                <div class="enterprise-actions">
+                    <button class="btn btn-outline" onclick="showClaimModal()" style="border-color:var(--primary);color:var(--primary);">
+                        👤 认领已有企业
+                    </button>
+                    <button class="btn btn-primary" onclick="showCreateModal()">
+                        ➕ 创建新企业
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-layout">
+        <!-- Filter Sidebar -->
+        <aside class="filter-sidebar">
+            <!-- 行业级联选择器（一级+二级联动） -->
+            <div class="filter-group">
+                <div class="filter-group-title">行业分类</div>
+                <div class="cascader-wrapper" id="industryCascader">
+                    <div class="cascader-tags" id="industryTags" onclick="toggleCascader('industryCascaderPanel')">
+                        <span class="cascader-placeholder">选择行业（支持多选）</span>
+                    </div>
+                    <div class="cascader-panel" id="industryCascaderPanel">
+                        <div class="cascader-menu-wrapper">
+                            <div class="cascader-menu" id="industry1Menu"></div>
+                            <div class="cascader-menu" id="industry2Menu">
+                                <div class="cascader-empty-tip">请先选择一级行业</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 业务品类（多选） -->
+            <div class="filter-group">
+                <div class="filter-group-title">业务品类</div>
+                <div class="filter-options" id="categoryOptions">
+                    <label class="filter-option active">
+                        <span class="filter-checkbox">✓</span>
+                        <input type="checkbox" value="all" checked style="display:none;">
+                        全部品类
+                    </label>
+                    <label class="filter-option" onclick="toggleMultiFilter(this, 'category')">
+                        <span class="filter-checkbox"></span>
+                        <input type="checkbox" value="cat-1" style="display:none;">
+                        自动驾驶算法
+                    </label>
+                    <label class="filter-option" onclick="toggleMultiFilter(this, 'category')">
+                        <span class="filter-checkbox"></span>
+                        <input type="checkbox" value="cat-2" style="display:none;">
+                        车规级芯片
+                    </label>
+                    <label class="filter-option" onclick="toggleMultiFilter(this, 'category')">
+                        <span class="filter-checkbox"></span>
+                        <input type="checkbox" value="cat-3" style="display:none;">
+                        动力电池
+                    </label>
+                </div>
+            </div>
+
+            <!-- 所在地区级联选择器（省份+城市联动） -->
+            <div class="filter-group">
+                <div class="filter-group-title">所在地区</div>
+                <div class="cascader-wrapper" id="regionCascader">
+                    <div class="cascader-tags" id="regionTags" onclick="toggleCascader('regionCascaderPanel')">
+                        <span class="cascader-placeholder">选择地区（支持多选）</span>
+                    </div>
+                    <div class="cascader-panel" id="regionCascaderPanel">
+                        <div class="cascader-menu-wrapper">
+                            <div class="cascader-menu" id="provinceMenu"></div>
+                            <div class="cascader-menu" id="cityMenu">
+                                <div class="cascader-empty-tip">请先选择省份</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 热门标签（多选） -->
+            <div class="filter-group">
+                <div class="filter-group-title">热门标签</div>
+                <div class="hot-tags" id="hotTagsContainer">
+                    <!-- 随机展示5个标签 -->
+                </div>
+            </div>
+
+            <!-- 已选条件摘要 -->
+            <div class="filter-summary" id="filterSummary" style="display:none;">
+                <div class="filter-summary-title">已选条件</div>
+                <div class="filter-summary-tags" id="filterSummaryTags"></div>
+            </div>
+
+            <button class="btn btn-outline" style="width:100%;" onclick="resetAllFilters()">重置筛选</button>
+        </aside>
+
+        <!-- Enterprise List -->
+        <main class="enterprise-main">
+            <div class="result-count">
+                共找到 <strong>256</strong> 家企业
+            </div>
+
+            <div class="enterprise-grid">
+                <!-- Enterprise Card 1 -->
+                <div class="enterprise-card" onclick="showEnterpriseDrawer(1)">
+                    <div class="enterprise-card-top">
+                        <div class="enterprise-logo">威</div>
+                        <div class="enterprise-info">
+                            <div class="enterprise-name">
+                                上海威蓝智能科技有限公司
+                                <span class="verified-badge">✓</span>
+                            </div>
+                            <div class="enterprise-field">自动驾驶域控制器、ADAS算法开发</div>
+                            <div class="enterprise-tags">
+                                <span class="tag tag-primary">自动驾驶</span>
+                                <span class="tag tag-primary">专精特新</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="enterprise-card-footer">
+                        <span class="enterprise-meta">校友企业</span>
+                        <span class="enterprise-action">查看详情 ></span>
+                    </div>
+                </div>
+
+                <!-- Enterprise Card 2 -->
+                <div class="enterprise-card" onclick="showEnterpriseDrawer(2)">
+                    <div class="enterprise-card-top">
+                        <div class="enterprise-logo" style="background:linear-gradient(135deg,#4CAF50,#2E7D32);">宁</div>
+                        <div class="enterprise-info">
+                            <div class="enterprise-name">
+                                宁德时代新能源科技股份有限公司
+                                <span class="verified-badge">✓</span>
+                            </div>
+                            <div class="enterprise-field">新能源汽车动力电池研发制造</div>
+                            <div class="enterprise-tags">
+                                <span class="tag tag-primary">动力电池</span>
+                                <span class="tag tag-primary">新能源</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="enterprise-card-footer">
+                        <span class="enterprise-meta">校友企业</span>
+                        <span class="enterprise-action">查看详情 ></span>
+                    </div>
+                </div>
+
+                <!-- Enterprise Card 3 -->
+                <div class="enterprise-card" onclick="showEnterpriseDrawer(3)">
+                    <div class="enterprise-card-top">
+                        <div class="enterprise-logo" style="background:linear-gradient(135deg,#FF9800,#E65100);">比</div>
+                        <div class="enterprise-info">
+                            <div class="enterprise-name">
+                                比亚迪汽车工业有限公司
+                                <span class="verified-badge">✓</span>
+                            </div>
+                            <div class="enterprise-field">新能源乘用车、商用车整车制造</div>
+                            <div class="enterprise-tags">
+                                <span class="tag tag-primary">整车制造</span>
+                                <span class="tag tag-primary">三电系统</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="enterprise-card-footer">
+                        <span class="enterprise-meta">校友企业</span>
+                        <span class="enterprise-action">查看详情 ></span>
+                    </div>
+                </div>
+
+                <!-- Enterprise Card 4 -->
+                <div class="enterprise-card" onclick="showEnterpriseDrawer(4)">
+                    <div class="enterprise-card-top">
+                        <div class="enterprise-logo" style="background:linear-gradient(135deg,#9C27B0,#6A1B9A);">地</div>
+                        <div class="enterprise-info">
+                            <div class="enterprise-name">
+                                地平线机器人技术研发有限公司
+                                <span class="verified-badge">✓</span>
+                            </div>
+                            <div class="enterprise-field">自动驾驶芯片、智能驾驶解决方案</div>
+                            <div class="enterprise-tags">
+                                <span class="tag tag-primary">车规级芯片</span>
+                                <span class="tag tag-primary">AI算法</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="enterprise-card-footer">
+                        <span class="enterprise-meta">校友企业</span>
+                        <span class="enterprise-action">查看详情 ></span>
+                    </div>
+                </div>
+
+                <!-- Enterprise Card 5 -->
+                <div class="enterprise-card" onclick="showEnterpriseDrawer(5)">
+                    <div class="enterprise-card-top">
+                        <div class="enterprise-logo" style="background:linear-gradient(135deg,#00BCD4,#00838F);">拓</div>
+                        <div class="enterprise-info">
+                            <div class="enterprise-name">
+                                拓普集团股份有限公司
+                                <span class="verified-badge">✓</span>
+                            </div>
+                            <div class="enterprise-field">汽车底盘系统、内外饰系统研发</div>
+                            <div class="enterprise-tags">
+                                <span class="tag tag-primary">底盘系统</span>
+                                <span class="tag tag-primary">轻量化</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="enterprise-card-footer">
+                        <span class="enterprise-meta">校友企业</span>
+                        <span class="enterprise-action">查看详情 ></span>
+                    </div>
+                </div>
+
+                <!-- Enterprise Card 6 -->
+                <div class="enterprise-card" onclick="showEnterpriseDrawer(6)">
+                    <div class="enterprise-card-top">
+                        <div class="enterprise-logo" style="background:linear-gradient(135deg,#3F51B5,#1A237E);">德</div>
+                        <div class="enterprise-info">
+                            <div class="enterprise-name">
+                                德赛西威汽车电子股份有限公司
+                                <span class="verified-badge">✓</span>
+                            </div>
+                            <div class="enterprise-field">智能座舱域控制器、自动驾驶</div>
+                            <div class="enterprise-tags">
+                                <span class="tag tag-primary">智能座舱</span>
+                                <span class="tag tag-primary">汽车电子</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="enterprise-card-footer">
+                        <span class="enterprise-meta">校友企业</span>
+                        <span class="enterprise-action">查看详情 ></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <div class="pagination-item disabled"><</div>
+                <div class="pagination-item active">1</div>
+                <div class="pagination-item">2</div>
+                <div class="pagination-item">3</div>
+                <div class="pagination-item">...</div>
+                <div class="pagination-item">85</div>
+                <div class="pagination-item">></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Claim Modal (认领企业) -->
+    <div class="modal-overlay" id="claimModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">认领已有企业</h3>
+                <button class="modal-close" onclick="closeModal('claimModal')">✕</button>
+            </div>
+            <div class="modal-body" id="claimSelectBody">
+                <p style="color:var(--text-muted);margin-bottom:var(--spacing-lg);">请选择您要认领的企业（仅显示未认领的企业）</p>
+                <div style="max-height:400px;overflow-y:auto;">
+                    <div style="display:flex;flex-direction:column;gap:var(--spacing-sm);">
+                        <div class="claim-enterprise-item" onclick="selectClaimEnterprise('上海威蓝智能科技有限公司', '91310000XXXXXXX', '智能网联 > 自动驾驶')" style="padding:var(--spacing-md);border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition-fast);">
+                            <div style="display:flex;align-items:center;gap:var(--spacing-sm);">
+                                <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;">威</div>
+                                <div>
+                                    <div style="font-weight:600;">上海威蓝智能科技有限公司</div>
+                                    <div style="font-size:0.75rem;color:var(--text-muted);">智能网联 > 自动驾驶</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="claim-enterprise-item" onclick="selectClaimEnterprise('北京智行科技有限公司', '91110000XXXXXXX', '智能网联 > 智能座舱')" style="padding:var(--spacing-md);border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition-fast);">
+                            <div style="display:flex;align-items:center;gap:var(--spacing-sm);">
+                                <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#4CAF50,#2E7D32);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;">智</div>
+                                <div>
+                                    <div style="font-weight:600;">北京智行科技有限公司</div>
+                                    <div style="font-size:0.75rem;color:var(--text-muted);">智能网联 > 智能座舱</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body" id="claimFormBody" style="display:none;">
+                <div style="background:var(--bg-main);padding:var(--spacing-md);border-radius:var(--radius-md);margin-bottom:var(--spacing-lg);border:1px solid var(--primary);">
+                    <div style="font-size:0.75rem;color:var(--primary);margin-bottom:var(--spacing-sm);">已选择（不可修改）</div>
+                    <div style="display:grid;grid-template-columns:100px 1fr;gap:var(--spacing-sm);font-size:0.875rem;">
+                        <span class="text-muted">企业全称</span>
+                        <span id="claimEntName">-</span>
+                        <span class="text-muted">信用代码</span>
+                        <span id="claimEntCode">-</span>
+                        <span class="text-muted">行业领域</span>
+                        <span id="claimEntIndustry">-</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">法人姓名</label>
+                    <input type="text" class="form-input" placeholder="请输入企业法人姓名" id="claimLegalRep">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">营业执照</label>
+                    <div style="border:2px dashed var(--border);border-radius:var(--radius-md);padding:var(--spacing-xxl);text-align:center;color:var(--text-muted);cursor:pointer;">
+                        <div style="font-size:2rem;margin-bottom:var(--spacing-sm);">📁</div>
+                        <p>点击或拖拽上传文件</p>
+                        <p style="font-size:0.75rem;margin-top:var(--spacing-xs);">支持 JPG、PNG、PDF，大小不超过 5MB</p>
+                    </div>
+                    <p class="form-hint" style="margin-top:var(--spacing-sm);">请上传加盖公章的营业执照扫描件</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">您的职务</label>
+                    <input type="text" class="form-input" placeholder="请输入您在公司的职务" id="claimPosition">
+                </div>
+            </div>
+            <div class="modal-footer" id="claimSelectFooter">
+                <button class="btn btn-outline" onclick="closeModal('claimModal')">取消</button>
+            </div>
+            <div class="modal-footer" id="claimFormFooter" style="display:none;">
+                <button class="btn btn-outline" onclick="backToClaimSelect()">返回选择</button>
+                <button class="btn btn-outline" onclick="closeModal('claimModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleClaim()">提交申请</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Modal (创建企业) -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">创建企业</h3>
+                <button class="modal-close" onclick="closeModal('createModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">企业全称</label>
+                        <input type="text" class="form-input" placeholder="请输入企业全称">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">统一社会信用代码</label>
+                        <input type="text" class="form-input" placeholder="请输入18位信用代码">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">所属行业</label>
+                        <div style="display:flex;gap:var(--spacing-sm);">
+                            <select class="form-select" style="flex:1;" onchange="onCreateIndustry1Change()">
+                                <option value="">选择行业</option>
+                            </select>
+                            <select class="form-select" style="flex:1;">
+                                <option value="">选择子行业</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">主营业务品类</label>
+                        <select class="form-select">
+                            <option value="">请选择品类</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">所在地区</label>
+                        <div style="display:flex;gap:var(--spacing-sm);">
+                            <select class="form-select" style="flex:1;" onchange="onCreateProvinceChange()">
+                                <option value="">省份</option>
+                            </select>
+                            <select class="form-select" style="flex:1;">
+                                <option value="">城市</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">业务标签</label>
+                        <input type="text" class="form-input" id="tagInputCreate" placeholder="输入标签按回车，可添加多个" onkeydown="if(event.key==='Enter'){addTag(this);event.preventDefault();}">
+                        <div id="tagSuggestionsCreate" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+                        <div id="tagListCreate" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">企业Logo</label>
+                    <div style="border:2px dashed var(--border);border-radius:var(--radius-md);padding:var(--spacing-md);text-align:center;color:var(--text-muted);cursor:pointer;">
+                        <div style="font-size:1.25rem;margin-bottom:var(--spacing-xs);">🖼️</div>
+                        <p style="font-size:0.625rem;">点击上传</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">企业简介</label>
+                    <textarea class="form-input" rows="4" placeholder="请输入企业简介，不少于50字"></textarea>
+                </div>
+
+                <div style="border-top:1px solid var(--border-light);padding-top:var(--spacing-lg);margin-top:var(--spacing-lg);">
+                    <h4 style="margin-bottom:var(--spacing-md);">申请人信息</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">法人姓名</label>
+                            <input type="text" class="form-input" placeholder="请输入企业法人姓名">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">营业执照</label>
+                            <div style="border:2px dashed var(--border);border-radius:var(--radius-md);padding:var(--spacing-xxl);text-align:center;color:var(--text-muted);cursor:pointer;">
+                                <div style="font-size:2rem;margin-bottom:var(--spacing-sm);">📁</div>
+                                <p>点击或拖拽上传文件</p>
+                                <p style="font-size:0.75rem;margin-top:var(--spacing-xs);">支持 JPG、PNG、PDF，大小不超过 5MB</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row" style="margin-top:var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label required">您的职务</label>
+                            <input type="text" class="form-input" placeholder="请输入您在公司的职务">
+                        </div>
+                        <div class="form-group">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('createModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleCreate()">提交创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enterprise Drawer -->
+    <div class="drawer-overlay" id="enterpriseDrawer">
+        <div class="drawer">
+            <div class="drawer-header">
+                <h3 class="drawer-title">企业详情</h3>
+                <button class="modal-close" onclick="closeDrawer('enterpriseDrawer')">✕</button>
+            </div>
+            <div class="drawer-body">
+                <div style="text-align:center;margin-bottom:var(--spacing-xl);">
+                    <div style="width:80px;height:80px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));margin:0 auto var(--spacing-md);display:flex;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:700;">威</div>
+                    <h2 style="margin-bottom:var(--spacing-xs);">上海威蓝智能科技有限公司 <span class="badge badge-success">已认证 ✓</span></h2>
+                    <p style="color:var(--text-muted);">自动驾驶域控制器、ADAS算法开发</p>
+                </div>
+
+                <div style="background:var(--bg-main);padding:var(--spacing-lg);border-radius:var(--radius-lg);margin-bottom:var(--spacing-lg);">
+                    <h4 style="margin-bottom:var(--spacing-md);">基础信息</h4>
+                    <div style="display:grid;gap:var(--spacing-sm);font-size:0.875rem;">
+                        <div style="display:flex;justify-content:space-between;"><span class="text-muted">信用代码：</span><span>91310000XXXXXXX</span></div>
+                        <div style="display:flex;justify-content:space-between;"><span class="text-muted">所在地区：</span><span>上海市嘉定区</span></div>
+                        <div style="display:flex;justify-content:space-between;"><span class="text-muted">行业领域：</span><span>智能网联 > 自动驾驶</span></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:var(--spacing-lg);">
+                    <h4 style="margin-bottom:var(--spacing-md);">企业简介</h4>
+                    <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.7;">
+                        上海威蓝智能科技有限公司成立于2019年，是一家专注于自动驾驶域控制器和ADAS算法开发的科技公司。公司核心团队来自国内外知名车企和科技公司，拥有丰富的车规级产品量产经验。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 style="margin-bottom:var(--spacing-md);">该企业发布的商机 (3)</h4>
+                    <div style="display:flex;flex-direction:column;gap:var(--spacing-sm);">
+                        <div style="padding:var(--spacing-md);background:var(--bg-card);border-radius:var(--radius-md);border:1px solid var(--border);cursor:pointer;" onclick="showContactModal()">
+                            <span class="tag tag-buy" style="font-size:0.6875rem;margin-bottom:4px;display:inline-block;">我要买</span>
+                            <p style="font-size:0.875rem;font-weight:500;">寻车规级毫米波雷达供应商</p>
+                            <span style="font-size:0.75rem;color:var(--text-muted);">2天前发布</span>
+                        </div>
+                        <div style="padding:var(--spacing-md);background:var(--bg-card);border-radius:var(--radius-md);border:1px solid var(--border);cursor:pointer;" onclick="showContactModal()">
+                            <span class="tag tag-supply" style="font-size:0.6875rem;margin-bottom:4px;display:inline-block;">我能供</span>
+                            <p style="font-size:0.875rem;font-weight:500;">提供L4级自动驾驶算法定制服务</p>
+                            <span style="font-size:0.75rem;color:var(--text-muted);">1周前发布</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">登录</h3>
+                <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">手机号</label>
+                    <input type="tel" class="form-input" placeholder="请输入手机号" maxlength="11">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">验证码</label>
+                    <div style="position:relative;">
+                        <input type="text" class="form-input" placeholder="请输入验证码" maxlength="6">
+                        <button type="button" onclick="sendSms(this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:6px 12px;font-size:0.8125rem;color:var(--primary);background:transparent;border:1px solid var(--primary);border-radius:4px;cursor:pointer;">获取验证码</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%;padding:12px;" onclick="handleLogin()">登 录</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">获取联系方式</h3>
+                <button class="modal-close" onclick="closeModal('contactModal')">✕</button>
+            </div>
+            <div class="modal-body" style="text-align:center;padding:var(--spacing-xxl);">
+                <div style="width:64px;height:64px;border-radius:50%;background:rgba(30,136,229,0.1);margin:0 auto var(--spacing-lg);display:flex;align-items:center;justify-content:center;font-size:2rem;">📞</div>
+                <p style="font-size:1rem;margin-bottom:var(--spacing-sm);">您即将获取该企业发布人的真实联系方式。</p>
+                <p style="font-size:0.875rem;color:var(--text-muted);">确认获取吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('contactModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleGetContact()">确认获取</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== 筛选状态 =====
+        const filterState = {
+            industry1: new Set(),
+            industry2: new Set(),
+            category: new Set(),
+            province: new Set(),
+            city: new Set(),
+            hotTags: new Set()
+        };
+
+        // ===== 行业级联数据 =====
+        const industryData = [
+            { id: 'ind-1', name: '智能网联', children: [
+                { id: 'ind-1-1', name: '自动驾驶' },
+                { id: 'ind-1-2', name: 'ADAS域控制器' },
+                { id: 'ind-1-3', name: '车规级芯片' }
+            ]},
+            { id: 'ind-2', name: '新能源汽车', children: [
+                { id: 'ind-2-1', name: '动力电池' },
+                { id: 'ind-2-2', name: '电机电控' },
+                { id: 'ind-2-3', name: '充电桩' }
+            ]},
+            { id: 'ind-3', name: '汽车零部件', children: [
+                { id: 'ind-3-1', name: '车联网' },
+                { id: 'ind-3-2', name: '智能座舱' },
+                { id: 'ind-3-3', name: '底盘系统' }
+            ]}
+        ];
+
+        // ===== 地区级联数据 =====
+        const regionData = [
+            { id: 'prov-1', name: '上海市', children: [
+                { id: 'prov-1-1', name: '浦东新区' },
+                { id: 'prov-1-2', name: '嘉定区' },
+                { id: 'prov-1-3', name: '闵行区' }
+            ]},
+            { id: 'prov-2', name: '广东省', children: [
+                { id: 'prov-2-1', name: '深圳市' },
+                { id: 'prov-2-2', name: '广州市' },
+                { id: 'prov-2-3', name: '东莞市' }
+            ]},
+            { id: 'prov-3', name: '北京市', children: [
+                { id: 'prov-3-1', name: '朝阳区' },
+                { id: 'prov-3-2', name: '海淀区' },
+                { id: 'prov-3-3', name: '大兴区' }
+            ]}
+        ];
+
+        // ===== 全部标签 =====
+        const allTags = ['专精特新', '高新技术企业', '上市公司', '世界500强', '中国500强', '民营企业500强', '瞪羚企业', '独角兽企业', '国产替代', '出口供应', 'OEM配套', '研发合作', '产能合作', '渠道合作'];
+
+        // ===== 初始化 =====
+        document.addEventListener('DOMContentLoaded', function() {
+            initIndustryCascader();
+            initRegionCascader();
+            initHotTags();
+            initClickOutside();
+        });
+
+        // ===== 行业级联初始化 =====
+        function initIndustryCascader() {
+            const menu = document.getElementById('industry1Menu');
+            menu.innerHTML = industryData.map(item => `
+                <div class="cascader-item" onclick="toggleIndustry1('${item.id}')">
+                    <span class="checkbox">${filterState.industry1.has(item.id) ? '✓' : ''}</span>
+                    <span>${item.name}</span>
+                    <span class="arrow">›</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleIndustry1(id) {
+            const item = industryData.find(i => i.id === id);
+            const isActive = filterState.industry1.has(id);
+
+            if (isActive) {
+                filterState.industry1.delete(id);
+                // 移除对应的二级
+                item.children.forEach(child => filterState.industry2.delete(child.id));
+            } else {
+                filterState.industry1.add(id);
+            }
+
+            renderIndustry1Menu();
+            renderIndustry2Menu(item.children);
+            updateIndustryTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        function renderIndustry1Menu() {
+            const menu = document.getElementById('industry1Menu');
+            menu.innerHTML = industryData.map(item => `
+                <div class="cascader-item ${filterState.industry1.has(item.id) ? 'active' : ''}" onclick="toggleIndustry1('${item.id}')">
+                    <span class="checkbox">${filterState.industry1.has(item.id) ? '✓' : ''}</span>
+                    <span>${item.name}</span>
+                    <span class="arrow">›</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleIndustry2(id) {
+            const isActive = filterState.industry2.has(id);
+            if (isActive) {
+                filterState.industry2.delete(id);
+            } else {
+                filterState.industry2.add(id);
+            }
+            // 找到父级并渲染
+            let parent = null;
+            for (const ind of industryData) {
+                if (ind.children.find(c => c.id === id)) {
+                    parent = ind.children;
+                    break;
+                }
+            }
+            renderIndustry2Menu(parent);
+            updateIndustryTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        function renderIndustry2Menu(children) {
+            const menu = document.getElementById('industry2Menu');
+            if (!children || children.length === 0) {
+                menu.innerHTML = '<div class="cascader-empty-tip">请先选择一级行业</div>';
+                return;
+            }
+            menu.innerHTML = children.map(item => `
+                <div class="cascader-item ${filterState.industry2.has(item.id) ? 'active' : ''}" onclick="toggleIndustry2('${item.id}')">
+                    <span class="checkbox">${filterState.industry2.has(item.id) ? '✓' : ''}</span>
+                    <span>${item.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateIndustryTags() {
+            const container = document.getElementById('industryTags');
+            const tags = [];
+
+            filterState.industry1.forEach(id => {
+                const item = industryData.find(i => i.id === id);
+                if (item) tags.push({ group: 'industry1', id, name: item.name });
+            });
+
+            filterState.industry2.forEach(id => {
+                let parent = null;
+                for (const ind of industryData) {
+                    if (ind.children.find(c => c.id === id)) {
+                        parent = ind;
+                        break;
+                    }
+                }
+                if (parent) tags.push({ group: 'industry2', id, name: `${parent.name} > ${ind.children.find(c => c.id === id).name}` });
+            });
+
+            if (tags.length === 0) {
+                container.innerHTML = '<span class="cascader-placeholder">选择行业（支持多选）</span>';
+            } else {
+                container.innerHTML = tags.map(t => `
+                    <span class="cascader-tag-group">
+                        ${t.name}
+                        <span class="remove" onclick="event.stopPropagation();removeIndustryTag('${t.group}', '${t.id}')">×</span>
+                    </span>
+                `).join('');
+            }
+        }
+
+        function removeIndustryTag(group, id) {
+            if (group === 'industry1') {
+                const item = industryData.find(i => i.id === id);
+                filterState.industry1.delete(id);
+                item.children.forEach(child => filterState.industry2.delete(child.id));
+                renderIndustry2Menu(null);
+            } else {
+                filterState.industry2.delete(id);
+                // 检查是否还有二级选中，如果没有则清空一级
+                let hasChild = false;
+                for (const ind of industryData) {
+                    if (filterState.industry2.has(ind.children[0]?.id)) {
+                        hasChild = true;
+                        break;
+                    }
+                }
+            }
+            renderIndustry1Menu();
+            updateIndustryTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        // ===== 地区级联初始化 =====
+        function initRegionCascader() {
+            const menu = document.getElementById('provinceMenu');
+            menu.innerHTML = regionData.map(item => `
+                <div class="cascader-item" onclick="toggleProvince('${item.id}')">
+                    <span class="checkbox">${filterState.province.has(item.id) ? '✓' : ''}</span>
+                    <span>${item.name}</span>
+                    <span class="arrow">›</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleProvince(id) {
+            const item = regionData.find(i => i.id === id);
+            const isActive = filterState.province.has(id);
+
+            if (isActive) {
+                filterState.province.delete(id);
+                item.children.forEach(child => filterState.city.delete(child.id));
+            } else {
+                filterState.province.add(id);
+            }
+
+            renderProvinceMenu();
+            renderCityMenu(item.children);
+            updateRegionTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        function renderProvinceMenu() {
+            const menu = document.getElementById('provinceMenu');
+            menu.innerHTML = regionData.map(item => `
+                <div class="cascader-item ${filterState.province.has(item.id) ? 'active' : ''}" onclick="toggleProvince('${item.id}')">
+                    <span class="checkbox">${filterState.province.has(item.id) ? '✓' : ''}</span>
+                    <span>${item.name}</span>
+                    <span class="arrow">›</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleCity(id) {
+            const isActive = filterState.city.has(id);
+            if (isActive) {
+                filterState.city.delete(id);
+            } else {
+                filterState.city.add(id);
+            }
+            let parent = null;
+            for (const r of regionData) {
+                if (r.children.find(c => c.id === id)) {
+                    parent = r.children;
+                    break;
+                }
+            }
+            renderCityMenu(parent);
+            updateRegionTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        function renderCityMenu(children) {
+            const menu = document.getElementById('cityMenu');
+            if (!children || children.length === 0) {
+                menu.innerHTML = '<div class="cascader-empty-tip">请先选择省份</div>';
+                return;
+            }
+            menu.innerHTML = children.map(item => `
+                <div class="cascader-item ${filterState.city.has(item.id) ? 'active' : ''}" onclick="toggleCity('${item.id}')">
+                    <span class="checkbox">${filterState.city.has(item.id) ? '✓' : ''}</span>
+                    <span>${item.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateRegionTags() {
+            const container = document.getElementById('regionTags');
+            const tags = [];
+
+            filterState.province.forEach(id => {
+                const item = regionData.find(i => i.id === id);
+                if (item) tags.push({ group: 'province', id, name: item.name });
+            });
+
+            filterState.city.forEach(id => {
+                let parent = null;
+                for (const r of regionData) {
+                    if (r.children.find(c => c.id === id)) {
+                        parent = r;
+                        break;
+                    }
+                }
+                if (parent) tags.push({ group: 'city', id, name: `${parent.name} > ${r.children.find(c => c.id === id).name}` });
+            });
+
+            if (tags.length === 0) {
+                container.innerHTML = '<span class="cascader-placeholder">选择地区（支持多选）</span>';
+            } else {
+                container.innerHTML = tags.map(t => `
+                    <span class="cascader-tag-group">
+                        ${t.name}
+                        <span class="remove" onclick="event.stopPropagation();removeRegionTag('${t.group}', '${t.id}')">×</span>
+                    </span>
+                `).join('');
+            }
+        }
+
+        function removeRegionTag(group, id) {
+            if (group === 'province') {
+                const item = regionData.find(i => i.id === id);
+                filterState.province.delete(id);
+                item.children.forEach(child => filterState.city.delete(child.id));
+                renderCityMenu(null);
+            } else {
+                filterState.city.delete(id);
+            }
+            renderProvinceMenu();
+            updateRegionTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        // ===== 热门标签 =====
+        function initHotTags() {
+            const shuffled = [...allTags].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, 5);
+            const container = document.getElementById('hotTagsContainer');
+            container.innerHTML = allTags.map(tag => `
+                <span class="hot-tag ${filterState.hotTags.has(tag) ? 'active' : ''}" onclick="toggleHotTag('${tag}', this)">${tag}</span>
+            `).join('');
+        }
+
+        function toggleHotTag(tag, element) {
+            if (filterState.hotTags.has(tag)) {
+                filterState.hotTags.delete(tag);
+                element.classList.remove('active');
+            } else {
+                filterState.hotTags.add(tag);
+                element.classList.add('active');
+            }
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        // ===== 多选品类 =====
+        function toggleMultiFilter(element, type) {
+            const checkbox = element.querySelector('input');
+            const value = checkbox.value;
+
+            if (type === 'category') {
+                if (value === 'all') {
+                    // 全部：清空其他选择
+                    filterState.category.clear();
+                    document.querySelectorAll('#categoryOptions .filter-option').forEach(el => {
+                        el.classList.remove('active');
+                        el.querySelector('input').checked = false;
+                    });
+                    element.classList.add('active');
+                    checkbox.checked = true;
+                } else {
+                    // 取消"全部"
+                    const allOption = document.querySelector('#categoryOptions .filter-option input[value="all"]');
+                    allOption.checked = false;
+                    allOption.closest('.filter-option').classList.remove('active');
+
+                    if (filterState.category.has(value)) {
+                        filterState.category.delete(value);
+                        element.classList.remove('active');
+                        checkbox.checked = false;
+                    } else {
+                        filterState.category.add(value);
+                        element.classList.add('active');
+                        checkbox.checked = true;
+                    }
+                }
+            }
+
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        // ===== 级联选择器开关 =====
+        function toggleCascader(panelId) {
+            const panel = document.getElementById(panelId);
+            const wasActive = panel.classList.contains('active');
+
+            // 关闭所有面板
+            document.querySelectorAll('.cascader-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.cascader-tags').forEach(t => t.classList.remove('active'));
+
+            // 打开点击的面板
+            if (!wasActive) {
+                panel.classList.add('active');
+                panel.parentElement.querySelector('.cascader-tags').classList.add('active');
+            }
+        }
+
+        // ===== 已选条件摘要 =====
+        function updateFilterSummary() {
+            const summary = document.getElementById('filterSummary');
+            const tagsContainer = document.getElementById('filterSummaryTags');
+            const allFilters = [];
+
+            // 行业
+            filterState.industry1.forEach(id => {
+                const item = industryData.find(i => i.id === id);
+                if (item) allFilters.push({ group: 'industry1', value: id, name: item.name });
+            });
+            filterState.industry2.forEach(id => {
+                for (const ind of industryData) {
+                    const child = ind.children.find(c => c.id === id);
+                    if (child) {
+                        allFilters.push({ group: 'industry2', value: id, name: child.name });
+                        break;
+                    }
+                }
+            });
+
+            // 品类
+            filterState.category.forEach(v => {
+                const names = { 'cat-1': '自动驾驶算法', 'cat-2': '车规级芯片', 'cat-3': '动力电池' };
+                if (names[v]) allFilters.push({ group: 'category', value: v, name: names[v] });
+            });
+
+            // 地区
+            filterState.province.forEach(id => {
+                const item = regionData.find(i => i.id === id);
+                if (item) allFilters.push({ group: 'province', value: id, name: item.name });
+            });
+            filterState.city.forEach(id => {
+                for (const r of regionData) {
+                    const child = r.children.find(c => c.id === id);
+                    if (child) {
+                        allFilters.push({ group: 'city', value: id, name: child.name });
+                        break;
+                    }
+                }
+            });
+
+            // 标签
+            filterState.hotTags.forEach(tag => {
+                allFilters.push({ group: 'hotTag', value: tag, name: tag });
+            });
+
+            if (allFilters.length === 0) {
+                summary.style.display = 'none';
+            } else {
+                summary.style.display = 'block';
+                tagsContainer.innerHTML = allFilters.map(f => `
+                    <span class="filter-summary-tag">
+                        ${f.name}
+                        <span class="remove" onclick="removeFilter('${f.group}', '${f.value}')">×</span>
+                    </span>
+                `).join('');
+            }
+        }
+
+        function removeFilter(group, value) {
+            switch(group) {
+                case 'industry1':
+                    const item = industryData.find(i => i.id === value);
+                    filterState.industry1.delete(value);
+                    item.children.forEach(child => filterState.industry2.delete(child.id));
+                    renderIndustry2Menu(null);
+                    renderIndustry1Menu();
+                    updateIndustryTags();
+                    break;
+                case 'industry2':
+                    filterState.industry2.delete(value);
+                    renderIndustry1Menu();
+                    updateIndustryTags();
+                    break;
+                case 'category':
+                    filterState.category.delete(value);
+                    const allOption = document.querySelector('#categoryOptions .filter-option input[value="all"]');
+                    if (filterState.category.size === 0) {
+                        allOption.checked = true;
+                        allOption.closest('.filter-option').classList.add('active');
+                    }
+                    document.querySelectorAll('#categoryOptions .filter-option').forEach(el => {
+                        if (el.querySelector('input').value === value) {
+                            el.classList.remove('active');
+                            el.querySelector('input').checked = false;
+                        }
+                    });
+                    break;
+                case 'province':
+                    const prov = regionData.find(i => i.id === value);
+                    filterState.province.delete(value);
+                    prov.children.forEach(child => filterState.city.delete(child.id));
+                    renderCityMenu(null);
+                    renderProvinceMenu();
+                    updateRegionTags();
+                    break;
+                case 'city':
+                    filterState.city.delete(value);
+                    renderProvinceMenu();
+                    updateRegionTags();
+                    break;
+                case 'hotTag':
+                    filterState.hotTags.delete(value);
+                    document.querySelectorAll('.hot-tag').forEach(el => {
+                        if (el.textContent.trim() === value) el.classList.remove('active');
+                    });
+                    break;
+            }
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        // ===== 重置筛选 =====
+        function resetAllFilters() {
+            // 重置行业
+            filterState.industry1.clear();
+            filterState.industry2.clear();
+            renderIndustry1Menu();
+            renderIndustry2Menu(null);
+            updateIndustryTags();
+
+            // 重置品类
+            filterState.category.clear();
+            document.querySelectorAll('#categoryOptions .filter-option').forEach(el => {
+                el.classList.remove('active');
+                el.querySelector('input').checked = false;
+            });
+            document.querySelector('#categoryOptions .filter-option input[value="all"]').checked = true;
+            document.querySelector('#categoryOptions .filter-option input[value="all"]').closest('.filter-option').classList.add('active');
+
+            // 重置地区
+            filterState.province.clear();
+            filterState.city.clear();
+            renderProvinceMenu();
+            renderCityMenu(null);
+            updateRegionTags();
+
+            // 重置标签
+            filterState.hotTags.clear();
+            document.querySelectorAll('.hot-tag').forEach(el => el.classList.remove('active'));
+
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        // ===== 防抖搜索 =====
+        let searchTimer = null;
+        function debounceSearch() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                triggerSearch();
+            }, 300);
+        }
+
+        function triggerSearch() {
+            const params = {
+                industry1: Array.from(filterState.industry1),
+                industry2: Array.from(filterState.industry2),
+                category: Array.from(filterState.category),
+                province: Array.from(filterState.province),
+                city: Array.from(filterState.city),
+                hotTags: Array.from(filterState.hotTags)
+            };
+            console.log('搜索参数:', params);
+            // API: GET /ent/enterprise?industry1=ind-1,ind-2&industry2=ind-1-1&category=cat-1,cat-2&province=prov-1&city=prov-1-1&tags=专精特新,高新技术企业
+        }
+
+        // ===== 点击外部关闭 =====
+        function initClickOutside() {
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.cascader-wrapper')) {
+                    document.querySelectorAll('.cascader-panel').forEach(p => p.classList.remove('active'));
+                    document.querySelectorAll('.cascader-tags').forEach(t => {
+                        if (!t.querySelector('.cascader-tag-group') && !t.querySelector('.cascader-tag')) {
+                            // 保留active状态如果没有选中项
+                        } else if (!t.querySelector('.cascader-tag-group') && !t.querySelector('.cascader-tag')) {
+                            t.classList.remove('active');
+                        }
+                    });
+                }
+            });
+        }
+
+        // ===== 弹窗相关 =====
+        function showClaimModal() {
+            document.getElementById('claimSelectBody').style.display = 'block';
+            document.getElementById('claimFormBody').style.display = 'none';
+            document.getElementById('claimSelectFooter').style.display = 'flex';
+            document.getElementById('claimFormFooter').style.display = 'none';
+            document.getElementById('claimModal').classList.add('active');
+        }
+
+        function selectClaimEnterprise(name, code, industry) {
+            document.getElementById('claimEntName').textContent = name;
+            document.getElementById('claimEntCode').textContent = code;
+            document.getElementById('claimEntIndustry').textContent = industry;
+            document.getElementById('claimSelectBody').style.display = 'none';
+            document.getElementById('claimFormBody').style.display = 'block';
+            document.getElementById('claimSelectFooter').style.display = 'none';
+            document.getElementById('claimFormFooter').style.display = 'flex';
+        }
+
+        function backToClaimSelect() {
+            document.getElementById('claimSelectBody').style.display = 'block';
+            document.getElementById('claimFormBody').style.display = 'none';
+            document.getElementById('claimSelectFooter').style.display = 'flex';
+            document.getElementById('claimFormFooter').style.display = 'none';
+        }
+
+        function showCreateModal() {
+            selectedTagsCreate = [];
+            renderTagListCreate();
+            renderSuggestionsCreate();
+            loadCreateFormData();
+            document.getElementById('createModal').classList.add('active');
+        }
+
+        // 加载创建表单数据字典
+        function loadCreateFormData() {
+            // 加载一级行业
+            // API: GET /ent/industry?parent_id=0
+            // 模拟数据
+            const industries = [
+                { id: 'ind-1', name: '智能网联' },
+                { id: 'ind-2', name: '新能源汽车' },
+                { id: 'ind-3', name: '汽车零部件' }
+            ];
+            const industrySelect = document.querySelector('#createModal select:nth-of-type(1)');
+            if (industrySelect) {
+                industrySelect.innerHTML = '<option value="">选择行业</option>' +
+                    industries.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+            }
+
+            // 加载省份
+            // API: GET /ent/region?parent_id=0
+            // 模拟数据
+            const provinces = [
+                { id: 'prov-1', name: '上海市' },
+                { id: 'prov-2', name: '广东省' },
+                { id: 'prov-3', name: '北京市' }
+            ];
+            const provinceSelect = document.querySelector('#createModal select:nth-of-type(3)');
+            if (provinceSelect) {
+                provinceSelect.innerHTML = '<option value="">省份</option>' +
+                    provinces.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            }
+
+            // 加载标签推荐
+            // API: GET /plat-admin/master-data?category=tag
+            // 模拟数据 - 前端随机展示5个
+            const shuffled = [...allTags].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, 5);
+            const suggestionsEl = document.getElementById('tagSuggestionsCreate');
+            if (suggestionsEl) {
+                suggestionsEl.innerHTML = selected.map(t => `
+                    <span onclick="pickTag('${t}')" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg-main);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.75rem;cursor:pointer;color:var(--text-secondary);">+ ${t}</span>
+                `).join('');
+            }
+        }
+
+        // 行业一级变化 → 加载二级行业 + 业务品类
+        function onCreateIndustry1Change() {
+            const industryId = document.querySelector('#createModal select:nth-of-type(1)').value;
+            const subIndustrySelect = document.querySelector('#createModal select:nth-of-type(2)');
+            const categorySelect = document.querySelector('#createModal select:nth-of-type(4)');
+
+            // 重置二级行业
+            if (subIndustrySelect) {
+                subIndustrySelect.innerHTML = '<option value="">选择子行业</option>';
+            }
+
+            if (!industryId) {
+                // 重置业务品类
+                if (categorySelect) {
+                    categorySelect.innerHTML = '<option value="">请选择品类</option>';
+                }
+                return;
+            }
+
+            // API: GET /ent/industry?parent_id={industryId}
+            // 模拟二级行业数据
+            const subIndustries = {
+                'ind-1': [
+                    { id: 'ind-1-1', name: '自动驾驶' },
+                    { id: 'ind-1-2', name: 'ADAS域控制器' },
+                    { id: 'ind-1-3', name: '车规级芯片' }
+                ],
+                'ind-2': [
+                    { id: 'ind-2-1', name: '动力电池' },
+                    { id: 'ind-2-2', name: '电机电控' },
+                    { id: 'ind-2-3', name: '充电桩' }
+                ],
+                'ind-3': [
+                    { id: 'ind-3-1', name: '车联网' },
+                    { id: 'ind-3-2', name: '智能座舱' },
+                    { id: 'ind-3-3', name: '底盘系统' }
+                ]
+            };
+
+            const subs = subIndustries[industryId] || [];
+            if (subIndustrySelect) {
+                subIndustrySelect.innerHTML = '<option value="">选择子行业</option>' +
+                    subs.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            }
+
+            // API: GET /ent/category?industry_id={industryId}
+            // 模拟业务品类数据
+            const categories = {
+                'ind-1': [
+                    { id: 'cat-1', name: '自动驾驶算法' },
+                    { id: 'cat-2', name: '车规级芯片' },
+                    { id: 'cat-3', name: '动力电池' }
+                ],
+                'ind-2': [
+                    { id: 'cat-1', name: '自动驾驶算法' },
+                    { id: 'cat-4', name: '动力电池系统' },
+                    { id: 'cat-5', name: '电机控制器' }
+                ],
+                'ind-3': [
+                    { id: 'cat-6', name: '智能座舱方案' },
+                    { id: 'cat-7', name: '底盘零部件' },
+                    { id: 'cat-8', name: '车联网设备' }
+                ]
+            };
+
+            const cats = categories[industryId] || [];
+            if (categorySelect) {
+                categorySelect.innerHTML = '<option value="">请选择品类</option>' +
+                    cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            }
+        }
+
+        // 省份变化 → 加载城市
+        function onCreateProvinceChange() {
+            const provinceId = document.querySelector('#createModal select:nth-of-type(3)').value;
+            const citySelect = document.querySelector('#createModal select:nth-of-type(5)');
+
+            // 重置城市
+            if (citySelect) {
+                citySelect.innerHTML = '<option value="">城市</option>';
+            }
+
+            if (!provinceId) return;
+
+            // API: GET /ent/region?parent_id={provinceId}
+            // 模拟城市数据
+            const cities = {
+                'prov-1': [
+                    { id: 'prov-1-1', name: '浦东新区' },
+                    { id: 'prov-1-2', name: '嘉定区' },
+                    { id: 'prov-1-3', name: '闵行区' }
+                ],
+                'prov-2': [
+                    { id: 'prov-2-1', name: '深圳市' },
+                    { id: 'prov-2-2', name: '广州市' },
+                    { id: 'prov-2-3', name: '东莞市' }
+                ],
+                'prov-3': [
+                    { id: 'prov-3-1', name: '朝阳区' },
+                    { id: 'prov-3-2', name: '海淀区' },
+                    { id: 'prov-3-3', name: '大兴区' }
+                ]
+            };
+
+            const cits = cities[provinceId] || [];
+            if (citySelect) {
+                citySelect.innerHTML = '<option value="">城市</option>' +
+                    cits.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            }
+        }
+
+        function showEnterpriseDrawer(enterpriseId) {
+            console.log('Loading enterprise:', enterpriseId);
+            document.getElementById('enterpriseDrawer').classList.add('active');
+        }
+
+        function showLoginModal() {
+            window.location.href = 'login.html';
+        }
+
+        function showContactModal() {
+            document.getElementById('contactModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function closeDrawer(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function sendSms(btn) {
+            let countdown = 60;
+            btn.disabled = true;
+            btn.textContent = `${countdown}秒后重试`;
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.textContent = '获取验证码';
+                } else {
+                    btn.textContent = `${countdown}秒后重试`;
+                }
+            }, 1000);
+        }
+
+        function handleClaim() {
+            closeModal('claimModal');
+            showToast('认领申请已提交，请等待审核', 'success');
+        }
+
+        // ----- Tags -----
+        let selectedTagsCreate = [];
+
+        function shuffle(arr) { const a = [...arr]; for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+        function renderSuggestionsCreate() {
+            const el = document.getElementById('tagSuggestionsCreate');
+            if (!el) return;
+            const unused = allTags.filter(t => !selectedTagsCreate.includes(t));
+            const picks = shuffle(unused).slice(0, 5);
+            el.innerHTML = picks.map(t => `<span onclick="pickTag('${t}')" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg-main);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.75rem;cursor:pointer;color:var(--text-secondary);">+ ${t}</span>`).join('');
+        }
+        function renderTagListCreate() {
+            const el = document.getElementById('tagListCreate');
+            if (!el) return;
+            el.innerHTML = selectedTagsCreate.map(t => `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(30,136,229,0.1);border-radius:var(--radius-sm);font-size:0.75rem;color:var(--primary);">${t} <span onclick="removeTagCreate('${t}')" style="cursor:pointer;font-size:0.625rem;">✕</span></span>`).join('');
+        }
+        function pickTag(tag) {
+            if (!selectedTagsCreate.includes(tag)) selectedTagsCreate.push(tag);
+            renderTagListCreate();
+            renderSuggestionsCreate();
+        }
+        function removeTagCreate(tag) {
+            selectedTagsCreate = selectedTagsCreate.filter(t => t !== tag);
+            renderTagListCreate();
+            renderSuggestionsCreate();
+        }
+        function addTag(input) {
+            const val = input.value.trim();
+            if (val && !selectedTagsCreate.includes(val)) selectedTagsCreate.push(val);
+            input.value = '';
+            renderTagListCreate();
+            renderSuggestionsCreate();
+        }
+
+        function handleCreate() {
+            closeModal('createModal');
+            showToast('创建申请已提交，请等待审核', 'success');
+        }
+
+        function handleLogin() {
+            closeModal('loginModal');
+            showToast('登录成功', 'success');
+        }
+
+        function handleGetContact() {
+            closeModal('contactModal');
+            showToast('获取成功', 'success');
+        }
+
+        function showToast(message, type = 'default') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'success' ? ' toast-success' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function goToSearch() {
+            const keyword = document.getElementById('headerSearchInput').value || '自动驾驶';
+            window.location.href = 'search.html?keyword=' + encodeURIComponent(keyword);
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenuDropdown');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function markAllRead() {
+            document.getElementById('unreadBadge').style.display = 'none';
+            showToast('已全部已读', 'success');
+        }
+
+        function goToNotify(id) {
+            window.location.href = 'notification.html';
+        }
+
+        document.addEventListener('click', function(e) {
+            const userMenu = document.getElementById('userMenuDropdown');
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if (!e.target.closest('.user-menu')) {
+                userMenu.style.display = 'none';
+            }
+            if (!e.target.closest('.notification-wrapper')) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.modal-overlay, .drawer-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>

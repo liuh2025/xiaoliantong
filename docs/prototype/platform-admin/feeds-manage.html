@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态内容管理 - 校链通</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>.admin-layout { display: flex; min-height: 100vh; } .admin-sidebar { width: 220px; background: #1a1f36; color: white; position: fixed; top: 0; bottom: 0; left: 0; } .admin-sidebar-header { padding: var(--spacing-lg); border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; font-size: 1.125rem; } .admin-nav { padding: var(--spacing-md); } .admin-nav-section { margin-bottom: var(--spacing-lg); } .admin-nav-section-title { font-size: 0.6875rem; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: var(--spacing-sm) var(--spacing-md); } .admin-nav-item { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-md); color: rgba(255,255,255,0.7); font-size: 0.9375rem; cursor: pointer; transition: all var(--transition-fast); margin-bottom: 2px; text-decoration: none; } .admin-nav-item:hover { background: rgba(255,255,255,0.1); color: white; } .admin-nav-item.active { background: var(--primary); color: white; } .admin-main { flex: 1; margin-left: 220px; background: var(--bg-main); } .admin-header { background: var(--bg-card); padding: var(--spacing-md) var(--spacing-xl); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; } .admin-breadcrumb { display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-muted); font-size: 0.875rem; } .admin-breadcrumb span { color: var(--text-primary); } .admin-content { padding: var(--spacing-xl); }</style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header"><span>🏛️</span> 校链通管理后台</div>
+            <nav class="admin-nav">
+                <div class="admin-nav-section"><div class="admin-nav-section-title">数据中心</div><a href="dashboard.html" class="admin-nav-item"><span>📊</span> 数据大盘</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">企业管理</div><a href="audit.html" class="admin-nav-item"><span>✅</span> 企业入驻审核</a><a href="tenant.html" class="admin-nav-item"><span>🏢</span> 企业(租户)管理</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">内容管理</div><a href="opportunity-manage.html" class="admin-nav-item"><span>📋</span> 商机内容管理</a><a href="feeds-manage.html" class="admin-nav-item active"><span>📱</span> 动态内容管理</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">系统管理</div><a href="master-data.html" class="admin-nav-item"><span>📚</span> 基础数据字典</a><a href="rbac.html" class="admin-nav-item"><span>🔐</span> 账号与角色权限</a><a href="settings.html" class="admin-nav-item"><span>⚙️</span> 系统设置</a></div>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <header class="admin-header"><div class="admin-breadcrumb">首页 <span>/</span> 内容管理 <span>/</span> 动态内容管理</div><div style="display:flex;align-items:center;gap:var(--spacing-md);"><span style="font-size:0.875rem;color:var(--text-muted);">管理员：张总</span><div class="avatar" style="width:32px;height:32px;font-size:0.875rem;background:var(--primary);">张</div></div></header>
+            <div class="admin-content">
+                <div style="display:flex;gap:var(--spacing-md);margin-bottom:var(--spacing-lg);flex-wrap:wrap;">
+                    <select class="form-select" style="width:150px;"><option value="">全部状态</option><option value="active">正常</option><option value="offline">已下架</option></select>
+                    <input type="text" class="form-input" placeholder="搜索动态内容..." style="max-width:300px;">
+                    <button class="btn btn-outline">搜索</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead><tr><th>动态内容</th><th>发布人</th><th>发布时间</th><th>状态</th><th>操作</th></tr></thead>
+                        <tbody>
+                            <tr><td style="max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">我们公司最新研发的L4级自动驾驶域控制器已通过全部车规级认证...</td><td>李威 / 威蓝智能科技</td><td>2026-04-01 14:00</td><td><span class="badge badge-success">正常</span></td><td><button class="btn btn-sm btn-outline" onclick="handleView(1)">查看</button> <button class="btn btn-sm btn-outline" onclick="handleOffline(1)">下架</button></td></tr>
+                            <tr><td style="max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">【活动通知】2026年春季新能源汽车校友论坛将于5月在深圳举办...</td><td>王教授 / 燕山大学</td><td>2026-04-01 11:00</td><td><span class="badge badge-success">正常</span></td><td><button class="btn btn-sm btn-outline" onclick="handleView(2)">查看</button> <button class="btn btn-sm btn-outline" onclick="handleOffline(2)">下架</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination"><div class="pagination-item disabled"><</div><div class="pagination-item active">1</div><div class="pagination-item">2</div><div class="pagination-item">></div></div>
+            </div>
+        </main>
+    </div>
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal" style="max-width:640px;">
+            <div class="modal-header">
+                <h3 class="modal-title">动态详情</h3>
+                <button class="modal-close" onclick="closeModal('viewModal')">✕</button>
+            </div>
+            <div class="modal-body" style="padding:var(--spacing-lg);">
+                <div style="display:flex;align-items:center;gap:var(--spacing-md);margin-bottom:var(--spacing-lg);">
+                    <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:white;font-size:0.875rem;" id="viewAvatar">李</div>
+                    <div>
+                        <div style="font-weight:500;font-size:0.9375rem;" id="viewPublisher">李威 / 威蓝智能科技</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);" id="viewTime">2026-04-01 14:00</div>
+                    </div>
+                </div>
+                <div style="font-size:0.9375rem;line-height:1.7;margin-bottom:var(--spacing-lg);" id="viewContent">
+                    我们公司最新研发的L4级自动驾驶域控制器已通过全部车规级认证，包括AEC-Q100可靠性认证、ISO 26262功能安全认证以及ASPICE CL2过程能力评估。这标志着我们在智能驾驶核心零部件国产化道路上又迈出了坚实的一步。
+                </div>
+                <div style="display:flex;gap:var(--spacing-md);color:var(--text-muted);font-size:0.8125rem;">
+                    <span id="viewStatus"><span class="badge badge-success">正常</span></span>
+                    <span>浏览 <span id="viewViews">1,234</span> 次</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('viewModal')">关闭</button>
+                <button class="btn btn-danger" onclick="closeModal('viewModal');handleOffline(currentViewId);">下架</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="offlineModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">下架动态</h3>
+                <button class="modal-close" onclick="closeModal('offlineModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">下架原因</label>
+                    <textarea class="form-input" rows="3" placeholder="请输入下架原因" id="offlineReason"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('offlineModal')">取消</button>
+                <button class="btn btn-danger" onclick="confirmOffline()">确认下架</button>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script>
+        let currentViewId = null;
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function handleView(id) { currentViewId = id; document.getElementById('viewModal').classList.add('active'); }
+        function handleOffline(id) { currentViewId = id; document.getElementById('offlineModal').classList.add('active'); }
+        function confirmOffline() {
+            const reason = document.getElementById('offlineReason').value;
+            if (!reason.trim()) { showToast('请填写下架原因', 'error'); return; }
+            closeModal('offlineModal');
+            document.getElementById('offlineReason').value = '';
+            showToast('已下架，站内信已发送', 'success');
+        }
+        function showToast(message) { const toast = document.getElementById('toast'); toast.textContent = message; toast.className = 'toast show' + (message.includes('成功') ? ' toast-success' : ''); setTimeout(() => toast.classList.remove('show'), 3000); }
+        document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); }));
+    </script>
+</body>
+</html>

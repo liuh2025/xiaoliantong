@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>员工管理 - 校链通</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        .enterprise-admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .enterprise-sidebar {
+            width: 200px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            padding-top: 64px;
+        }
+
+        .enterprise-nav {
+            padding: var(--spacing-md);
+        }
+
+        .enterprise-nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: 2px;
+            text-decoration: none;
+        }
+
+        .enterprise-nav-item:hover {
+            background: var(--bg-main);
+            color: var(--text-primary);
+        }
+
+        .enterprise-nav-item.active {
+            background: rgba(30, 136, 229, 0.1);
+            color: var(--primary);
+        }
+
+        .enterprise-main {
+            flex: 1;
+            margin-left: 200px;
+            padding: 64px var(--spacing-xl) var(--spacing-xl);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .search-bar input {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .table-container {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+        }
+
+        .status-badge.normal {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.disabled {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--danger);
+        }
+
+        .action-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .action-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: white;
+            cursor: pointer;
+            font-size: 0.8125rem;
+            transition: all var(--transition-fast);
+        }
+
+        .action-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .action-btn.action-remove {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .action-btn.action-remove:hover {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" style="position:fixed;top:0;left:0;right:0;z-index:100;">
+        <div class="header-inner">
+            <div class="logo">
+                <span>🏛️</span>
+                <span>校链通</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-item">首页</a>
+                <a href="opportunity.html" class="nav-item">商机广场</a>
+                <a href="enterprise.html" class="nav-item">企业名录</a>
+                <a href="feeds.html" class="nav-item">校友圈</a>
+            </nav>
+            <div class="header-actions">
+                <div class="notification-wrapper" style="position:relative;">
+                    <button class="icon-btn" id="notificationBtn" onclick="toggleNotificationDropdown()">🔔<span class="badge" id="unreadBadge">3</span></button>
+                    <div class="notification-dropdown" id="notificationDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:360px;max-width:400px;z-index:1000;margin-top:8px;">
+                        <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-weight:600;font-size:0.9375rem;">通知消息</span>
+                            <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.8125rem;cursor:pointer;">全部已读</button>
+                        </div>
+                        <div class="notification-list" style="max-height:320px;overflow-y:auto;">
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(1)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业已通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您的企业"威蓝智能科技"已通过审核，现在可以发布商...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">10分钟前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:#f8f9fa;" onclick="goToNotify(2)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您的商机收到了新的查看请求</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">比亚迪汽车工业查看了您发布的"采购10万套智能座舱显示屏"</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">2小时前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(3)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业未通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您申请的企业"上海威蓝智能科技"因"证明材料不清晰"未通过审...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">1天前</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding:10px 16px;text-align:center;border-top:1px solid #eee;">
+                            <a href="../notification.html" style="color:var(--primary);font-size:0.8125rem;text-decoration:none;">查看全部通知</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-menu">
+                    <div class="avatar" style="background:var(--success);">李</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="enterprise-admin-layout">
+        <!-- Sidebar -->
+        <aside class="enterprise-sidebar">
+            <div class="enterprise-nav">
+                <a href="enterprise-info.html" class="enterprise-nav-item">
+                    <span>🏢</span> 维护信息
+                </a>
+                <a href="employee.html" class="enterprise-nav-item active">
+                    <span>👥</span> 员工管理
+                </a>
+                <a href="my-opportunity.html" class="enterprise-nav-item">
+                    <span>📋</span> 商机管理
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="enterprise-main">
+            <div class="page-header">
+                <h2 class="page-title">员工管理</h2>
+                <button class="btn btn-primary" onclick="showAddModal()">
+                    <span>+</span> 邀请/新增员工
+                </button>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" class="form-input" placeholder="搜索员工姓名或手机号...">
+                <button class="btn btn-outline">搜索</button>
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>职位</th>
+                            <th>手机号（登录账号）</th>
+                            <th>系统角色</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:var(--spacing-sm);">
+                                    <div class="avatar" style="width:32px;height:32px;font-size:0.75rem;background:var(--success);">李</div>
+                                    <span>李总（我）</span>
+                                </div>
+                            </td>
+                            <td>CEO</td>
+                            <td>13812345678</td>
+                            <td><span class="badge badge-success">企业管理员</span></td>
+                            <td><span class="status-badge normal"><span class="status-dot success"></span> 正常</span></td>
+                            <td><span class="text-muted">-</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:var(--spacing-sm);">
+                                    <div class="avatar" style="width:32px;height:32px;font-size:0.75rem;background:var(--primary);">张</div>
+                                    <span>张三</span>
+                                </div>
+                            </td>
+                            <td>技术总监</td>
+                            <td>13900001111</td>
+                            <td><span class="badge badge-info">普通员工</span></td>
+                            <td><span class="status-badge normal"><span class="status-dot success"></span> 正常</span></td>
+                            <td>
+                                <button class="action-btn" onclick="showEditModal()">编辑</button>
+                                <button class="action-btn" onclick="resetPassword()">重置密码</button>
+                                <button class="action-btn action-remove" onclick="handleUnbind()">解绑</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:var(--spacing-sm);">
+                                    <div class="avatar" style="width:32px;height:32px;font-size:0.75rem;background:#9E9E9E;">王</div>
+                                    <span>王五</span>
+                                </div>
+                            </td>
+                            <td>项目经理</td>
+                            <td>13722223333</td>
+                            <td><span class="badge badge-info">普通员工</span></td>
+                            <td><span class="status-badge disabled"><span class="status-dot danger"></span> 停用</span></td>
+                            <td>
+                                <button class="action-btn" onclick="showEditModal()">编辑</button>
+                                <button class="action-btn" onclick="resetPassword()">重置密码</button>
+                                <button class="action-btn action-remove" onclick="handleUnbind()">解绑</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">邀请/新增员工</h3>
+                <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">员工姓名</label>
+                    <input type="text" class="form-input" placeholder="请输入员工姓名">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">职位/职级</label>
+                    <input type="text" class="form-input" placeholder="如 CEO、总监、经理、员工等">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">手机号码</label>
+                    <input type="tel" class="form-input" placeholder="请输入手机号（作为登录账号）" maxlength="11">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">分配角色</label>
+                    <div style="display:flex;gap:var(--spacing-lg);">
+                        <label class="form-check">
+                            <input type="radio" name="role" value="employee" checked>
+                            <span style="padding:8px 16px;border:1px solid var(--border);border-radius:var(--radius-md);font-size:0.9375rem;">普通员工</span>
+                        </label>
+                        <label class="form-check">
+                            <input type="radio" name="role" value="admin">
+                            <span style="padding:8px 16px;border:1px solid var(--border);border-radius:var(--radius-md);font-size:0.9375rem;">企业管理员</span>
+                        </label>
+                    </div>
+                </div>
+                <div style="background:var(--bg-main);padding:var(--spacing-md);border-radius:var(--radius-md);font-size:0.8125rem;color:var(--text-muted);">
+                    <p>✓ 手机号需已注册平台账号（校友圈注册流程）</p>
+                    <p>✓ 初始密码为手机号后6位</p>
+                    <p>✓ 如需重置密码，点击"重置密码"由管理员线下通知</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('addModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleAdd()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Employee Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑员工</h3>
+                <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">员工姓名</label>
+                    <input type="text" class="form-input" value="张三">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">职位/职级</label>
+                    <input type="text" class="form-input" value="技术总监">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">手机号码</label>
+                    <input type="tel" class="form-input" value="13900001111" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">系统角色</label>
+                    <select class="form-select">
+                        <option value="employee" selected>普通员工</option>
+                        <option value="admin">企业管理员</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">账号状态</label>
+                    <select class="form-select">
+                        <option value="active" selected>启用</option>
+                        <option value="disabled">停用</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('editModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showAddModal() {
+            document.getElementById('addModal').classList.add('active');
+        }
+
+        function showEditModal() {
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function handleAdd() {
+            closeModal('addModal');
+            showToast('添加成功', 'success');
+        }
+
+        function handleEdit() {
+            closeModal('editModal');
+            showToast('保存成功', 'success');
+        }
+
+        function resetPassword() {
+            showToast('密码已重置为手机号后6位', 'success');
+        }
+
+        function handleUnbind() {
+            if (confirm('确定要解绑该员工吗？解绑后该员工将恢复为游客身份（角色变更为guest），可重新加入本企业或其他企业。')) {
+                showToast('已解绑该员工', 'success');
+            }
+        }
+
+        function showToast(message, type = 'default') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'success' ? ' toast-success' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('active');
+            });
+        });
+
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function markAllRead() {
+            document.getElementById('unreadBadge').style.display = 'none';
+            showToast('已全部已读', 'success');
+        }
+
+        function goToNotify(id) {
+            window.location.href = '../notification.html';
+        }
+
+        document.addEventListener('click', function(e) {
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if (!e.target.closest('.notification-wrapper')) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

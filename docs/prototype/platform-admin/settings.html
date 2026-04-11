@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统设置 - 校链通</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 220px; background: #1a1f36; color: white; position: fixed; top: 0; bottom: 0; left: 0; }
+        .admin-sidebar-header { padding: var(--spacing-lg); border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; font-size: 1.125rem; }
+        .admin-nav { padding: var(--spacing-md); }
+        .admin-nav-section { margin-bottom: var(--spacing-lg); }
+        .admin-nav-section-title { font-size: 0.6875rem; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: var(--spacing-sm) var(--spacing-md); }
+        .admin-nav-item { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-md); color: rgba(255,255,255,0.7); font-size: 0.9375rem; cursor: pointer; transition: all var(--transition-fast); margin-bottom: 2px; text-decoration: none; }
+        .admin-nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .admin-nav-item.active { background: var(--primary); color: white; }
+        .admin-main { flex: 1; margin-left: 220px; background: var(--bg-main); }
+        .admin-header { background: var(--bg-card); padding: var(--spacing-md) var(--spacing-xl); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .admin-breadcrumb { display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-muted); font-size: 0.875rem; }
+        .admin-breadcrumb span { color: var(--text-primary); }
+        .admin-content { padding: var(--spacing-xl); }
+        .settings-section { background: var(--bg-card); border-radius: var(--radius-lg); padding: var(--spacing-xl); margin-bottom: var(--spacing-lg); box-shadow: var(--shadow-sm); }
+        .settings-section-title { font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-lg); padding-bottom: var(--spacing-md); border-bottom: 1px solid var(--border-light); }
+        .settings-row { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) 0; border-bottom: 1px solid var(--border-light); }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-label { flex: 1; }
+        .settings-label-title { font-size: 0.9375rem; font-weight: 500; margin-bottom: 4px; }
+        .settings-label-desc { font-size: 0.75rem; color: var(--text-muted); }
+        .toggle-switch { position: relative; width: 48px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.3s; border-radius: 24px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%; }
+        .toggle-switch input:checked + .toggle-slider { background-color: var(--success); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header"><span>🏛️</span> 校链通管理后台</div>
+            <nav class="admin-nav">
+                <div class="admin-nav-section"><div class="admin-nav-section-title">数据中心</div><a href="dashboard.html" class="admin-nav-item"><span>📊</span> 数据大盘</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">企业管理</div><a href="audit.html" class="admin-nav-item"><span>✅</span> 企业入驻审核</a><a href="tenant.html" class="admin-nav-item"><span>🏢</span> 企业(租户)管理</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">内容管理</div><a href="opportunity-manage.html" class="admin-nav-item"><span>📋</span> 商机内容管理</a><a href="feeds-manage.html" class="admin-nav-item"><span>📱</span> 动态内容管理</a></div>
+                <div class="admin-nav-section"><div class="admin-nav-section-title">系统管理</div><a href="master-data.html" class="admin-nav-item"><span>📚</span> 基础数据字典</a><a href="rbac.html" class="admin-nav-item"><span>🔐</span> 账号与角色权限</a><a href="settings.html" class="admin-nav-item active"><span>⚙️</span> 系统设置</a></div>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <header class="admin-header"><div class="admin-breadcrumb">首页 <span>/</span> 系统管理 <span>/</span> 系统设置</div><div style="display:flex;align-items:center;gap:var(--spacing-md);"><span style="font-size:0.875rem;color:var(--text-muted);">管理员：张总</span><div class="avatar" style="width:32px;height:32px;font-size:0.875rem;background:var(--primary);">张</div></div></header>
+            <div class="admin-content">
+                <div class="settings-section">
+                    <h3 class="settings-section-title">基础设置</h3>
+                    <div class="settings-row">
+                        <div class="settings-label">
+                            <div class="settings-label-title">平台名称</div>
+                            <div class="settings-label-desc">显示在页面标题和Logo旁边</div>
+                        </div>
+                        <div style="width:300px;">
+                            <input type="text" class="form-input" value="校链通 - 校友供应链撮合平台">
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-label">
+                            <div class="settings-label-title">客服热线</div>
+                            <div class="settings-label-desc">显示在页面底部和帮助中心</div>
+                        </div>
+                        <div style="width:300px;">
+                            <input type="text" class="form-input" value="400-123-4567">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-section-title">安全与策略（预留二期）</h3>
+                    <div class="settings-row" style="opacity:0.5;">
+                        <div class="settings-label">
+                            <div class="settings-label-title">开启商机敏感词自动过滤拦截</div>
+                            <div class="settings-label-desc">自动拦截包含敏感词的商机发布（预留）</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked disabled>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-row" style="opacity:0.5;">
+                        <div class="settings-label">
+                            <div class="settings-label-title">强制商机发布"先审后发"</div>
+                            <div class="settings-label-desc">当前为"先发后审"模式（预留）</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" disabled>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:var(--spacing-md);">
+                    <button class="btn btn-outline">重置</button>
+                    <button class="btn btn-primary" onclick="showToast('保存成功', 'success')">保存配置</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script>
+        function showToast(message, type) { const toast = document.getElementById('toast'); toast.textContent = message; toast.className = 'toast show' + (type === 'success' ? ' toast-success' : ''); setTimeout(() => toast.classList.remove('show'), 3000); }
+    </script>
+</body>
+</html>

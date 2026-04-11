@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Django
+*.sqlite3
+db.sqlite3
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Debug
+debug_*.png
+
+# Node
+node_modules/
+
+# Venv
+venv/
+.venv/
+
+# Pytest
+.pytest_cache/
+
+# Claude worktrees (local only)
+.claude/worktrees/
+
+# Prototype archive (large binary)
+docs/prototype.rar
+
+# Test artifacts (generated at runtime)
+tests/e2e/captures/
+tests/e2e/screenshots/
+tests/e2e/log/
+tests/integration/log/
+tests/unit/__pycache__/
+tests/integration/__pycache__/
+
+# E2E test captures (generated)
+t/
