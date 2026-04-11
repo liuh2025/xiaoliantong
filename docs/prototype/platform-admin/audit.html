@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业入驻审核 - 校链通</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 220px; background: #1a1f36; color: white; position: fixed; top: 0; bottom: 0; left: 0; overflow-y: auto; }
+        .admin-sidebar-header { padding: var(--spacing-lg); border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; font-size: 1.125rem; display: flex; align-items: center; gap: var(--spacing-sm); }
+        .admin-nav { padding: var(--spacing-md); }
+        .admin-nav-section { margin-bottom: var(--spacing-lg); }
+        .admin-nav-section-title { font-size: 0.6875rem; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: var(--spacing-sm) var(--spacing-md); letter-spacing: 0.5px; }
+        .admin-nav-item { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-md); color: rgba(255,255,255,0.7); font-size: 0.9375rem; cursor: pointer; transition: all var(--transition-fast); margin-bottom: 2px; text-decoration: none; }
+        .admin-nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .admin-nav-item.active { background: var(--primary); color: white; }
+        .admin-main { flex: 1; margin-left: 220px; background: var(--bg-main); }
+        .admin-header { background: var(--bg-card); padding: var(--spacing-md) var(--spacing-xl); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .admin-breadcrumb { display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-muted); font-size: 0.875rem; }
+        .admin-breadcrumb span { color: var(--text-primary); }
+        .admin-content { padding: var(--spacing-xl); }
+        .filter-tabs { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); }
+        .filter-tab { padding: var(--spacing-sm) var(--spacing-lg); border-radius: var(--radius-md); font-size: 0.875rem; cursor: pointer; background: var(--bg-card); border: 1px solid var(--border); transition: all var(--transition-fast); }
+        .filter-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header"><span>🏛️</span> 校链通管理后台</div>
+            <nav class="admin-nav">
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">数据中心</div>
+                    <a href="dashboard.html" class="admin-nav-item"><span>📊</span> 数据大盘</a>
+                </div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">企业管理</div>
+                    <a href="audit.html" class="admin-nav-item active"><span>✅</span> 企业入驻审核</a>
+                    <a href="tenant.html" class="admin-nav-item"><span>🏢</span> 企业(租户)管理</a>
+                </div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">内容管理</div>
+                    <a href="opportunity-manage.html" class="admin-nav-item"><span>📋</span> 商机内容管理</a>
+                    <a href="feeds-manage.html" class="admin-nav-item"><span>📱</span> 动态内容管理</a>
+                </div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">系统管理</div>
+                    <a href="master-data.html" class="admin-nav-item"><span>📚</span> 基础数据字典</a>
+                    <a href="rbac.html" class="admin-nav-item"><span>🔐</span> 账号与角色权限</a>
+                    <a href="settings.html" class="admin-nav-item"><span>⚙️</span> 系统设置</a>
+                </div>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="admin-breadcrumb">首页 <span>/</span> 企业管理 <span>/</span> 企业入驻审核</div>
+                <div style="display:flex;align-items:center;gap:var(--spacing-md);"><span style="font-size:0.875rem;color:var(--text-muted);">管理员：张总</span><div class="avatar" style="width:32px;height:32px;font-size:0.875rem;background:var(--primary);">张</div></div>
+            </header>
+            <div class="admin-content">
+                <div class="filter-tabs">
+                    <div class="filter-tab active">待审核 (12)</div>
+                    <div class="filter-tab">已通过 (1,284)</div>
+                    <div class="filter-tab">已驳回 (23)</div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>企业名称</th>
+                                <th>统一信用代码</th>
+                                <th>申请人</th>
+                                <th>联系方式</th>
+                                <th>提交时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>威蓝智能科技有限公司</td>
+                                <td>9131000...</td>
+                                <td>李总 (CEO)</td>
+                                <td>138****8888</td>
+                                <td>2026-04-01</td>
+                                <td><button class="btn btn-sm btn-primary" onclick="showAuditModal()">审核</button></td>
+                            </tr>
+                            <tr>
+                                <td>比亚迪汽车工业有限公司</td>
+                                <td>9144000...</td>
+                                <td>张工 (采购经理)</td>
+                                <td>139****9999</td>
+                                <td>2026-04-01</td>
+                                <td><button class="btn btn-sm btn-primary" onclick="showAuditModal()">审核</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-item disabled"><</div>
+                    <div class="pagination-item active">1</div>
+                    <div class="pagination-item">2</div>
+                    <div class="pagination-item">></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Audit Modal -->
+    <div class="modal-overlay" id="auditModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">审核企业认领/创建</h3>
+                <button class="modal-close" onclick="closeModal('auditModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="background:var(--bg-main);padding:var(--spacing-lg);border-radius:var(--radius-md);margin-bottom:var(--spacing-lg);">
+                    <h4 style="margin-bottom:var(--spacing-md);">申请企业信息</h4>
+                    <div style="display:grid;grid-template-columns:100px 1fr;gap:var(--spacing-sm);font-size:0.875rem;">
+                        <span class="text-muted">企业全称</span><span>上海威蓝智能科技有限公司</span>
+                        <span class="text-muted">信用代码</span><span>91310000XXXXXXX</span>
+                        <span class="text-muted">行业领域</span><span>智能网联 > 自动驾驶</span>
+                        <span class="text-muted">所在地区</span><span>上海市嘉定区</span>
+                    </div>
+                </div>
+                <div style="background:var(--bg-main);padding:var(--spacing-lg);border-radius:var(--radius-md);margin-bottom:var(--spacing-lg);">
+                    <h4 style="margin-bottom:var(--spacing-md);">申请人信息</h4>
+                    <div style="display:grid;grid-template-columns:100px 1fr;gap:var(--spacing-sm);font-size:0.875rem;">
+                        <span class="text-muted">申请人</span><span>李总 (CEO)</span>
+                        <span class="text-muted">联系方式</span><span>13812345678</span>
+                    </div>
+                </div>
+                <div style="margin-bottom:var(--spacing-lg);">
+                    <h4 style="margin-bottom:var(--spacing-md);">证明材料附件</h4>
+                    <div style="display:flex;gap:var(--spacing-md);">
+                        <div style="flex:1;background:var(--bg-main);padding:var(--spacing-lg);border-radius:var(--radius-md);text-align:center;cursor:pointer;">
+                            <div style="font-size:2rem;margin-bottom:var(--spacing-xs);">📄</div>
+                            <div style="font-size:0.8125rem;">营业执照扫描件.jpg</div>
+                            <div style="font-size:0.75rem;color:var(--primary);">点击查看</div>
+                        </div>
+                        <div style="flex:1;background:var(--bg-main);padding:var(--spacing-lg);border-radius:var(--radius-md);text-align:center;cursor:pointer;">
+                            <div style="font-size:2rem;margin-bottom:var(--spacing-xs);">📄</div>
+                            <div style="font-size:0.8125rem;">个人名片.jpg</div>
+                            <div style="font-size:0.75rem;color:var(--primary);">点击查看</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">驳回原因（驳回必填）</label>
+                    <textarea class="form-input" rows="3" placeholder="如果驳回，请填写原因"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('auditModal')">取消</button>
+                <button class="btn btn-danger" onclick="handleReject()">驳回申请</button>
+                <button class="btn btn-success" onclick="handleApprove()">审核通过</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showAuditModal() { document.getElementById('auditModal').classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function handleApprove() { closeModal('auditModal'); showToast('审核通过', 'success'); }
+        function handleReject() { closeModal('auditModal'); showToast('已驳回', 'success'); }
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'success' ? ' toast-success' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); }));
+        document.querySelectorAll('.filter-tab').forEach(t => t.addEventListener('click', function() { document.querySelectorAll('.filter-tab').forEach(x => x.classList.remove('active')); this.classList.add('active'); }));
+    </script>
+</body>
+</html>

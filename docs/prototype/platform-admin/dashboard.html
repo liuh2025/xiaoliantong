@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据大盘 - 校链通</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 220px;
+            background: #1a1f36;
+            color: white;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-weight: 600;
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .admin-nav {
+            padding: var(--spacing-md);
+        }
+
+        .admin-nav-section {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .admin-nav-section-title {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            padding: var(--spacing-sm) var(--spacing-md);
+            letter-spacing: 0.5px;
+        }
+
+        .admin-nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: 2px;
+            text-decoration: none;
+        }
+
+        .admin-nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .admin-nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 220px;
+            background: var(--bg-main);
+        }
+
+        .admin-header {
+            background: var(--bg-card);
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .admin-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .admin-breadcrumb span {
+            color: var(--text-primary);
+        }
+
+        .admin-content {
+            padding: var(--spacing-xl);
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .stat-card-admin {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card-admin .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .stat-card-admin .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .stat-card-admin .label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .stat-card-admin .trend {
+            font-size: 0.75rem;
+            margin-top: var(--spacing-sm);
+        }
+
+        .stat-card-admin .trend.up {
+            color: var(--success);
+        }
+
+        .stat-card-admin .trend.down {
+            color: var(--danger);
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .panel-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .panel-body {
+            padding: var(--spacing-lg);
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background: var(--bg-main);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <span>🏛️</span> 校链通管理后台
+            </div>
+            <nav class="admin-nav">
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">数据中心</div>
+                    <a href="dashboard.html" class="admin-nav-item active">
+                        <span>📊</span> 数据大盘
+                    </a>
+                </div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">企业管理</div>
+                    <a href="audit.html" class="admin-nav-item">
+                        <span>✅</span> 企业入驻审核
+                    </a>
+                    <a href="tenant.html" class="admin-nav-item">
+                        <span>🏢</span> 企业(租户)管理
+                    </a>
+                </div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">内容管理</div>
+                    <a href="opportunity-manage.html" class="admin-nav-item">
+                        <span>📋</span> 商机内容管理
+                    </a>
+                    <a href="feeds-manage.html" class="admin-nav-item">
+                        <span>📱</span> 动态内容管理
+                    </a>
+                </div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">系统管理</div>
+                    <a href="master-data.html" class="admin-nav-item">
+                        <span>📚</span> 基础数据字典
+                    </a>
+                    <a href="rbac.html" class="admin-nav-item">
+                        <span>🔐</span> 账号与角色权限
+                    </a>
+                    <a href="settings.html" class="admin-nav-item">
+                        <span>⚙️</span> 系统设置
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="admin-breadcrumb">
+                    首页 <span>/</span> 数据大盘
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--spacing-md);">
+                    <div class="notification-wrapper" style="position:relative;">
+                        <button class="icon-btn" id="notificationBtn" onclick="toggleNotificationDropdown()">🔔<span class="badge" id="unreadBadge">3</span></button>
+                        <div class="notification-dropdown" id="notificationDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:360px;max-width:400px;z-index:1000;margin-top:8px;">
+                            <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-weight:600;font-size:0.9375rem;">通知消息</span>
+                                <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.8125rem;cursor:pointer;">全部已读</button>
+                            </div>
+                            <div class="notification-list" style="max-height:320px;overflow-y:auto;">
+                                <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(1)">
+                                    <div style="display:flex;align-items:flex-start;gap:10px;">
+                                        <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                        <div style="flex:1;min-width:0;">
+                                            <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业已通过审核</div>
+                                            <div style="font-size:0.75rem;color:var(--text-muted);">您的企业"威蓝智能科技"已通过审核，现在可以发布商...</div>
+                                            <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">10分钟前</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:#f8f9fa;" onclick="goToNotify(2)">
+                                    <div style="display:flex;align-items:flex-start;gap:10px;">
+                                        <div style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;flex-shrink:0;margin-top:6px;"></div>
+                                        <div style="flex:1;min-width:0;">
+                                            <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您的商机收到了新的查看请求</div>
+                                            <div style="font-size:0.75rem;color:var(--text-muted);">比亚迪汽车工业查看了您发布的"采购10万套智能座舱显示屏"</div>
+                                            <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">2小时前</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(3)">
+                                    <div style="display:flex;align-items:flex-start;gap:10px;">
+                                        <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                        <div style="flex:1;min-width:0;">
+                                            <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业未通过审核</div>
+                                            <div style="font-size:0.75rem;color:var(--text-muted);">您申请的企业"上海威蓝智能科技"因"证明材料不清晰"未通过审...</div>
+                                            <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">1天前</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding:10px 16px;text-align:center;border-top:1px solid #eee;">
+                                <a href="../notification.html" style="color:var(--primary);font-size:0.8125rem;text-decoration:none;">查看全部通知</a>
+                            </div>
+                        </div>
+                    </div>
+                    <span style="font-size:0.875rem;color:var(--text-muted);">管理员：张总</span>
+                    <div class="avatar" style="width:32px;height:32px;font-size:0.875rem;background:var(--primary);">张</div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                <!-- Stats Cards -->
+                <div class="stats-cards">
+                    <div class="stat-card-admin">
+                        <div class="icon" style="background:rgba(30,136,229,0.1);color:var(--primary);">🏢</div>
+                        <div class="value">1,284</div>
+                        <div class="label">入驻企业</div>
+                        <div class="trend up">↑ 12% 较上月</div>
+                    </div>
+                    <div class="stat-card-admin">
+                        <div class="icon" style="background:rgba(76,175,80,0.1);color:var(--success);">📋</div>
+                        <div class="value">5,492</div>
+                        <div class="label">发布商机</div>
+                        <div class="trend up">↑ 8% 较上月</div>
+                    </div>
+                    <div class="stat-card-admin">
+                        <div class="icon" style="background:rgba(255,107,0,0.1);color:var(--accent-buy);">🤝</div>
+                        <div class="value">8,301</div>
+                        <div class="label">成功撮合</div>
+                        <div class="trend up">↑ 23% 较上月</div>
+                    </div>
+                    <div class="stat-card-admin">
+                        <div class="icon" style="background:rgba(156,39,176,0.1);color:#9C27B0;">👥</div>
+                        <div class="value">12,050</div>
+                        <div class="label">活跃用户</div>
+                        <div class="trend down">↓ 3% 较上月</div>
+                    </div>
+                </div>
+
+                <div class="panel" style="max-width:100%;">
+                    <div class="panel-header">
+                        <span class="panel-title">商机趋势（近30天）</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart-placeholder">
+                            📈 商机发布趋势图表
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function markAllRead() {
+            document.getElementById('unreadBadge').style.display = 'none';
+            showToast('已全部已读', 'success');
+        }
+
+        function goToNotify(id) {
+            window.location.href = '../notification.html';
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'success' ? ' toast-success' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        document.addEventListener('click', function(e) {
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if (!e.target.closest('.notification-wrapper')) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

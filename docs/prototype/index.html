@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 校链通</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span>🏛️</span>
+                <span>校链通</span>
+            </div>
+
+            <nav class="nav">
+                <a href="index.html" class="nav-item active">首页</a>
+                <a href="opportunity.html" class="nav-item">商机广场</a>
+                <a href="enterprise.html" class="nav-item">企业名录</a>
+                <a href="feeds.html" class="nav-item">校友圈</a>
+            </nav>
+
+            <div class="header-actions">
+                <div class="search-box" onclick="goToSearch()">
+                    <span class="icon">🔍</span>
+                    <input type="text" placeholder="搜索供需、企业、校友..." id="headerSearchInput">
+                </div>
+                <div class="notification-wrapper" style="position:relative;">
+                    <button class="icon-btn" id="notificationBtn" onclick="toggleNotificationDropdown()">🔔<span class="badge" id="unreadBadge">3</span></button>
+                    <div class="notification-dropdown" id="notificationDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:360px;max-width:400px;z-index:1000;margin-top:8px;">
+                        <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-weight:600;font-size:0.9375rem;">通知消息</span>
+                            <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.8125rem;cursor:pointer;">全部已读</button>
+                        </div>
+                        <div class="notification-list" style="max-height:320px;overflow-y:auto;">
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(1)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业已通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您的企业"威蓝智能科技"已通过审核，现在可以发布商...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">10分钟前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:#f8f9fa;" onclick="goToNotify(2)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您的商机收到了新的查看请求</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">比亚迪汽车工业查看了您发布的"采购10万套智能座舱显示屏"</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">2小时前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(3)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业未通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您申请的企业"上海威蓝智能科技"因"证明材料不清晰"未通过审...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">1天前</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding:10px 16px;text-align:center;border-top:1px solid #eee;">
+                            <a href="notification.html" style="color:var(--primary);font-size:0.8125rem;text-decoration:none;">查看全部通知</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-menu" onclick="toggleUserMenu()">
+                    <div class="avatar">登</div>
+                    <div class="user-dropdown">▼</div>
+                    <div class="user-menu-dropdown" id="userMenuDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:180px;padding:8px 0;z-index:1000;margin-top:8px;">
+                        <a href="enterprise-admin/enterprise-info.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:0.875rem;">企业工作台</a>
+                        <a href="platform-admin/dashboard.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:0.875rem;">管理后台</a>
+                        <div style="border-top:1px solid #eee;margin:8px 0;"></div>
+                        <a href="login.html" style="display:block;padding:10px 16px;color:#999;text-decoration:none;font-size:0.875rem;">退出登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="main">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>连接校友资源，共创商业价值</h1>
+                <p>校链通是一个专为校友企业打造的轻量级供需撮合平台。在这里，您可以快速发布采购需求、展示供应能力，基于校友信任纽带，实现高效的业务对接与合作。</p>
+                <div class="hero-actions">
+                    <button class="btn btn-secondary" onclick="showPublishModal('buy')">
+                        <span>+</span> 发布采购需求
+                    </button>
+                    <button class="btn btn-secondary" onclick="showPublishModal('supply')">
+                        <span>+</span> 发布供应能力
+                    </button>
+                </div>
+                <div class="hero-tags">
+                    <span class="tag tag-primary">🔥 热门检索：</span>
+                    <span class="tag" onclick="goToSearchByTag('智能制造')">智能制造</span>
+                    <span class="tag" onclick="goToSearchByTag('新能源')">新能源</span>
+                    <span class="tag" onclick="goToSearchByTag('汽车零部件')">汽车零部件</span>
+                    <span class="tag" onclick="goToSearchByTag('专精特新')">专精特新</span>
+                    <span class="tag" onclick="goToSearchByTag('源头工厂')">源头工厂</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content -->
+        <div class="container">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🏢</div>
+                    <div class="stat-value">1,284</div>
+                    <div class="stat-label">入驻校友企业</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-value">5,492</div>
+                    <div class="stat-label">累计发布商机</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🤝</div>
+                    <div class="stat-value">8,301</div>
+                    <div class="stat-label">成功撮合对接</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value">12,050</div>
+                    <div class="stat-label">活跃校友人数</div>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="content-grid">
+                <div class="content-main">
+                    <!-- Smart Recommendations -->
+                    <section class="mb-lg">
+                        <div class="section-header">
+                            <h2 class="section-title">智能匹配推荐</h2>
+                            <a href="opportunity.html" class="text-primary">查看更多 ></a>
+                        </div>
+                        <div class="opportunity-grid">
+                            <div class="opportunity-card" onclick="showContactModal()">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-sm);">
+                                    <span class="opportunity-type buy">我要买</span>
+                                    <span class="opportunity-time">2小时前</span>
+                                </div>
+                                <h3 class="opportunity-title">采购10万套新能源汽车智能座舱显示屏</h3>
+                                <div class="opportunity-tags">
+                                    <span class="tag tag-primary">智能座舱</span>
+                                    <span class="tag tag-primary">显示屏</span>
+                                    <span class="tag">批量采购</span>
+                                </div>
+                                <div class="opportunity-meta">
+                                    <div class="opportunity-company">
+                                        <div style="width:24px;height:24px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:600;">比</div>
+                                        <span class="opportunity-company-name">比亚迪汽车工业有限公司 <span class="verified-badge">✓</span></span>
+                                    </div>
+                                    <span class="opportunity-location">📍 深圳</span>
+                                </div>
+                            </div>
+
+                            <div class="opportunity-card" onclick="showContactModal()">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-sm);">
+                                    <span class="opportunity-type supply">我能供</span>
+                                    <span class="opportunity-time">5小时前</span>
+                                </div>
+                                <h3 class="opportunity-title">提供车规级MCU芯片及底层软件解决方案</h3>
+                                <div class="opportunity-tags">
+                                    <span class="tag tag-primary">车规级芯片</span>
+                                    <span class="tag tag-primary">MCU</span>
+                                    <span class="tag">底层软件</span>
+                                </div>
+                                <div class="opportunity-meta">
+                                    <div class="opportunity-company">
+                                        <div style="width:24px;height:24px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:600;">地</div>
+                                        <span class="opportunity-company-name">地平线机器人技术 <span class="verified-badge">✓</span></span>
+                                    </div>
+                                    <span class="opportunity-location">📍 上海</span>
+                                </div>
+                            </div>
+
+                            <div class="opportunity-card" onclick="showContactModal()">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-sm);">
+                                    <span class="opportunity-type buy">我要买</span>
+                                    <span class="opportunity-time">1天前</span>
+                                </div>
+                                <h3 class="opportunity-title">寻优质汽车轻量化铝合金压铸件供应商</h3>
+                                <div class="opportunity-tags">
+                                    <span class="tag tag-primary">轻量化</span>
+                                    <span class="tag tag-primary">铝合金压铸</span>
+                                    <span class="tag">零部件</span>
+                                </div>
+                                <div class="opportunity-meta">
+                                    <div class="opportunity-company">
+                                        <div style="width:24px;height:24px;border-radius:50%;background:#FF9800;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:600;">拓</div>
+                                        <span class="opportunity-company-name">拓普集团 <span class="verified-badge">✓</span></span>
+                                    </div>
+                                    <span class="opportunity-location">📍 宁波</span>
+                                </div>
+                            </div>
+
+                            <div class="opportunity-card" onclick="showContactModal()">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-sm);">
+                                    <span class="opportunity-type supply">我能供</span>
+                                    <span class="opportunity-time">2天前</span>
+                                </div>
+                                <h3 class="opportunity-title">提供固态电池及核心正极材料解决方案</h3>
+                                <div class="opportunity-tags">
+                                    <span class="tag tag-primary">固态电池</span>
+                                    <span class="tag tag-primary">正极材料</span>
+                                    <span class="tag">新能源</span>
+                                </div>
+                                <div class="opportunity-meta">
+                                    <div class="opportunity-company">
+                                        <div style="width:24px;height:24px;border-radius:50%;background:#9C27B0;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:600;">宁</div>
+                                        <span class="opportunity-company-name">宁德时代 <span class="verified-badge">✓</span></span>
+                                    </div>
+                                    <span class="opportunity-location">📍 宁德</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="content-sidebar">
+                    <!-- New Enterprises -->
+                    <div class="sidebar-card">
+                        <div class="sidebar-card-header">
+                            <span class="sidebar-card-title">新入驻企业</span>
+                            <a href="enterprise.html" class="text-primary">全部 ></a>
+                        </div>
+                        <div class="sidebar-card-body">
+                            <div class="list-item" style="cursor:pointer" onclick="showEnterpriseDrawer(1)">
+                                <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">威</div>
+                                <div class="list-item-content">
+                                    <div class="list-item-title">上海威蓝智能科技有限公司</div>
+                                    <div class="list-item-subtitle">自动驾驶</div>
+                                </div>
+                            </div>
+                            <div class="list-item" style="cursor:pointer" onclick="showEnterpriseDrawer(2)">
+                                <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#4CAF50,#2E7D32);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">宁</div>
+                                <div class="list-item-content">
+                                    <div class="list-item-title">宁德时代新能源科技股份有限公司</div>
+                                    <div class="list-item-subtitle">动力电池</div>
+                                </div>
+                            </div>
+                            <div class="list-item" style="cursor:pointer" onclick="showEnterpriseDrawer(3)">
+                                <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#FF9800,#E65100);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">比</div>
+                                <div class="list-item-content">
+                                    <div class="list-item-title">比亚迪汽车工业有限公司</div>
+                                    <div class="list-item-subtitle">新能源整车</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alumni Feeds -->
+                    <div class="sidebar-card">
+                        <div class="sidebar-card-header">
+                            <span class="sidebar-card-title">校友动态</span>
+                            <a href="feeds.html" class="text-primary">去校友圈 ></a>
+                        </div>
+                        <div class="sidebar-card-body">
+                            <div class="list-item" style="flex-direction:column;align-items:flex-start;">
+                                <div style="display:flex;align-items:center;gap:var(--spacing-sm);width:100%;margin-bottom:var(--spacing-xs);">
+                                    <div class="list-item-avatar" style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;">李</div>
+                                    <span style="font-weight:500;">李威</span>
+                                    <span class="text-muted" style="font-size:0.75rem;margin-left:auto;">1小时前</span>
+                                </div>
+                                <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.5;">我们公司最新研发的L4级自动驾驶域控制器已通过全部车规级认证，即日起接受定制化需求...</p>
+                            </div>
+                            <div class="list-item" style="flex-direction:column;align-items:flex-start;">
+                                <div style="display:flex;align-items:center;gap:var(--spacing-sm);width:100%;margin-bottom:var(--spacing-xs);">
+                                    <div class="list-item-avatar" style="width:32px;height:32px;border-radius:50%;background:var(--success);color:white;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;">王</div>
+                                    <span style="font-weight:500;">王教授</span>
+                                    <span class="text-muted" style="font-size:0.75rem;margin-left:auto;">3小时前</span>
+                                </div>
+                                <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.5;">【活动通知】2026年春季新能源汽车校友论坛将于5月在深圳举办，诚邀各位校友参加...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Publish Modal -->
+    <div class="modal-overlay" id="publishModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">发布商机</h3>
+                <button class="modal-close" onclick="closeModal('publishModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">商机类型</label>
+                    <div style="display:flex;gap:var(--spacing-lg);">
+                        <label class="form-check">
+                            <input type="radio" name="oppType" value="buy" checked>
+                            <span class="tag tag-buy" style="padding:8px 16px;font-size:0.9375rem;">我要买</span>
+                        </label>
+                        <label class="form-check">
+                            <input type="radio" name="oppType" value="supply">
+                            <span class="tag tag-supply" style="padding:8px 16px;font-size:0.9375rem;">我能供</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">商机标题</label>
+                    <input type="text" class="form-input" placeholder="请输入商机标题，30字以内">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">所属行业</label>
+                        <div style="display:flex;gap:var(--spacing-sm);">
+                            <select class="form-select" style="flex:1;" id="industrySelect1">
+                                <option value="">一级行业</option>
+                                <option value="1">智能网联</option>
+                                <option value="2">新能源汽车</option>
+                                <option value="3">汽车电子</option>
+                            </select>
+                            <select class="form-select" style="flex:1;" id="industrySelect2">
+                                <option value="">二级行业</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">业务品类</label>
+                        <select class="form-select">
+                            <option value="">请选择品类</option>
+                            <option value="1">自动驾驶算法</option>
+                            <option value="2">车规级芯片</option>
+                            <option value="3">动力电池</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">所在地区</label>
+                        <div style="display:flex;gap:var(--spacing-sm);">
+                            <select class="form-select" style="flex:1;">
+                                <option value="">省份</option>
+                                <option value="1">上海市</option>
+                                <option value="2">广东省</option>
+                                <option value="3">北京市</option>
+                            </select>
+                            <select class="form-select" style="flex:1;">
+                                <option value="">城市</option>
+                                <option value="1">深圳市</option>
+                                <option value="2">广州市</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">业务标签</label>
+                        <input type="text" class="form-input" id="tagInputIdx" placeholder="输入标签按回车，可添加多个" onkeydown="if(event.key==='Enter'){addTagIdx(this);event.preventDefault();}">
+                        <div id="tagSuggestionsIdx" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+                        <div id="tagListIdx" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">详细描述</label>
+                    <textarea class="form-input" rows="4" placeholder="请详细描述您的需求或供应能力，不少于20字"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('publishModal')">取消</button>
+                <button class="btn btn-primary" onclick="handlePublish()">立即发布</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">获取联系方式</h3>
+                <button class="modal-close" onclick="closeModal('contactModal')">✕</button>
+            </div>
+            <div class="modal-body" style="text-align:center;padding:var(--spacing-xxl);">
+                <div style="width:64px;height:64px;border-radius:50%;background:rgba(30,136,229,0.1);margin:0 auto var(--spacing-lg);display:flex;align-items:center;justify-content:center;font-size:2rem;">📞</div>
+                <p style="font-size:1rem;margin-bottom:var(--spacing-sm);">您即将获取【比亚迪汽车工业有限公司】发布人的真实联系方式。</p>
+                <p style="font-size:0.875rem;color:var(--text-muted);">系统将向对方发送通知记录您的访问。</p>
+                <p style="font-size:0.875rem;color:var(--text-muted);margin-top:var(--spacing-sm);">确认获取吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('contactModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleGetContact()">确认获取</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Result Modal -->
+    <div class="modal-overlay" id="contactResultModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">联系方式</h3>
+                <button class="modal-close" onclick="closeModal('contactResultModal')">✕</button>
+            </div>
+            <div class="modal-body" style="text-align:center;padding:var(--spacing-xxl);">
+                <div style="width:64px;height:64px;border-radius:50%;background:rgba(76,175,80,0.1);margin:0 auto var(--spacing-lg);display:flex;align-items:center;justify-content:center;font-size:2rem;">✓</div>
+                <h4 style="margin-bottom:var(--spacing-lg);">获取成功</h4>
+                <div style="background:var(--bg-main);padding:var(--spacing-lg);border-radius:var(--radius-lg);text-align:left;">
+                    <p style="margin-bottom:var(--spacing-sm);"><strong>联系人：</strong>张经理</p>
+                    <p style="margin-bottom:var(--spacing-sm);"><strong>手机号：</strong>138****8888 <button class="btn btn-sm btn-outline" style="margin-left:8px;">复制</button></p>
+                    <p><strong>微信：</strong>zhang8888</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal('contactResultModal')">知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enterprise Drawer -->
+    <div class="drawer-overlay" id="enterpriseDrawer">
+        <div class="drawer">
+            <div class="drawer-header">
+                <h3 class="drawer-title">企业详情</h3>
+                <button class="modal-close" onclick="closeDrawer('enterpriseDrawer')">✕</button>
+            </div>
+            <div class="drawer-body">
+                <div style="text-align:center;margin-bottom:var(--spacing-xl);">
+                    <div style="width:80px;height:80px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));margin:0 auto var(--spacing-md);display:flex;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:700;" class="logo-text">威</div>
+                    <h2 style="margin-bottom:var(--spacing-xs);" class="enterprise-name">上海威蓝智能科技有限公司</h2>
+                    <p style="color:var(--text-muted);" class="enterprise-subtitle">自动驾驶域控制器、ADAS算法开发</p>
+                </div>
+
+                <div style="background:var(--bg-main);padding:var(--spacing-lg);border-radius:var(--radius-lg);margin-bottom:var(--spacing-lg);">
+                    <h4 style="margin-bottom:var(--spacing-md);">基础信息</h4>
+                    <div style="display:grid;gap:var(--spacing-sm);font-size:0.875rem;">
+                        <div style="display:flex;justify-content:space-between;"><span class="text-muted">信用代码：</span><span class="info-credit">91310000XXXXXXX</span></div>
+                        <div style="display:flex;justify-content:space-between;"><span class="text-muted">所在地区：</span><span class="info-region">上海市嘉定区</span></div>
+                        <div style="display:flex;justify-content:space-between;"><span class="text-muted">行业领域：</span><span class="info-industry">智能网联 > 自动驾驶</span></div>
+                        <div style="display:flex;justify-content:space-between;"><span class="text-muted">企业标签：</span>
+                            <div style="display:flex;gap:4px;" class="info-tags">
+                                <span class="tag tag-primary" style="font-size:0.6875rem;">专精特新小巨人</span>
+                                <span class="tag tag-primary" style="font-size:0.6875rem;">软硬一体</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:var(--spacing-lg);">
+                    <h4 style="margin-bottom:var(--spacing-md);">企业简介</h4>
+                    <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.7;" class="enterprise-desc">
+                        上海威蓝智能科技有限公司成立于2019年，是一家专注于自动驾驶域控制器和ADAS算法开发的科技公司。公司核心团队来自国内外知名车企和科技公司，拥有丰富的车规级产品量产经验。公司已通过ISO 26262功能安全认证和IATF 16949汽车质量管理体系认证。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 style="margin-bottom:var(--spacing-md);" class="opp-title">该企业发布的商机</h4>
+                    <div style="display:flex;flex-direction:column;gap:var(--spacing-sm);" class="enterprise-opportunities">
+                        <!-- 动态渲染商机列表 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function goToSearch() {
+            const keyword = document.getElementById('headerSearchInput').value || '自动驾驶';
+            window.location.href = 'search.html?keyword=' + encodeURIComponent(keyword);
+        }
+
+        function goToSearchByTag(keyword) {
+            window.location.href = 'search.html?keyword=' + encodeURIComponent(keyword);
+        }
+
+        function showLoginModal() {
+            window.location.href = 'login.html';
+        }
+
+        function showPublishModal(type) {
+            selectedTagsIdx = [];
+            renderTagListIdx();
+            renderSuggestionsIdx();
+            document.getElementById('publishModal').classList.add('active');
+            if (type === 'buy') {
+                document.querySelector('input[name="oppType"][value="buy"]').checked = true;
+            } else {
+                document.querySelector('input[name="oppType"][value="supply"]').checked = true;
+            }
+        }
+
+        function showContactModal() {
+            document.getElementById('contactModal').classList.add('active');
+        }
+
+        function showEnterpriseDrawer(enterpriseId) {
+            document.getElementById('enterpriseDrawer').classList.add('active');
+            // 模拟API调用：GET /ent/enterprise/{id}
+            // 实际开发中替换为：api.get(`/ent/enterprise/${enterpriseId}`).then(res => { renderEnterpriseDrawer(res.data); });
+            const mockData = {
+                id: enterpriseId,
+                name: '上海威蓝智能科技有限公司',
+                logo_url: '',
+                auth_status: 'VERIFIED',
+                industry_name: '智能网联 > 自动驾驶',
+                sub_industry_name: '自动驾驶',
+                province_name: '上海市',
+                city_name: '嘉定区',
+                credit_code: '91310000XXXXXXX',
+                tags: ['专精特新小巨人', '软硬一体'],
+                detail: '上海威蓝智能科技有限公司成立于2019年，是一家专注于自动驾驶域控制器和ADAS算法开发的科技公司。公司核心团队来自国内外知名车企和科技公司，拥有丰富的车规级产品量产经验。公司已通过ISO 26262功能安全认证和IATF 16949汽车质量管理体系认证。',
+                opportunities: [
+                    { id: 101, type: 'BUY', title: '寻车规级毫米波雷达供应商', created_at: '2天前' },
+                    { id: 102, type: 'SUPPLY', title: '提供L4级自动驾驶算法定制服务', created_at: '1周前' },
+                    { id: 103, type: 'BUY', title: '采购自动驾驶测试数据标注服务', created_at: '2周前' }
+                ]
+            };
+            renderEnterpriseDrawer(mockData);
+        }
+
+        function renderEnterpriseDrawer(data) {
+            // 渲染企业Logo（取首字）
+            document.querySelector('#enterpriseDrawer .logo-text').textContent = data.name.charAt(0);
+            // 渲染企业名称
+            document.querySelector('#enterpriseDrawer .enterprise-name').textContent = data.name;
+            // 渲染副标题（行业子领域）
+            document.querySelector('#enterpriseDrawer .enterprise-subtitle').textContent = data.sub_industry_name;
+            // 渲染简介
+            document.querySelector('#enterpriseDrawer .enterprise-desc').textContent = data.detail;
+            // 渲染基础信息
+            document.querySelector('#enterpriseDrawer .info-credit').textContent = data.credit_code;
+            document.querySelector('#enterpriseDrawer .info-region').textContent = data.province_name + data.city_name;
+            document.querySelector('#enterpriseDrawer .info-industry').textContent = data.industry_name;
+            // 渲染标签
+            const tagsContainer = document.querySelector('#enterpriseDrawer .info-tags');
+            tagsContainer.innerHTML = data.tags.map(t => `<span class="tag tag-primary" style="font-size:0.6875rem;">${t}</span>`).join('');
+            // 渲染商机数量和商机列表
+            document.querySelector('#enterpriseDrawer .opp-title').textContent = `该企业发布的商机 (${data.opportunities.length})`;
+            const oppContainer = document.querySelector('#enterpriseDrawer .enterprise-opportunities');
+            oppContainer.innerHTML = data.opportunities.map(opp => `
+                <div style="padding:var(--spacing-md);background:var(--bg-card);border-radius:var(--radius-md);border:1px solid var(--border);cursor:pointer;" onclick="showContactModal()">
+                    <div style="display:flex;align-items:center;gap:var(--spacing-sm);margin-bottom:var(--spacing-xs);">
+                        <span class="tag tag-${opp.type === 'BUY' ? 'buy' : 'supply'}" style="font-size:0.6875rem;">${opp.type === 'BUY' ? '我要买' : '我能供'}</span>
+                        <span style="font-size:0.8125rem;color:var(--text-muted);">${opp.created_at}</span>
+                    </div>
+                    <p style="font-size:0.875rem;font-weight:500;">${opp.title}</p>
+                </div>
+            `).join('');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function closeDrawer(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function sendSms(btn) {
+            let countdown = 60;
+            btn.disabled = true;
+            btn.textContent = `${countdown}秒后重试`;
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.textContent = '获取验证码';
+                } else {
+                    btn.textContent = `${countdown}秒后重试`;
+                }
+            }, 1000);
+        }
+
+        function handleQuickLogin() {
+            closeModal('loginModal');
+            showToast('登录成功', 'success');
+        }
+
+        // ----- Tags -----
+        const availableTagsIdx = ['专精特新', '高新技术企业', '上市公司', '世界500强', '中国500强', '民营企业500强', '瞪羚企业', '独角兽企业', '国产替代', '出口供应', 'OEM配套', '研发合作', '产能合作', '渠道合作'];
+        let selectedTagsIdx = [];
+
+        function shuffleIdx(arr) { const a = [...arr]; for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+        function renderSuggestionsIdx() {
+            const el = document.getElementById('tagSuggestionsIdx');
+            if (!el) return;
+            const unused = availableTagsIdx.filter(t => !selectedTagsIdx.includes(t));
+            el.innerHTML = shuffleIdx(unused).slice(0, 5).map(t => `<span onclick="pickTagIdx('${t}')" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg-main);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.75rem;cursor:pointer;color:var(--text-secondary);">+ ${t}</span>`).join('');
+        }
+        function renderTagListIdx() {
+            const el = document.getElementById('tagListIdx');
+            if (!el) return;
+            el.innerHTML = selectedTagsIdx.map(t => `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(30,136,229,0.1);border-radius:var(--radius-sm);font-size:0.75rem;color:var(--primary);">${t} <span onclick="removeTagIdx('${t}')" style="cursor:pointer;font-size:0.625rem;">✕</span></span>`).join('');
+        }
+        function pickTagIdx(tag) {
+            if (!selectedTagsIdx.includes(tag)) selectedTagsIdx.push(tag);
+            renderTagListIdx();
+            renderSuggestionsIdx();
+        }
+        function removeTagIdx(tag) {
+            selectedTagsIdx = selectedTagsIdx.filter(t => t !== tag);
+            renderTagListIdx();
+            renderSuggestionsIdx();
+        }
+        function addTagIdx(input) {
+            const val = input.value.trim();
+            if (val && !selectedTagsIdx.includes(val)) selectedTagsIdx.push(val);
+            input.value = '';
+            renderTagListIdx();
+            renderSuggestionsIdx();
+        }
+
+        function handlePublish() {
+            closeModal('publishModal');
+            showToast('发布成功', 'success');
+        }
+
+        function handleGetContact() {
+            closeModal('contactModal');
+            setTimeout(() => {
+                document.getElementById('contactResultModal').classList.add('active');
+            }, 300);
+        }
+
+        function showToast(message, type = 'default') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'success' ? ' toast-success' : '');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenuDropdown');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function markAllRead() {
+            document.getElementById('unreadBadge').style.display = 'none';
+            showToast('已全部已读', 'success');
+        }
+
+        function goToNotify(id) {
+            window.location.href = 'notification.html';
+        }
+
+        document.addEventListener('click', function(e) {
+            const userMenu = document.getElementById('userMenuDropdown');
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if (!e.target.closest('.user-menu')) {
+                userMenu.style.display = 'none';
+            }
+            if (!e.target.closest('.notification-wrapper')) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay, .drawer-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

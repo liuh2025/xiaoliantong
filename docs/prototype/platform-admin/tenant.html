@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业(租户)管理 - 校链通</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 220px; background: #1a1f36; color: white; position: fixed; top: 0; bottom: 0; left: 0; overflow-y: auto; }
+        .admin-sidebar-header { padding: var(--spacing-lg); border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; font-size: 1.125rem; display: flex; align-items: center; gap: var(--spacing-sm); }
+        .admin-nav { padding: var(--spacing-md); }
+        .admin-nav-section { margin-bottom: var(--spacing-lg); }
+        .admin-nav-section-title { font-size: 0.6875rem; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: var(--spacing-sm) var(--spacing-md); }
+        .admin-nav-item { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-md); color: rgba(255,255,255,0.7); font-size: 0.9375rem; cursor: pointer; transition: all var(--transition-fast); margin-bottom: 2px; text-decoration: none; }
+        .admin-nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .admin-nav-item.active { background: var(--primary); color: white; }
+        .admin-main { flex: 1; margin-left: 220px; background: var(--bg-main); }
+        .admin-header { background: var(--bg-card); padding: var(--spacing-md) var(--spacing-xl); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .admin-breadcrumb { display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-muted); font-size: 0.875rem; }
+        .admin-breadcrumb span { color: var(--text-primary); }
+        .admin-content { padding: var(--spacing-xl); }
+        .toggle-btn { padding: 4px 12px; border-radius: var(--radius-sm); font-size: 0.75rem; cursor: pointer; border: 1px solid; transition: all var(--transition-fast); }
+        .toggle-btn.enable { border-color: var(--success); color: var(--success); background: transparent; }
+        .toggle-btn.enable:hover { background: var(--success); color: white; }
+        .toggle-btn.disable { border-color: var(--danger); color: var(--danger); background: transparent; }
+        .toggle-btn.disable:hover { background: var(--danger); color: white; }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header"><span>🏛️</span> 校链通管理后台</div>
+            <nav class="admin-nav">
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">数据中心</div>
+                    <a href="dashboard.html" class="admin-nav-item"><span>📊</span> 数据大盘</a>
+                </div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">企业管理</div>
+                    <a href="audit.html" class="admin-nav-item"><span>✅</span> 企业入驻审核</a>
+                    <a href="tenant.html" class="admin-nav-item active"><span>🏢</span> 企业(租户)管理</a>
+                </div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">内容管理</div>
+                    <a href="opportunity-manage.html" class="admin-nav-item"><span>📋</span> 商机内容管理</a>
+                    <a href="feeds-manage.html" class="admin-nav-item"><span>📱</span> 动态内容管理</a>
+                </div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-section-title">系统管理</div>
+                    <a href="master-data.html" class="admin-nav-item"><span>📚</span> 基础数据字典</a>
+                    <a href="rbac.html" class="admin-nav-item"><span>🔐</span> 账号与角色权限</a>
+                    <a href="settings.html" class="admin-nav-item"><span>⚙️</span> 系统设置</a>
+                </div>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="admin-breadcrumb">首页 <span>/</span> 企业管理 <span>/</span> 企业(租户)管理</div>
+                <div style="display:flex;align-items:center;gap:var(--spacing-md);"><span style="font-size:0.875rem;color:var(--text-muted);">管理员：张总</span><div class="avatar" style="width:32px;height:32px;font-size:0.875rem;background:var(--primary);">张</div></div>
+            </header>
+            <div class="admin-content">
+                <div style="display:flex;gap:var(--spacing-md);margin-bottom:var(--spacing-lg);">
+                    <input type="text" class="form-input" placeholder="搜索企业名称..." style="max-width:300px;">
+                    <button class="btn btn-outline">搜索</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>企业名称</th>
+                                <th>入驻时间</th>
+                                <th>企业管理员</th>
+                                <th>成员数</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>威蓝智能科技有限公司</td>
+                                <td>2026-04-01</td>
+                                <td>李总</td>
+                                <td>15</td>
+                                <td><span class="badge badge-success">正常</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline" onclick="showMemberModal()">成员管理</button>
+                                    <button class="toggle-btn disable" onclick="handleToggleStatus(this, '1')">禁用</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>宁德时代新能源科技股份公司</td>
+                                <td>2026-03-15</td>
+                                <td>曾总</td>
+                                <td>120</td>
+                                <td><span class="badge badge-success">正常</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline" onclick="showMemberModal()">成员管理</button>
+                                    <button class="toggle-btn disable" onclick="handleToggleStatus(this, '2')">禁用</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>深圳华视光电科技有限公司</td>
+                                <td>2026-02-20</td>
+                                <td>陈总</td>
+                                <td>8</td>
+                                <td><span class="badge badge-danger">已禁用</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline" onclick="showMemberModal()">成员管理</button>
+                                    <button class="toggle-btn enable" onclick="handleToggleStatus(this, '3')">启用</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-item disabled"><</div>
+                    <div class="pagination-item active">1</div>
+                    <div class="pagination-item">2</div>
+                    <div class="pagination-item">></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Member Modal -->
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal" style="max-width:800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">【威蓝智能科技】成员管理</h3>
+                <button class="modal-close" onclick="closeModal('memberModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--spacing-lg);">
+                    <div style="font-size:0.875rem;color:var(--text-muted);">
+                        共 <strong id="memberTotal">3</strong> 名成员 &nbsp;|&nbsp;
+                        <span style="color:var(--success);">正常 <strong id="memberActive">2</strong></span> &nbsp;|&nbsp;
+                        <span style="color:var(--danger);">已停用 <strong id="memberInactive">1</strong></span>
+                    </div>
+                    <button class="btn btn-sm btn-primary" onclick="showAddMemberModal()">+ 新增成员</button>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>手机号(登录账号)</th>
+                            <th>职位</th>
+                            <th>系统角色</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="memberTableBody">
+                        <!-- API: GET /plat-admin/tenant/enterprise/{id}/member -->
+                        <!-- Response: { total: int, items: [{ id, real_name, phone, position, role_code, is_active, created_at }] } -->
+                    </tbody>
+                </table>
+                <div class="pagination" style="margin-top:var(--spacing-md);">
+                    <div class="pagination-item disabled"><</div>
+                    <div class="pagination-item active">1</div>
+                    <div class="pagination-item">></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('memberModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div class="modal-overlay" id="addMemberModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">新增成员</h3>
+                <button class="modal-close" onclick="closeModal('addMemberModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">手机号码</label>
+                    <input type="tel" id="addMemberPhone" class="form-input" placeholder="请输入手机号（作为登录账号）" maxlength="11">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">姓名</label>
+                    <input type="text" id="addMemberName" class="form-input" placeholder="请输入真实姓名">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">职位/职级</label>
+                    <input type="text" id="addMemberPosition" class="form-input" placeholder="如 CEO、总监、经理、员工等">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">分配角色</label>
+                    <div style="display:flex;gap:var(--spacing-lg);">
+                        <label class="form-check">
+                            <input type="radio" name="addRole" value="employee" checked>
+                            <span style="padding:8px 16px;border:1px solid var(--border);border-radius:var(--radius-md);font-size:0.9375rem;">普通员工</span>
+                        </label>
+                        <label class="form-check">
+                            <input type="radio" name="addRole" value="admin">
+                            <span style="padding:8px 16px;border:1px solid var(--border);border-radius:var(--radius-md);font-size:0.9375rem;">企业管理员</span>
+                        </label>
+                    </div>
+                </div>
+                <div style="background:var(--bg-main);padding:var(--spacing-md);border-radius:var(--radius-md);font-size:0.8125rem;color:var(--text-muted);">
+                    <p>✓ 手机号需已注册平台账号（校友圈注册流程）</p>
+                    <p>✓ 初始密码为手机号后6位</p>
+                    <p>✓ 如需重置密码，点击"重置密码"由管理员线下通知</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('addMemberModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleAddMember()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Member Modal -->
+    <div class="modal-overlay" id="editMemberModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑成员</h3>
+                <button class="modal-close" onclick="closeModal('editMemberModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">姓名</label>
+                    <input type="text" id="editMemberName" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">职位/职级</label>
+                    <input type="text" id="editMemberPosition" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">手机号码</label>
+                    <input type="tel" id="editMemberPhone" class="form-input" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">系统角色</label>
+                    <select id="editMemberRole" class="form-select">
+                        <option value="employee">普通员工</option>
+                        <option value="admin">企业管理员</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">账号状态</label>
+                    <select id="editMemberStatus" class="form-select">
+                        <option value="true">启用</option>
+                        <option value="false">停用</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('editMemberModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleEditMember()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script>
+        // API响应数据结构：
+        // GET /api/v1/plat-admin/tenant/enterprise/{id}/member
+        // Response: { total: int, items: [{ id, real_name, phone, position, role_code, is_active, created_at }] }
+        const memberData = {
+            total: 3,
+            items: [
+                { id: 1, real_name: '李总', phone: '13812345678', position: 'CEO', role_code: 'admin', is_active: true, created_at: '2026-04-01' },
+                { id: 2, real_name: '张三', phone: '13900001111', position: '技术总监', role_code: 'employee', is_active: true, created_at: '2026-04-02' },
+                { id: 3, real_name: '王五', phone: '13722223333', position: '项目经理', role_code: 'employee', is_active: false, created_at: '2026-04-03' }
+            ]
+        };
+
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function showMemberModal() {
+            renderMemberTable();
+            document.getElementById('memberModal').classList.add('active');
+        }
+        function renderMemberTable() {
+            const tbody = document.getElementById('memberTableBody');
+            const activeCount = memberData.items.filter(m => m.is_active).length;
+            document.getElementById('memberTotal').textContent = memberData.total;
+            document.getElementById('memberActive').textContent = activeCount;
+            document.getElementById('memberInactive').textContent = memberData.total - activeCount;
+
+            const roleMap = { admin: '企业管理员', employee: '普通员工', guest: '游客' };
+            const roleClass = { admin: 'badge-success', employee: 'badge-info', guest: 'badge-secondary' };
+
+            tbody.innerHTML = memberData.items.map(item => `
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:var(--spacing-sm);">
+                            <div class="avatar" style="width:28px;height:28px;font-size:0.75rem;background:${item.is_active ? 'var(--success)' : '#9E9E9E'};">${item.real_name[0]}</div>
+                            <span>${item.real_name}</span>
+                        </div>
+                    </td>
+                    <td>${item.phone}</td>
+                    <td>${item.position || '-'}</td>
+                    <td><span class="badge badge-${roleClass[item.role_code]}">${roleMap[item.role_code]}</span></td>
+                    <td>
+                        <span class="status-badge ${item.is_active ? 'normal' : 'disabled'}">
+                            <span class="status-dot ${item.is_active ? 'success' : 'danger'}"></span>
+                            ${item.is_active ? '正常' : '已停用'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="showEditMemberModal(${item.id})">编辑</button>
+                        <button class="btn btn-sm btn-outline" onclick="handleResetPassword(${item.id})">重置密码</button>
+                        <button class="btn btn-sm btn-outline" style="color:var(--danger);border-color:var(--danger);" onclick="handleUnbindMember(${item.id})">解绑</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        let currentEditMemberId = null;
+
+        // 新增成员弹窗
+        function showAddMemberModal() {
+            document.getElementById('addMemberPhone').value = '';
+            document.getElementById('addMemberName').value = '';
+            document.getElementById('addMemberPosition').value = '';
+            document.querySelector('input[name="addRole"][value="employee"]').checked = true;
+            document.getElementById('addMemberModal').classList.add('active');
+        }
+
+        // 新增成员保存
+        function handleAddMember() {
+            const phone = document.getElementById('addMemberPhone').value.trim();
+            const real_name = document.getElementById('addMemberName').value.trim();
+            const position = document.getElementById('addMemberPosition').value.trim();
+            const role_code = document.querySelector('input[name="addRole"]:checked').value;
+
+            if (!phone || !real_name) {
+                showToast('请填写必填项', 'error');
+                return;
+            }
+            if (!/^1[3-9]\d{9}$/.test(phone)) {
+                showToast('请输入正确的手机号', 'error');
+                return;
+            }
+
+            // API: POST /plat-admin/tenant/enterprise/{id}/member
+            const newMember = {
+                id: Date.now(),
+                real_name,
+                phone,
+                position,
+                role_code,
+                is_active: true,
+                created_at: new Date().toISOString().split('T')[0]
+            };
+            memberData.items.push(newMember);
+            memberData.total++;
+            renderMemberTable();
+            closeModal('addMemberModal');
+            showToast('添加成员成功', 'success');
+        }
+
+        // 编辑成员弹窗
+        function showEditMemberModal(id) {
+            currentEditMemberId = id;
+            const member = memberData.items.find(m => m.id === id);
+            if (!member) return;
+
+            document.getElementById('editMemberName').value = member.real_name;
+            document.getElementById('editMemberPosition').value = member.position || '';
+            document.getElementById('editMemberPhone').value = member.phone;
+            document.getElementById('editMemberRole').value = member.role_code;
+            document.getElementById('editMemberStatus').value = member.is_active.toString();
+
+            document.getElementById('editMemberModal').classList.add('active');
+        }
+
+        // 编辑成员保存
+        function handleEditMember() {
+            if (!currentEditMemberId) return;
+
+            const member = memberData.items.find(m => m.id === currentEditMemberId);
+            if (!member) return;
+
+            member.real_name = document.getElementById('editMemberName').value.trim();
+            member.position = document.getElementById('editMemberPosition').value.trim();
+            member.role_code = document.getElementById('editMemberRole').value;
+            member.is_active = document.getElementById('editMemberStatus').value === 'true';
+
+            // API: PUT /plat-admin/tenant/member/{id}
+            renderMemberTable();
+            closeModal('editMemberModal');
+            showToast('保存成功', 'success');
+        }
+
+        function handleResetPassword(id) {
+            // API: POST /plat-admin/tenant/member/{id}/reset-password
+            showToast('密码已重置为手机号后6位', 'success');
+        }
+        function handleUnbindMember(id) {
+            // API: POST /plat-admin/tenant/member/{id}/unbind
+            if (confirm('确定要解绑该成员吗？解绑后该成员将恢复为游客身份。')) {
+                memberData.items = memberData.items.filter(m => m.id !== id);
+                memberData.total--;
+                renderMemberTable();
+                showToast('已解绑该成员', 'success');
+            }
+        }
+        function showToast(message, type) { const toast = document.getElementById('toast'); toast.textContent = message; toast.className = 'toast show' + (type === 'success' ? ' toast-success' : ''); setTimeout(() => toast.classList.remove('show'), 3000); }
+        function handleToggleStatus(btn, id) {
+            const row = btn.closest('tr');
+            const badge = row.querySelector('.badge');
+            const isDisableBtn = btn.classList.contains('disable');
+
+            if (isDisableBtn) {
+                // Disable - 点击"禁用"按钮
+                if (!confirm('确定要禁用该企业吗？禁用后企业所有成员将无法登录。')) return;
+                badge.className = 'badge badge-danger';
+                badge.textContent = '已禁用';
+                btn.className = 'toggle-btn enable';
+                btn.textContent = '启用';
+                showToast('已禁用该企业', 'success');
+            } else {
+                // Enable - 点击"启用"按钮
+                badge.className = 'badge badge-success';
+                badge.textContent = '正常';
+                btn.className = 'toggle-btn disable';
+                btn.textContent = '禁用';
+                showToast('已启用该企业', 'success');
+            }
+        }
+        document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); }));
+    </script>
+</body>
+</html>

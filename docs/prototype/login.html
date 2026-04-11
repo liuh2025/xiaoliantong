@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 校链通</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <style>
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+            padding: var(--spacing-lg);
+        }
+
+        .login-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 420px;
+            padding: var(--spacing-xxl);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .login-logo h1 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .login-tabs {
+            display: flex;
+            margin-bottom: var(--spacing-xl);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .login-tab {
+            flex: 1;
+            padding: var(--spacing-md);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all var(--transition-fast);
+        }
+
+        .login-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .login-form {
+            display: none;
+        }
+
+        .login-form.active {
+            display: block;
+        }
+
+        .sms-btn {
+            position: absolute;
+            right: var(--spacing-sm);
+            top: 50%;
+            transform: translateY(-50%);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 0.8125rem;
+            color: var(--primary);
+            background: transparent;
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .sms-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .sms-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-input-with-btn {
+            position: relative;
+        }
+
+        .form-input-with-btn .form-input {
+            padding-right: 100px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .remember-me input {
+            width: 16px;
+            height: 16px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: var(--spacing-md);
+            font-size: 1rem;
+        }
+
+        .login-footer {
+            margin-top: var(--spacing-xl);
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .login-footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .login-footer a:hover {
+            color: var(--primary);
+        }
+
+        .login-success {
+            text-align: center;
+            padding: var(--spacing-xxl) 0;
+        }
+
+        .login-success-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-lg);
+            font-size: 2rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: var(--spacing-sm);
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-card">
+            <div class="login-logo">
+                <h1>校链通</h1>
+                <p class="text-muted">校友供应链撮合平台</p>
+            </div>
+
+            <div class="login-tabs">
+                <div class="login-tab active" onclick="switchTab('sms')">短信验证码登录</div>
+                <div class="login-tab" onclick="switchTab('password')">密码登录</div>
+            </div>
+
+            <!-- 短信验证码登录 -->
+            <div id="sms-login" class="login-form active">
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label required">手机号</label>
+                        <input type="tel" class="form-input" placeholder="请输入手机号" maxlength="11" id="sms-phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label required">验证码</label>
+                        <div class="form-input-with-btn">
+                            <input type="text" class="form-input" placeholder="请输入验证码" maxlength="6" id="sms-code">
+                            <button type="button" class="sms-btn" id="sms-send-btn" onclick="sendSms()">获取验证码</button>
+                        </div>
+                    </div>
+
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember-sms">
+                        <label for="remember-sms">7天内免登录</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary login-btn">登 录</button>
+                </form>
+            </div>
+
+            <!-- 密码登录 -->
+            <div id="password-login" class="login-form">
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label required">手机号</label>
+                        <input type="tel" class="form-input" placeholder="请输入手机号" maxlength="11" id="pwd-phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label required">密码</label>
+                        <div style="position:relative;">
+                            <input type="password" class="form-input" placeholder="请输入密码" id="pwd-password" style="padding-right:40px;">
+                            <span class="password-toggle" onclick="togglePassword('pwd-password')">👁️</span>
+                        </div>
+                    </div>
+
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember-pwd">
+                        <label for="remember-pwd">7天内免登录</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary login-btn">登 录</button>
+                </form>
+            </div>
+
+            <div class="login-footer">
+                <a href="register.html">立即注册</a>
+                <a href="#" onclick="showForgotModal(); return false;">忘记密码？</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录成功弹窗 -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal">
+            <div class="modal-body">
+                <div class="login-success">
+                    <div class="login-success-icon">✓</div>
+                    <h3>登录成功</h3>
+                    <p class="text-muted mt-md">欢迎回来！正在跳转...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeSuccessModal()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 忘记密码弹窗 -->
+    <div class="modal-overlay" id="forgotModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">忘记密码</h3>
+                <button class="modal-close" onclick="closeModal('forgotModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: 输入手机号 -->
+                <div id="forgot-step-1">
+                    <div class="form-group">
+                        <label class="form-label required">手机号</label>
+                        <input type="tel" class="form-input" placeholder="请输入绑定的手机号" maxlength="11" id="forgot-phone">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">验证码</label>
+                        <div class="form-input-with-btn">
+                            <input type="text" class="form-input" placeholder="请输入验证码" maxlength="6" id="forgot-code">
+                            <button type="button" class="sms-btn" id="forgot-send-btn" onclick="sendForgotSms()">获取验证码</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="verifyForgotCode()">下一步</button>
+                </div>
+                <!-- Step 2: 设置新密码 -->
+                <div id="forgot-step-2" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label required">新密码</label>
+                        <div style="position:relative;">
+                            <input type="password" class="form-input" placeholder="8-20位，字母数字组合" id="forgot-new-pwd" style="padding-right:40px;">
+                            <span class="password-toggle" onclick="togglePassword('forgot-new-pwd')">👁️</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">确认密码</label>
+                        <div style="position:relative;">
+                            <input type="password" class="form-input" placeholder="请再次输入新密码" id="forgot-confirm-pwd" style="padding-right:40px;">
+                            <span class="password-toggle" onclick="togglePassword('forgot-confirm-pwd')">👁️</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="resetPassword()">确认重置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重置成功弹窗 -->
+    <div class="modal-overlay" id="resetSuccessModal">
+        <div class="modal">
+            <div class="modal-body">
+                <div class="login-success">
+                    <div class="login-success-icon">✓</div>
+                    <h3>密码重置成功</h3>
+                    <p class="text-muted mt-md">请使用新密码登录</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="goToLogin()">去登录</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.login-tab').forEach((t, i) => {
+                t.classList.toggle('active', (tab === 'sms' && i === 0) || (tab === 'password' && i === 1));
+            });
+            document.getElementById('sms-login').classList.toggle('active', tab === 'sms');
+            document.getElementById('password-login').classList.toggle('active', tab === 'password');
+        }
+
+        function sendSms() {
+            const phone = document.getElementById('sms-phone').value;
+            if (!phone || phone.length !== 11) {
+                showToast('请输入正确的手机号');
+                return;
+            }
+            // API: POST /auth/sms/send { phone, type: 'login' }
+            startCountdown('sms-send-btn');
+            showToast('验证码已发送');
+        }
+
+        function sendForgotSms() {
+            const phone = document.getElementById('forgot-phone').value;
+            if (!phone || phone.length !== 11) {
+                showToast('请输入正确的手机号');
+                return;
+            }
+            // API: POST /auth/sms/send { phone, type: 'password_reset' }
+            startCountdown('forgot-send-btn');
+            showToast('验证码已发送');
+        }
+
+        function startCountdown(btnId) {
+            let countdown = 60;
+            const btn = document.getElementById(btnId);
+            btn.disabled = true;
+            btn.textContent = `${countdown}秒后重试`;
+
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.textContent = '获取验证码';
+                } else {
+                    btn.textContent = `${countdown}秒后重试`;
+                }
+            }, 1000);
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            // 实际登录逻辑
+            document.getElementById('successModal').classList.add('active');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+        }
+
+        function showForgotModal() {
+            document.getElementById('forgotModal').classList.add('active');
+            document.getElementById('forgot-step-1').style.display = 'block';
+            document.getElementById('forgot-step-2').style.display = 'none';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function verifyForgotCode() {
+            const phone = document.getElementById('forgot-phone').value;
+            const code = document.getElementById('forgot-code').value;
+            if (!phone || phone.length !== 11) {
+                showToast('请输入正确的手机号');
+                return;
+            }
+            if (!code || code.length !== 6) {
+                showToast('请输入6位验证码');
+                return;
+            }
+            // API: POST /auth/password/reset/verify (验证验证码)
+            // 假设返回 { valid: true } 表示验证码正确
+            // 此处模拟验证通过，实际需调用接口
+            document.getElementById('forgot-step-1').style.display = 'none';
+            document.getElementById('forgot-step-2').style.display = 'block';
+        }
+
+        function resetPassword() {
+            const phone = document.getElementById('forgot-phone').value;
+            const code = document.getElementById('forgot-code').value;
+            const newPwd = document.getElementById('forgot-new-pwd').value;
+            const confirmPwd = document.getElementById('forgot-confirm-pwd').value;
+            if (!newPwd || newPwd.length < 8) {
+                showToast('密码长度8-20位');
+                return;
+            }
+            if (newPwd !== confirmPwd) {
+                showToast('两次密码输入不一致');
+                return;
+            }
+            // API: POST /auth/password/reset (重置密码)
+            closeModal('forgotModal');
+            document.getElementById('resetSuccessModal').classList.add('active');
+        }
+
+        function goToLogin() {
+            closeModal('resetSuccessModal');
+            // 跳转登录页
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast') || createToast();
+            toast.textContent = message;
+            toast.className = 'toast show';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function createToast() {
+            const toast = document.createElement('div');
+            toast.id = 'toast';
+            toast.className = 'toast';
+            document.body.appendChild(toast);
+            return toast;
+        }
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

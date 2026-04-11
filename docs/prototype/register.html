@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 校链通</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <style>
+        .register-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+            padding: var(--spacing-lg);
+        }
+
+        .register-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 480px;
+            padding: var(--spacing-xxl);
+        }
+
+        .register-logo {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .register-logo h1 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .sms-btn {
+            position: absolute;
+            right: var(--spacing-sm);
+            top: 50%;
+            transform: translateY(-50%);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 0.8125rem;
+            color: var(--primary);
+            background: transparent;
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .sms-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .sms-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-input-with-btn {
+            position: relative;
+        }
+
+        .form-input-with-btn .form-input {
+            padding-right: 100px;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: var(--spacing-md);
+            font-size: 1rem;
+        }
+
+        .upload-box {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            text-align: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .upload-box:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.02);
+        }
+
+        .upload-box-icon {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .protocol-check {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .protocol-check input {
+            margin-top: 2px;
+        }
+
+        .protocol-check a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .register-footer {
+            margin-top: var(--spacing-xl);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .register-footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-page">
+        <div class="register-card">
+            <div class="register-logo">
+                <h1>校链通</h1>
+                <p class="text-muted">校友供应链撮合平台</p>
+            </div>
+
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label required">手机号</label>
+                    <input type="tel" class="form-input" placeholder="请输入手机号" maxlength="11" id="phone">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">验证码</label>
+                    <div class="form-input-with-btn">
+                        <input type="text" class="form-input" placeholder="请输入验证码" maxlength="6" id="code">
+                        <button type="button" class="sms-btn" onclick="sendSms(this)">获取验证码</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">设置密码</label>
+                    <input type="password" class="form-input" placeholder="请设置登录密码（8-20位）" id="password">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">确认密码</label>
+                    <input type="password" class="form-input" placeholder="请再次输入密码" id="confirmPassword">
+                </div>
+
+                <div class="protocol-check">
+                    <input type="checkbox" id="protocol">
+                    <label for="protocol">
+                        我已阅读并同意<a href="#" class="agreement-link">《校链通用户协议》</a>和<a href="#" class="agreement-link">《隐私政策》</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary register-btn">立即注册</button>
+            </form>
+
+            <div class="register-footer">
+                已有账号？<a href="login.html">立即登录</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function sendSms(btn) {
+            const phone = document.getElementById('phone').value;
+            if (!phone || phone.length !== 11) {
+                showToast('请输入正确的手机号');
+                return;
+            }
+            // API: POST /auth/sms/send { phone, type: 'register' }
+            startCountdown(btn);
+            showToast('验证码已发送');
+        }
+
+        function startCountdown(btn) {
+            let countdown = 60;
+            btn.disabled = true;
+            btn.textContent = `${countdown}秒后重试`;
+
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.textContent = '获取验证码';
+                } else {
+                    btn.textContent = `${countdown}秒后重试`;
+                }
+            }, 1000);
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value;
+            const code = document.getElementById('code').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const protocol = document.getElementById('protocol').checked;
+
+            if (!phone || phone.length !== 11) {
+                showToast('请输入正确的手机号');
+                return;
+            }
+            if (!code || code.length !== 6) {
+                showToast('请输入6位验证码');
+                return;
+            }
+            if (password.length < 8 || password.length > 20) {
+                showToast('密码长度应为8-20位');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showToast('两次输入的密码不一致');
+                return;
+            }
+            if (!protocol) {
+                showToast('请阅读并同意用户协议');
+                return;
+            }
+
+            // API: POST /auth/register
+            // request: { phone, code, password }
+            // 成功后跳转首页或登录页
+            showToast('注册成功');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast') || createToast();
+            toast.textContent = message;
+            toast.className = 'toast show';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function createToast() {
+            const toast = document.createElement('div');
+            toast.id = 'toast';
+            toast.className = 'toast';
+            document.body.appendChild(toast);
+            return toast;
+        }
+    </script>
+</body>
+</html>

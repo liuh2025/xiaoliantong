@@ -553,14 +553,14 @@ test_data:
 
 #### 7.1.1 发送短信验证码
 
-| 用例ID | 用例名称 | 测试场景 | 测试数据 | 操作步骤 | 预期结果 | 验证步骤 |
-|--------|----------|----------|----------|----------|----------|----------|
-| TC-API-auth-001 | 发送登录验证码-成功 | 正例-有效手机号 | phone: `${valid_phone}`<br>type: `login` | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 0 | **API断言**:<br>- data.send_status = true<br>**DB校验**:<br>- sms_codes表: phone=`${valid_phone}`<br>- type=`login`<br>- used=false<br>- code=6位数字<br>- expires_at > now+4min<br>**清理**: 删除验证码记录 |
-| TC-API-auth-002 | 发送登录验证码-超过每日限制 | 反例-10次限制 | phone: `${phone_daily_limit}`<br>type: `login`<br>**Mock**: 注入limit=10 | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 10001<br>message: "当日发送次数已用尽" | **Mock验证**:<br>- 检查daily_limit[phone] >= 10<br>**DB校验**:<br>- sms_send_log表当日count=10 |
-| TC-API-auth-003 | 发送注册验证码-成功 | 正例-新手机号 | phone: `${new_phone}`<br>type: `register` | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 0 | **API断言**:<br>- data.send_status = true<br>**DB校验**:<br>- sms_codes表记录存在<br>- type=`register` |
-| TC-API-auth-004 | 发送注册验证码-手机号已注册 | 反例-手机号重复 | phone: `${registered_phone}`<br>type: `register` | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 10002<br>message: "手机号已注册" | **API断言**:<br>- data.exists = true<br>**DB校验**:<br>- users表有记录 |
-| TC-API-auth-005 | 发送密码重置验证码-成功 | 正例-已注册手机 | phone: `${valid_phone}`<br>type: `password_reset` | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 0 | **API断言**:<br>- data.send_status = true<br>**DB校验**:<br>- sms_codes.type=`password_reset` |
-| TC-API-auth-006 | 发送密码重置验证码-未注册手机 | 反例-手机不存在 | phone: `${nonexistent_phone}`<br>type: `password_reset` | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 10003<br>message: "手机号未注册" | **API断言**:<br>- data.exists = false |
+| 用例ID            | 用例名称            | 测试场景     | 测试数据                                                                   | 操作步骤                                        | 预期结果                                            | 验证步骤                                                                                                                                                                                        |
+| --------------- | --------------- | -------- | ---------------------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TC-API-auth-001 | 发送登录验证码-成功      | 正例-有效手机号 | phone: `${valid_phone}`<br>type: `login`                               | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 0                             | **API断言**:<br>- data.send_status = true<br>**DB校验**:<br>- sms_codes表: phone=`${valid_phone}`<br>- type=`login`<br>- used=false<br>- code=6位数字<br>- expires_at > now+4min<br>**清理**: 删除验证码记录 |
+| TC-API-auth-002 | 发送登录验证码-超过每日限制  | 反例-10次限制 | phone: `${phone_daily_limit}`<br>type: `login`<br>**Mock**: 注入limit=10 | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 10001<br>message: "当日发送次数已用尽" | **Mock验证**:<br>- 检查daily_limit[phone] >= 10<br>**DB校验**:<br>- sms_send_log表当日count=10                                                                                                       |
+| TC-API-auth-003 | 发送注册验证码-成功      | 正例-新手机号  | phone: `${new_phone}`<br>type: `register`                              | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 0                             | **API断言**:<br>- data.send_status = true<br>**DB校验**:<br>- sms_codes表记录存在<br>- type=`register`                                                                                               |
+| TC-API-auth-004 | 发送注册验证码-手机号已注册  | 反例-手机号重复 | phone: `${registered_phone}`<br>type: `register`                       | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 10002<br>message: "手机号已注册"    | **API断言**:<br>- data.exists = true<br>**DB校验**:<br>- users表有记录                                                                                                                              |
+| TC-API-auth-005 | 发送密码重置验证码-成功    | 正例-已注册手机 | phone: `${valid_phone}`<br>type: `password_reset`                      | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 0                             | **API断言**:<br>- data.send_status = true<br>**DB校验**:<br>- sms_codes.type=`password_reset`                                                                                                   |
+| TC-API-auth-006 | 发送密码重置验证码-未注册手机 | 反例-手机不存在 | phone: `${nonexistent_phone}`<br>type: `password_reset`                | POST /api/v1/auth/sms/send<br>{phone, type} | HTTP 200<br>code: 10003<br>message: "手机号未注册"    | **API断言**:<br>- data.exists = false                                                                                                                                                         |
 
 #### 7.1.2 短信验证码登录
 
@@ -660,71 +660,243 @@ test_data:
 
 #### TC-API-Chain-002: Token刷新链路
 
-| 阶段 | 用例 | 操作 | 预期结果 | DB验证 |
-|------|------|------|----------|--------|
-| 1.登录 | TC-API-auth-007 | POST /auth/login/sms | 成功，返回tokens | auth_tokens.expires_at = now+2h |
-| 2.刷新Token | TC-API-auth-015 | POST /auth/token/refresh | 成功，返回新tokens | 原refresh_token.revoked=true |
-| 3.使用旧refresh | TC-API-auth-016 | POST /auth/token/refresh<br>(用旧token) | 失败，Token无效 | token_blacklist有记录 |
-| 4.使用新refresh | TC-API-auth-015 | POST /auth/token/refresh<br>(用新token) | 成功 | — |
+| 阶段           | 用例              | 操作                                    | 预期结果         | DB验证                            |
+| ------------ | --------------- | ------------------------------------- | ------------ | ------------------------------- |
+| 1.登录         | TC-API-auth-007 | POST /auth/login/sms                  | 成功，返回tokens  | auth_tokens.expires_at = now+2h |
+| 2.刷新Token    | TC-API-auth-015 | POST /auth/token/refresh              | 成功，返回新tokens | 原refresh_token.revoked=true     |
+| 3.使用旧refresh | TC-API-auth-016 | POST /auth/token/refresh<br>(用旧token) | 失败，Token无效   | token_blacklist有记录              |
+| 4.使用新refresh | TC-API-auth-015 | POST /auth/token/refresh<br>(用新token) | 成功           | —                               |
 
 ---
 
 ## 8. 测试用例（L2 E2E）
 
-### 8.1 E2E 用例模板
+> **详细用例文档**: [E2E 测试用例详细设计](floating-dazzling-feigenbaum.md)
 
-```yaml
-用例ID: TC-E2E-{序号}
-用例名称: {描述}
-前置条件:
-  - 已登录 / 已认证用户 / 已创建企业 / ...
-操作步骤:
-  - step: 1
-    action: 点击元素 / 输入文本 / API调用
-    selector: "#login-phone" / "登录按钮"
-    value: "${phone}"
-  - step: 2
-    action: API调用
-    method: POST
-    url: /api/v1/auth/sms/send
-    body: {phone: "${phone}"}
-预期结果:
-  - 页面跳转到首页
-  - 显示用户头像
-截图:
-  - TC-E2E-xxx-步骤1-登录成功.png
-  - TC-E2E-xxx-步骤2-进入首页.png
+### 8.0 测试前置条件检查（必读）
+
+> **WARNING**: 执行任何 E2E 测试用例前，必须逐项确认以下条件已满足。如有不满足项，须先准备测试数据，否则用例将因数据缺失而失败。
+
+#### 8.0.1 环境就绪检查
+
+| 序号 | 检查项 | 检查方法 | 不满足时的处理 |
+|:----:|--------|----------|--------------|
+| 1 | 后端服务已启动 | `curl http://localhost:8000/api/v1/public/stats` 返回 200 | `cd src/backend && python manage.py runserver 0.0.0.0:8000` |
+| 2 | 前端服务已启动 | `curl http://localhost:3000` 返回 200 | `cd frontend && npm run dev` |
+| 3 | 数据库 migration 已执行 | `python manage.py showmigrations` 无 `[X]` 待执行项 | `python manage.py migrate` |
+| 4 | 基础数据字典已加载 | 行业/品类/标签/地区表有数据 | 执行 fixtures 或通过管理后台录入 |
+
+#### 8.0.2 测试账号准备
+
+| 账号类型 | 手机号 | 密码 | 角色 | 用途 | 准备方式 |
+|----------|--------|------|------|------|----------|
+| 平台超级管理员 | 13800000001 | Admin123! | `SUPER_ADMIN` | 第12~19章测试 | 执行 `python manage.py createsuperuser` 或 fixtures |
+| 平台运营 | 13800000002 | Admin123! | `PLATFORM_OPERATOR` | 第13~16章审核测试 | 通过超管后台创建 |
+| 企业管理员（已认证） | 13900000001 | Ent123! | `ENT_ADMIN` | 第9~11章企业管理测试 | 注册 → 创建企业 → 超管审核通过 |
+| 企业普通员工 | 13900000002 | Ent123! | `EMPLOYEE` | 员工相关测试 | 企业管理员添加 |
+| 未绑定企业用户 | 13700000001 | User123! | `GUEST` | 第20章权限测试 | 注册即可 |
+| 无企业用户（用于第2章注册测试） | — | — | — | 新注册测试 | 无需预创建 |
+
+#### 8.0.3 业务数据准备
+
+| 数据项 | 要求 | 影响章节 | 准备方式 |
+|--------|------|----------|----------|
+| 已认证企业 ≥1 家 | auth_status=VERIFIED, 企业管理员已绑定 | 第3~7章, 第9~11章 | 注册企业管理员 → 创建企业 → 超管审核通过 |
+| 未认证企业 ≥1 家 | auth_status=UNVERIFIED | 第13章审核测试 | 创建企业后不审核 |
+| 生效中的商机 ≥5 条 | status=PUBLISHED，类型包含"我要买"和"我能供" | 第3~4章商机列表, 第7章搜索 | 企业管理员发布 |
+| 已发布动态 ≥3 条 | status=NORMAL | 第3章校友动态, 第6章校友圈 | 已登录用户发布 |
+| 未读通知 ≥3 条 | is_read=false | 第3.10节, 第8章通知页 | 触发审核/商机查看等业务动作 |
+| 基础数据字典 | 行业≥3个一级+二级，地区≥3省+市，品类≥3个，标签≥5个 | 第4~5章筛选, 第17章字典 | fixtures 或管理后台录入 |
+
+#### 8.0.4 检查脚本（建议在测试前执行）
+
+```bash
+# 1. 检查后端
+curl -s http://localhost:8000/api/v1/public/stats | python -m json.tool
+
+# 2. 检查前端
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
+
+# 3. 检查数据库 migration
+cd src/backend && python manage.py showmigrations --plan 2>&1 | grep "\[ \]" && echo "存在未执行迁移!" || echo "迁移全部完成"
+
+# 4. 检查测试账号可登录
+curl -s -X POST http://localhost:8000/api/v1/auth/login/password \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"13900000001","password":"Ent123!"}' | python -m json.tool
 ```
 
-### 8.2 冒烟测试用例
+---
 
-| 用例ID | 用例名称 | 冒烟 | 操作步骤 | 预期结果 | 截图 |
-|--------|----------|:----:|----------|----------|------|
-| TC-E2E-001 | 短信验证码登录 | ✅ | 1. 打开登录页<br>2. 输入手机号<br>3. 点击获取验证码<br>4. 输入验证码(123456)<br>5. 点击登录 | 登录成功，跳转首页，显示用户信息 | ✅ |
-| TC-E2E-002 | 账号密码登录 | ✅ | 1. 打开登录页<br>2. 输入用户名/密码<br>3. 点击登录 | 登录成功，跳转首页 | ✅ |
-| TC-E2E-003 | 注册新账号 | ✅ | 1. 打开注册页<br>2. 输入手机号/验证码/密码/用户名<br>3. 点击注册 | 注册成功，自动登录 | ✅ |
-| TC-E2E-004 | 浏览企业名录 | ✅ | 1. 首页点击"企业名录"<br>2. 筛选行业/省份<br>3. 点击企业查看详情 | 显示企业列表和详情 | ✅ |
-| TC-E2E-005 | 认领企业 | ✅ | 1. 搜索未认领企业<br>2. 点击"认领"<br>3. 填写认证信息<br>4. 提交认证 | 提交成功，等待审核 | ✅ |
-| TC-E2E-006 | 发布商机 | ✅ | 1. 进入企业工作台<br>2. 点击"商机管理"<br>3. 点击"发布商机"<br>4. 填写商机信息<br>5. 提交发布 | 商机发布成功 | ✅ |
-| TC-E2E-007 | 获取商机联系方式 | ✅ | 1. 商机广场浏览商机<br>2. 点击"查看详情"<br>3. 点击"获取联系方式" | 显示联系方式 | ✅ |
-| TC-E2E-008 | 发布动态 | ✅ | 1. 进入校友圈<br>2. 点击"发布动态"<br>3. 填写内容并上传图片<br>4. 提交发布 | 动态发布成功 | ✅ |
-| TC-E2E-009 | 企业管理员添加员工 | ✅ | 1. 进入企业工作台<br>2. 点击"员工管理"<br>3. 点击"添加员工"<br>4. 填写员工信息<br>5. 提交添加 | 员工添加成功 | ✅ |
-| TC-E2E-010 | 企业管理员编辑企业信息 | ✅ | 1. 进入企业工作台<br>2. 点击"企业信息"<br>3. 编辑企业简介<br>4. 保存修改 | 信息更新成功 | ✅ |
-| TC-E2E-011 | 平台运营审核企业 | ✅ | 1. 进入管理后台<br>2. 点击"企业审核"<br>3. 查看待审核企业<br>4. 点击"通过" | 企业审核通过 | ✅ |
-| TC-E2E-013 | 全局搜索功能 | ✅ | 1. 首页搜索框输入关键词<br>2. 点击搜索 | 显示搜索结果 | ✅ |
-| TC-E2E-015 | 登出功能 | ✅ | 1. 点击用户头像<br>2. 点击"退出登录" | 退出登录，跳转登录页 | ✅ |
+### 8.1 用例总览（20章 × 全页面覆盖）
 
-### 8.3 核心功能测试用例
+> 以下为用例摘要，**完整步骤与预期结果**见 [floating-dazzling-feigenbaum.md](floating-dazzling-feigenbaum.md)。
 
-| 用例ID | 用例名称 | 操作步骤 | 预期结果 | 截图 |
-|--------|----------|----------|----------|------|
-| TC-E2E-012 | 平台运营下架商机 | 1. 进入管理后台<br>2. 点击"商机内容管理"<br>3. 选择商机并下架 | 商机已下架 | ✅ |
-| TC-E2E-014 | 消息通知查看 | 1. 点击顶部铃铛图标<br>2. 查看最近通知<br>3. 点击单条查看详情<br>4. 点击"全部已读" | 通知显示并标记已读 | ✅ |
-| TC-E2E-016 | Token自动刷新 | 1. 登录系统<br>2. 等待access_token即将过期<br>3. 继续操作 | 操作不中断，Token自动刷新 | ✅ |
-| TC-E2E-017 | 登录失败-验证码错误 | 1. 打开登录页<br>2. 输入手机号<br>3. 获取验证码<br>4. 输入错误验证码<br>5. 点击登录 | 提示"验证码错误" | ✅ |
-| TC-E2E-018 | 登录失败-密码错误 | 1. 打开登录页<br>2. 输入错误密码<br>3. 点击登录 | 提示"密码错误" | ✅ |
-| TC-E2E-019 | 发布商机-未绑定企业 | 1. 未认领企业<br>2. 进入企业工作台<br>3. 点击"发布商机" | 提示"请先认领或创建企业" | ✅ |
-| TC-E2E-020 | 访问管理后台-无权限 | 1. 已登录企业用户<br>2. 尝试访问管理后台URL | 提示"权限不足" | ✅ |
+| 章节 | 模块 | 页面原型 | 前提条件 | 关键测试点 |
+|------|------|----------|----------|-----------|
+| 第1章 | 登录 | login.html | 用户未登录 | 短信登录、密码登录、忘记密码、Tab切换、弹窗关闭 |
+| 第2章 | 注册 | register.html | 用户未登录 | 页面展示、表单校验（5项）、注册成功跳转 |
+| 第3章 | 首页 | index.html | 已登录 | Header结构、Hero区、统计卡片、推荐列表、发布商机弹窗、获取联系方式、企业Drawer、通知面板、用户菜单、搜索跳转 |
+| 第4章 | 商机广场 | opportunity.html | 已登录 | 页面结构、筛选侧边栏（类型/行业级联/品类/地区级联）、已选摘要、重置、商机卡片、分页、发布弹窗、获取联系方式 |
+| 第5章 | 企业名录 | enterprise.html | 已登录 | 页面结构、筛选（行业/品类/地区/热门标签）、企业卡片、分页、认领弹窗（两步式）、创建弹窗、企业详情Drawer |
+| 第6章 | 校友圈 | feeds.html | 已登录 | 页面展示、动态卡片、发布动态 |
+| 第7章 | 搜索 | search.html | — | 搜索页面、三Tab切换、重新搜索 |
+| 第8章 | 通知消息 | notification.html | 已登录 | 页面展示、通知列表、未读/已读、全部已读 |
+| 第9章 | 企业信息维护 | enterprise-admin/enterprise-info.html | 企业管理员登录 | Admin侧边栏、只读/可编辑字段、保存/取消 |
+| 第10章 | 员工管理 | enterprise-admin/employee.html | 企业管理员登录 | 员工列表、新增弹窗、编辑弹窗、重置密码、解绑 |
+| 第11章 | 商机管理 | enterprise-admin/my-opportunity.html | 企业管理员登录 | 列表筛选、编辑弹窗、下架/重新发布 |
+| 第12章 | 数据大盘 | platform-admin/dashboard.html | 平台管理员登录 | 侧边栏4分组、统计卡片4项、趋势图 |
+| 第13章 | 企业审核 | platform-admin/audit.html | 平台管理员登录 | 审核列表Tab切换、审核弹窗（通过/驳回） |
+| 第14章 | 租户管理 | platform-admin/tenant.html | 平台管理员登录 | 租户列表、成员管理弹窗、新增成员、禁用/启用 |
+| 第15章 | 商机内容管理 | platform-admin/opportunity-manage.html | 平台管理员登录 | 列表筛选、查看详情弹窗、强制下架 |
+| 第16章 | 动态内容管理 | platform-admin/feeds-manage.html | 平台管理员登录 | 列表筛选、查看/下架 |
+| 第17章 | 基础数据字典 | platform-admin/master-data.html | 平台管理员登录 | 4个Tab（行业/品类/标签/区划）、树形CRUD |
+| 第18章 | 权限管理 | platform-admin/rbac.html | 超级管理员登录 | 5个角色卡片、权限矩阵（3系统Tab） |
+| 第19章 | 系统设置 | platform-admin/settings.html | 超级管理员登录 | 基础设置、安全策略（Phase 2禁用）、保存/重置 |
+| 第20章 | 全局交互 | — | 多种角色 | 导航一致性、通知一致性、菜单一致性、弹窗遮罩、登出、未登录保护、权限不足 |
+
+### 8.2 用例格式说明
+
+每个用例采用 `前提/步骤/预期` 格式（参考 EACheck 项目测试用例规范）：
+
+```markdown
+**前提：** [前置条件]
+
+- 步骤：[具体操作]
+- 预期：[验证点1]
+- 预期：[验证点2]
+- 预期：[验证点3]
+```
+
+特点：
+- 每个步骤可列出多个预期结果，确保全面验证
+- 前提条件与 8.0 节的前置条件检查对应
+- 操作步骤细化到具体元素（按钮、输入框、Tab、级联选择器等）
+- 预期结果覆盖页面展示、交互行为、API调用、状态变化
+
+### 8.3 各章节测试用例
+
+> 完整内容见 [floating-dazzling-feigenbaum.md](floating-dazzling-feigenbaum.md)，以下为各章摘要。
+
+#### 第1章 登录模块（login.html）
+
+**前提：** 用户未登录
+
+| 用例 | 测试点 |
+|------|--------|
+| 1.1 短信验证码登录 | 页面渲染（蓝色渐变+卡片+Tab+表单）、空手机号校验、不足11位校验、正确手机号输入、获取验证码（60s倒计时+disabled）、输入验证码、7天免登录、登录成功弹窗 |
+| 1.2 密码登录 | Tab切换、表单切换、密码明文/密文切换、登录成功 |
+| 1.3 忘记密码 | 两步式弹窗（验证码→重置密码）、密码长度校验、两次不一致校验、重置成功弹窗 |
+| 1.4 Tab切换数据独立 | 两个表单数据互不影响 |
+| 1.5 弹窗关闭 | ✕按钮关闭、遮罩层关闭 |
+
+#### 第2章 注册模块（register.html）
+
+**前提：** 用户未登录
+
+| 用例 | 测试点 |
+|------|--------|
+| 2.1 页面展示 | 卡片（480px）、4个必填字段、协议复选框（蓝色链接）、"立即登录"链接 |
+| 2.2 校验 | 空表单、缺验证码、密码<8位、两次不一致、未勾协议（5项校验） |
+| 2.3 注册成功 | 提示成功、1.5秒跳转login.html |
+
+#### 第3章 首页模块（index.html）
+
+**前提：** 已登录，需已认证企业+商机+动态+通知数据
+
+| 用例 | 测试点 |
+|------|--------|
+| 3.1 Header结构 | Logo、导航4项（首页active）、搜索框、铃铛+徽标3、用户头像 |
+| 3.2 Hero区域 | 大标题、副标题、两个发布按钮、热门检索标签5个 |
+| 3.3 统计卡片 | 4项统计（企业/商机/撮合/用户） |
+| 3.4 智能匹配推荐 | 标题+链接、2列商机卡片（类型标签+标题+标签组+企业+地区） |
+| 3.5 侧边栏-新入驻企业 | 标题+链接、企业列表 |
+| 3.6 侧边栏-校友动态 | 标题+链接、动态条目 |
+| 3.7 发布商机弹窗 | 弹窗表单完整字段、类型radio切换、填写提交 |
+| 3.8 获取联系方式 | 确认弹窗、结果弹窗（联系人+手机+微信+复制） |
+| 3.9 企业详情Drawer | 550px Drawer、基础信息、简介、商机列表 |
+| 3.10 通知下拉面板 | 360px面板、通知列表、全部已读、查看全部链接 |
+| 3.11 用户菜单 | 下拉菜单3项、外部关闭 |
+| 3.12 搜索跳转 | 输入搜索→跳转、热门标签点击→跳转 |
+
+#### 第4章 商机广场模块（opportunity.html）
+
+**前提：** 已登录，需基础数据字典+商机数据
+
+| 用例 | 测试点 |
+|------|--------|
+| 4.1 页面结构 | Header active、标题副标题、两个发布按钮、筛选栏+列表 |
+| 4.2 筛选-商机类型 | 全部/我要买/我能供、多选逻辑 |
+| 4.3 筛选-行业级联 | 一级+二级联动、勾选/取消、标签显示/移除 |
+| 4.4 筛选-业务品类 | 多选、摘要更新 |
+| 4.5 筛选-地区级联 | 省份+城市联动 |
+| 4.6 已选条件摘要 | 所有标签带✕、单项移除 |
+| 4.7 重置筛选 | 全部清空 |
+| 4.8 商机卡片 | 类型徽章+内容+按钮 |
+| 4.9 分页 | 页码组件 |
+| 4.10 发布弹窗 | 完整表单、类型默认、提交成功 |
+| 4.11 获取联系方式 | 确认→成功 |
+
+#### 第5章 企业名录模块（enterprise.html）
+
+**前提：** 已登录，需基础数据字典+企业数据+未认领企业
+
+| 用例 | 测试点 |
+|------|--------|
+| 5.1 页面结构 | 标题副标题、认领+创建按钮、2列grid |
+| 5.2~5.5 筛选 | 行业级联、品类多选、地区级联、热门标签（14个） |
+| 5.6 摘要与重置 | 已选标签、重置按钮 |
+| 5.7 企业卡片 | 2列grid、Logo+名称+✓+标签+查看详情 |
+| 5.8 分页 | 页码组件 |
+| 5.9 认领企业 | 两步式弹窗（选企业→填资料）、返回选择、提交申请 |
+| 5.10 创建企业 | 分区表单（企业信息+申请人信息）、联动下拉 |
+| 5.11 企业详情Drawer | Logo+认证徽章+基础信息+简介+商机列表 |
+
+#### 第6~8章 校友圈/搜索/通知
+
+| 章节 | 关键测试点 |
+|------|-----------|
+| 第6章 | 动态卡片结构、发布动态（输入+提交+列表更新） |
+| 第7章 | 搜索框预填、三Tab切换（商机/企业/动态+数量角标）、重新搜索 |
+| 第8章 | 通知列表（4种图标类型）、未读背景、全部已读 |
+
+#### 第9~11章 企业管理
+
+| 章节 | 关键测试点 |
+|------|-----------|
+| 第9章 | Admin侧边栏、只读/可编辑字段、Logo上传、标签添加、保存/取消 |
+| 第10章 | 员工表格、新增弹窗（4字段+单选角色）、编辑弹窗（手机号disabled）、重置密码、解绑 |
+| 第11章 | 筛选（类型+状态+搜索）、编辑弹窗、下架、重新发布 |
+
+#### 第12~16章 平台管理
+
+| 章节 | 关键测试点 |
+|------|-----------|
+| 第12章 | 侧边栏4分组、4统计卡片（↑↓趋势）、趋势图 |
+| 第13章 | 3 Tab（待审核/已通过/已驳回）、审核弹窗（企业信息+申请人+附件+驳回原因）、通过/驳回 |
+| 第14章 | 租户列表、成员管理弹窗（统计+表格+新增）、禁用/启用切换 |
+| 第15章 | 筛选、查看详情弹窗、强制下架（原因必填） |
+| 第16章 | 筛选、查看弹窗、下架（原因必填） |
+
+#### 第17~19章 系统管理
+
+| 章节 | 关键测试点 |
+|------|-----------|
+| 第17章 | 4 Tab（行业树形/品类列表/标签Chip/区划树形）、CRUD、启用/禁用 |
+| 第18章 | 5角色卡片、权限矩阵（3系统Tab）、✓/○/[超管]标记 |
+| 第19章 | 平台名称+客服热线、敏感词/先审后发toggle（禁用态）、保存/重置 |
+
+#### 第20章 全局公共交互
+
+| 用例 | 关键测试点 |
+|------|-----------|
+| 20.1 Header导航一致性 | 4页面切换时active状态 |
+| 20.2 通知铃铛一致性 | 所有页面面板内容一致 |
+| 20.3 用户菜单一致性 | 所有页面菜单选项一致 |
+| 20.4 弹窗遮罩关闭 | 任意弹窗/Drawer遮罩关闭 |
+| 20.5 登出 | 菜单退出→跳转登录页→localStorage清空 |
+| 20.6 未登录保护 | 直接访问/ent-admin/*→跳转/login |
+| 20.7 权限不足 | 企业用户访问/plat-admin/*→拦截 |
 
 ---
 

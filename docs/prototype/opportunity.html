@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商机广场 - 校链通</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <style>
+        .opp-header {
+            background: var(--bg-card);
+            padding: var(--spacing-xl) 0;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .opp-header-inner {
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .opp-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .opp-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .opp-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .result-count {
+            margin-bottom: var(--spacing-lg);
+            font-size: 0.9375rem;
+            color: var(--text-muted);
+        }
+
+        .result-count strong {
+            color: var(--text-primary);
+        }
+
+        .opp-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .opp-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            display: flex;
+            gap: var(--spacing-lg);
+        }
+
+        .opp-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .opp-type-badge {
+            flex-shrink: 0;
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .opp-type-badge.buy {
+            background: rgba(255, 107, 0, 0.1);
+            color: var(--accent-buy);
+        }
+
+        .opp-type-badge.supply {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--accent-supply);
+        }
+
+        .opp-type-badge .icon {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .opp-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .opp-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .opp-tags {
+            display: flex;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .opp-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border-light);
+        }
+
+        .opp-company {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .opp-company-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .opp-company-name {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .opp-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .opp-action {
+            flex-shrink: 0;
+        }
+
+        .content-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: var(--spacing-xl);
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .filter-sidebar {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+        }
+
+        .filter-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .filter-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-group-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+        }
+
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background var(--transition-fast);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .filter-option:hover {
+            background: var(--bg-main);
+        }
+
+        .filter-option.active {
+            background: rgba(30, 136, 229, 0.1);
+            color: var(--primary);
+        }
+
+        .filter-option input {
+            display: none;
+        }
+
+        .filter-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .filter-option.active .filter-checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* 级联选择器 */
+        .cascader-wrapper {
+            position: relative;
+        }
+
+        .cascader-tags {
+            min-height: 36px;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+            background: white;
+            transition: border-color var(--transition-fast);
+        }
+
+        .cascader-tags:hover {
+            border-color: var(--primary);
+        }
+
+        .cascader-tags.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.1);
+        }
+
+        .cascader-placeholder {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .cascader-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+        }
+
+        .cascader-tag .remove {
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .cascader-tag .remove:hover {
+            opacity: 1;
+        }
+
+        .cascader-tag-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px 4px 2px 8px;
+            background: rgba(30, 136, 229, 0.1);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--primary);
+        }
+
+        .cascader-tag-group .remove {
+            cursor: pointer;
+            padding: 0 2px;
+            opacity: 0.7;
+        }
+
+        .cascader-tag-group .remove:hover {
+            opacity: 1;
+        }
+
+        .cascader-panel {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 100;
+            margin-top: 4px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .cascader-panel.active {
+            display: block;
+        }
+
+        .cascader-menu-wrapper {
+            display: flex;
+        }
+
+        .cascader-menu {
+            min-width: 140px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 8px 0;
+            border-right: 1px solid var(--border);
+        }
+
+        .cascader-menu:last-child {
+            border-right: none;
+        }
+
+        .cascader-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            transition: background var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .cascader-item:hover {
+            background: var(--bg-main);
+        }
+
+        .cascader-item.active {
+            background: rgba(30, 136, 229, 0.08);
+            color: var(--primary);
+        }
+
+        .cascader-item .checkbox {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .cascader-item.active .checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .cascader-item .arrow {
+            margin-left: auto;
+            font-size: 0.625rem;
+            color: var(--text-muted);
+        }
+
+        .cascader-empty-tip {
+            padding: 24px 16px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* 已选条件摘要 */
+        .filter-summary {
+            background: var(--bg-main);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .filter-summary-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .filter-summary-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .filter-summary-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .filter-summary-tag .remove {
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .filter-summary-tag .remove:hover {
+            color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span>🏛️</span>
+                <span>校链通</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-item">首页</a>
+                <a href="opportunity.html" class="nav-item active">商机广场</a>
+                <a href="enterprise.html" class="nav-item">企业名录</a>
+                <a href="feeds.html" class="nav-item">校友圈</a>
+            </nav>
+            <div class="header-actions">
+                <div class="search-box" onclick="goToSearch()">
+                    <span class="icon">🔍</span>
+                    <input type="text" placeholder="搜索供需、企业、校友..." id="headerSearchInput">
+                </div>
+                <div class="notification-wrapper" style="position:relative;">
+                    <button class="icon-btn" id="notificationBtn" onclick="toggleNotificationDropdown()">🔔<span class="badge" id="unreadBadge">3</span></button>
+                    <div class="notification-dropdown" id="notificationDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:360px;max-width:400px;z-index:1000;margin-top:8px;">
+                        <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-weight:600;font-size:0.9375rem;">通知消息</span>
+                            <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.8125rem;cursor:pointer;">全部已读</button>
+                        </div>
+                        <div class="notification-list" style="max-height:320px;overflow-y:auto;">
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(1)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业已通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您的企业"威蓝智能科技"已通过审核，现在可以发布商...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">10分钟前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:#f8f9fa;" onclick="goToNotify(2)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您的商机收到了新的查看请求</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">比亚迪汽车工业查看了您发布的"采购10万套智能座舱显示屏"</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">2小时前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(3)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业未通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您申请的企业"上海威蓝智能科技"因"证明材料不清晰"未通过审...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">1天前</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding:10px 16px;text-align:center;border-top:1px solid #eee;">
+                            <a href="notification.html" style="color:var(--primary);font-size:0.8125rem;text-decoration:none;">查看全部通知</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-menu" onclick="toggleUserMenu()">
+                    <div class="avatar">登</div>
+                    <div class="user-dropdown">▼</div>
+                    <div class="user-menu-dropdown" id="userMenuDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:180px;padding:8px 0;z-index:1000;margin-top:8px;">
+                        <a href="enterprise-admin/enterprise-info.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:0.875rem;">企业工作台</a>
+                        <a href="platform-admin/dashboard.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:0.875rem;">管理后台</a>
+                        <div style="border-top:1px solid #eee;margin:8px 0;"></div>
+                        <a href="login.html" style="display:block;padding:10px 16px;color:#999;text-decoration:none;font-size:0.875rem;">退出登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Opportunity Header -->
+    <div class="opp-header">
+        <div class="opp-header-inner">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <h1 class="opp-title">商机广场</h1>
+                    <p class="opp-subtitle">海量商机，快速匹配</p>
+                </div>
+                <div class="opp-actions">
+                    <button class="btn btn-buy" onclick="showPublishModal('buy')">
+                        <span>+</span> 发布采购需求
+                    </button>
+                    <button class="btn btn-supply" onclick="showPublishModal('supply')">
+                        <span>+</span> 发布供应能力
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-layout">
+        <!-- Filter Sidebar -->
+        <aside class="filter-sidebar">
+            <!-- 商机类型（多选） -->
+            <div class="filter-group">
+                <div class="filter-group-title">商机类型</div>
+                <div class="filter-options" id="typeOptions">
+                    <label class="filter-option active">
+                        <span class="filter-checkbox">✓</span>
+                        <input type="checkbox" value="all" checked style="display:none;">
+                        全部
+                    </label>
+                    <label class="filter-option" onclick="toggleMultiFilter(this, 'type')">
+                        <span class="filter-checkbox"></span>
+                        <input type="checkbox" value="buy" style="display:none;">
+                        我要买 (采购需求)
+                    </label>
+                    <label class="filter-option" onclick="toggleMultiFilter(this, 'type')">
+                        <span class="filter-checkbox"></span>
+                        <input type="checkbox" value="supply" style="display:none;">
+                        我能供 (供应能力)
+                    </label>
+                </div>
+            </div>
+
+            <!-- 行业级联选择器（一级+二级联动） -->
+            <div class="filter-group">
+                <div class="filter-group-title">行业分类</div>
+                <!-- Cascader 输入框 -->
+                <div class="cascader-wrapper" id="industryCascader">
+                    <div class="cascader-tags" id="industryTags" onclick="toggleCascader('industryCascaderPanel')">
+                        <span class="cascader-placeholder">选择行业（支持多选）</span>
+                    </div>
+                    <div class="cascader-panel" id="industryCascaderPanel">
+                        <div class="cascader-menu-wrapper">
+                            <!-- 一级行业列表 -->
+                            <div class="cascader-menu" id="industry1Menu">
+                                <!-- 动态渲染 -->
+                            </div>
+                            <!-- 二级行业列表 -->
+                            <div class="cascader-menu" id="industry2Menu">
+                                <div class="cascader-empty-tip">请先选择一级行业</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 业务品类（多选） -->
+            <div class="filter-group">
+                <div class="filter-group-title">业务品类</div>
+                <div class="filter-options" id="categoryOptions">
+                    <label class="filter-option active">
+                        <span class="filter-checkbox">✓</span>
+                        <input type="checkbox" value="all" checked style="display:none;">
+                        全部品类
+                    </label>
+                    <label class="filter-option" onclick="toggleMultiFilter(this, 'category')">
+                        <span class="filter-checkbox"></span>
+                        <input type="checkbox" value="cat-1" style="display:none;">
+                        自动驾驶算法
+                    </label>
+                    <label class="filter-option" onclick="toggleMultiFilter(this, 'category')">
+                        <span class="filter-checkbox"></span>
+                        <input type="checkbox" value="cat-2" style="display:none;">
+                        车规级芯片
+                    </label>
+                    <label class="filter-option" onclick="toggleMultiFilter(this, 'category')">
+                        <span class="filter-checkbox"></span>
+                        <input type="checkbox" value="cat-3" style="display:none;">
+                        动力电池
+                    </label>
+                </div>
+            </div>
+
+            <!-- 所在地区级联选择器（省份+城市联动） -->
+            <div class="filter-group">
+                <div class="filter-group-title">所在地区</div>
+                <div class="cascader-wrapper" id="regionCascader">
+                    <div class="cascader-tags" id="regionTags" onclick="toggleCascader('regionCascaderPanel')">
+                        <span class="cascader-placeholder">选择地区（支持多选）</span>
+                    </div>
+                    <div class="cascader-panel" id="regionCascaderPanel">
+                        <div class="cascader-menu-wrapper">
+                            <!-- 省份列表 -->
+                            <div class="cascader-menu" id="provinceMenu">
+                                <!-- 动态渲染 -->
+                            </div>
+                            <!-- 城市列表 -->
+                            <div class="cascader-menu" id="cityMenu">
+                                <div class="cascader-empty-tip">请先选择省份</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 已选条件摘要 -->
+            <div class="filter-summary" id="filterSummary" style="display:none;">
+                <div class="filter-summary-title">已选条件</div>
+                <div class="filter-summary-tags" id="filterSummaryTags"></div>
+            </div>
+
+            <button class="btn btn-outline" style="width:100%;" onclick="resetAllFilters()">重置筛选</button>
+        </aside>
+
+        <!-- Opportunity List -->
+        <main>
+            <div class="result-count">
+                共找到 <strong>8,500</strong> 条商机
+            </div>
+
+            <div class="opp-list">
+                <!-- Opportunity 1 -->
+                <div class="opp-card" onclick="showContactModal()">
+                    <div class="opp-type-badge buy">
+                        <span class="icon">🛒</span>
+                        我要买
+                    </div>
+                    <div class="opp-content">
+                        <h3 class="opp-title">采购10万套新能源汽车智能座舱显示屏</h3>
+                        <div class="opp-tags">
+                            <span class="tag tag-primary">智能座舱</span>
+                            <span class="tag tag-primary">显示屏</span>
+                            <span class="tag">批量采购</span>
+                            <span class="tag">车规级</span>
+                        </div>
+                        <div class="opp-meta">
+                            <div class="opp-company">
+                                <div class="opp-company-logo" style="background:var(--primary);">比</div>
+                                <span class="opp-company-name">比亚迪汽车工业有限公司 <span style="color:var(--success);">✓</span></span>
+                            </div>
+                            <div class="opp-info">
+                                <span>📍 深圳</span>
+                                <span>2小时前</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opp-action">
+                        <button class="btn btn-primary btn-sm">获取联系方式</button>
+                    </div>
+                </div>
+
+                <!-- Opportunity 2 -->
+                <div class="opp-card" onclick="showContactModal()">
+                    <div class="opp-type-badge supply">
+                        <span class="icon">📦</span>
+                        我能供
+                    </div>
+                    <div class="opp-content">
+                        <h3 class="opp-title">提供车规级MCU芯片及底层软件解决方案</h3>
+                        <div class="opp-tags">
+                            <span class="tag tag-primary">车规级芯片</span>
+                            <span class="tag tag-primary">MCU</span>
+                            <span class="tag">底层软件</span>
+                        </div>
+                        <div class="opp-meta">
+                            <div class="opp-company">
+                                <div class="opp-company-logo" style="background:var(--success);">地</div>
+                                <span class="opp-company-name">地平线机器人技术 <span style="color:var(--success);">✓</span></span>
+                            </div>
+                            <div class="opp-info">
+                                <span>📍 上海</span>
+                                <span>5小时前</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opp-action">
+                        <button class="btn btn-primary btn-sm">获取联系方式</button>
+                    </div>
+                </div>
+
+                <!-- Opportunity 3 -->
+                <div class="opp-card" onclick="showContactModal()">
+                    <div class="opp-type-badge buy">
+                        <span class="icon">🛒</span>
+                        我要买
+                    </div>
+                    <div class="opp-content">
+                        <h3 class="opp-title">寻优质汽车轻量化铝合金压铸件供应商</h3>
+                        <div class="opp-tags">
+                            <span class="tag tag-primary">轻量化</span>
+                            <span class="tag tag-primary">铝合金压铸</span>
+                            <span class="tag">零部件</span>
+                        </div>
+                        <div class="opp-meta">
+                            <div class="opp-company">
+                                <div class="opp-company-logo" style="background:#FF9800;">拓</div>
+                                <span class="opp-company-name">拓普集团 <span style="color:var(--success);">✓</span></span>
+                            </div>
+                            <div class="opp-info">
+                                <span>📍 宁波</span>
+                                <span>1天前</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opp-action">
+                        <button class="btn btn-primary btn-sm">获取联系方式</button>
+                    </div>
+                </div>
+
+                <!-- Opportunity 4 -->
+                <div class="opp-card" onclick="showContactModal()">
+                    <div class="opp-type-badge supply">
+                        <span class="icon">📦</span>
+                        我能供
+                    </div>
+                    <div class="opp-content">
+                        <h3 class="opp-title">提供固态电池及核心正极材料解决方案</h3>
+                        <div class="opp-tags">
+                            <span class="tag tag-primary">固态电池</span>
+                            <span class="tag tag-primary">正极材料</span>
+                            <span class="tag">新能源</span>
+                        </div>
+                        <div class="opp-meta">
+                            <div class="opp-company">
+                                <div class="opp-company-logo" style="background:#9C27B0;">宁</div>
+                                <span class="opp-company-name">宁德时代 <span style="color:var(--success);">✓</span></span>
+                            </div>
+                            <div class="opp-info">
+                                <span>📍 宁德</span>
+                                <span>2天前</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opp-action">
+                        <button class="btn btn-primary btn-sm">获取联系方式</button>
+                    </div>
+                </div>
+
+                <!-- Opportunity 5 -->
+                <div class="opp-card" onclick="showContactModal()">
+                    <div class="opp-type-badge buy">
+                        <span class="icon">🛒</span>
+                        我要买
+                    </div>
+                    <div class="opp-content">
+                        <h3 class="opp-title">采购车规级功率半导体器件（IGBT/SiC）</h3>
+                        <div class="opp-tags">
+                            <span class="tag tag-primary">功率半导体</span>
+                            <span class="tag tag-primary">IGBT</span>
+                            <span class="tag">SiC</span>
+                        </div>
+                        <div class="opp-meta">
+                            <div class="opp-company">
+                                <div class="opp-company-logo" style="background:#00BCD4;">中</div>
+                                <span class="opp-company-name">中车时代半导体 <span style="color:var(--success);">✓</span></span>
+                            </div>
+                            <div class="opp-info">
+                                <span>📍 株洲</span>
+                                <span>3天前</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opp-action">
+                        <button class="btn btn-primary btn-sm">获取联系方式</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" style="margin-top:var(--spacing-xl);">
+                <div class="pagination-item disabled"><</div>
+                <div class="pagination-item active">1</div>
+                <div class="pagination-item">2</div>
+                <div class="pagination-item">3</div>
+                <div class="pagination-item">...</div>
+                <div class="pagination-item">850</div>
+                <div class="pagination-item">></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Publish Modal -->
+    <div class="modal-overlay" id="publishModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">发布商机</h3>
+                <button class="modal-close" onclick="closeModal('publishModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">商机类型</label>
+                    <div style="display:flex;gap:var(--spacing-lg);">
+                        <label class="form-check">
+                            <input type="radio" name="oppType" value="buy" checked>
+                            <span class="tag tag-buy" style="padding:8px 16px;font-size:0.9375rem;">我要买</span>
+                        </label>
+                        <label class="form-check">
+                            <input type="radio" name="oppType" value="supply">
+                            <span class="tag tag-supply" style="padding:8px 16px;font-size:0.9375rem;">我能供</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">商机标题</label>
+                    <input type="text" class="form-input" placeholder="请输入商机标题，30字以内">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">一级行业</label>
+                        <select class="form-select">
+                            <option value="">选择行业</option>
+                            <option value="1">智能网联</option>
+                            <option value="2">新能源汽车</option>
+                            <option value="3">汽车零部件</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">二级行业</label>
+                        <select class="form-select">
+                            <option value="">选择子行业</option>
+                            <option value="1">自动驾驶</option>
+                            <option value="2">ADAS域控制器</option>
+                            <option value="3">车规级芯片</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">业务品类</label>
+                        <select class="form-select">
+                            <option value="">请选择品类</option>
+                            <option value="1">自动驾驶算法</option>
+                            <option value="2">车规级芯片</option>
+                            <option value="3">动力电池</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">所在地区</label>
+                        <div style="display:flex;gap:var(--spacing-sm);">
+                            <select class="form-select" style="flex:1;">
+                                <option value="">省份</option>
+                                <option value="1">上海市</option>
+                                <option value="2">广东省</option>
+                                <option value="3">北京市</option>
+                            </select>
+                            <select class="form-select" style="flex:1;">
+                                <option value="">城市</option>
+                                <option value="1">深圳市</option>
+                                <option value="2">广州市</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">业务标签</label>
+                        <input type="text" class="form-input" id="tagInputPublish" placeholder="输入标签按回车，可添加多个" onkeydown="if(event.key==='Enter'){addTagOpp(this);event.preventDefault();}">
+                        <div id="tagSuggestionsPublish" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+                        <div id="tagListPublish" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">详细描述</label>
+                    <textarea class="form-input" rows="4" placeholder="请详细描述您的需求或供应能力，不少于20字"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('publishModal')">取消</button>
+                <button class="btn btn-primary" onclick="handlePublish()">立即发布</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">获取联系方式</h3>
+                <button class="modal-close" onclick="closeModal('contactModal')">✕</button>
+            </div>
+            <div class="modal-body" style="text-align:center;padding:var(--spacing-xxl);">
+                <div style="width:64px;height:64px;border-radius:50%;background:rgba(30,136,229,0.1);margin:0 auto var(--spacing-lg);display:flex;align-items:center;justify-content:center;font-size:2rem;">📞</div>
+                <p style="font-size:1rem;margin-bottom:var(--spacing-sm);">您即将获取该商机发布人的真实联系方式。</p>
+                <p style="font-size:0.875rem;color:var(--text-muted);">系统将向对方发送通知记录您的访问。</p>
+                <p style="font-size:0.875rem;color:var(--text-muted);margin-top:var(--spacing-sm);">确认获取吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('contactModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleGetContact()">确认获取</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== 级联选择器筛选逻辑 =====
+
+        // 字典数据（实际从API加载）
+        const industryData = [
+            {
+                id: 'ind-1', name: '智能网联',
+                children: [
+                    { id: 'ind-1-1', name: '自动驾驶' },
+                    { id: 'ind-1-2', name: 'ADAS域控制器' },
+                    { id: 'ind-1-3', name: '车规级芯片' }
+                ]
+            },
+            {
+                id: 'ind-2', name: '新能源汽车',
+                children: [
+                    { id: 'ind-2-1', name: '动力电池' },
+                    { id: 'ind-2-2', name: '电机电控' },
+                    { id: 'ind-2-3', name: '充电桩' }
+                ]
+            },
+            {
+                id: 'ind-3', name: '汽车零部件',
+                children: [
+                    { id: 'ind-3-1', name: '车联网' },
+                    { id: 'ind-3-2', name: '智能座舱' },
+                    { id: 'ind-3-3', name: '底盘系统' }
+                ]
+            }
+        ];
+
+        const regionData = [
+            {
+                id: 'prov-1', name: '上海市',
+                children: [
+                    { id: 'prov-1-1', name: '上海市' }
+                ]
+            },
+            {
+                id: 'prov-2', name: '广东省',
+                children: [
+                    { id: 'prov-2-1', name: '深圳市' },
+                    { id: 'prov-2-2', name: '广州市' },
+                    { id: 'prov-2-3', name: '东莞市' }
+                ]
+            },
+            {
+                id: 'prov-3', name: '北京市',
+                children: [
+                    { id: 'prov-3-1', name: '北京市' }
+                ]
+            }
+        ];
+
+        // 已选择的值
+        const filterState = {
+            type: new Set(),
+            industry1: new Set(),
+            industry2: new Set(),
+            category: new Set(),
+            province: new Set(),
+            city: new Set()
+        };
+
+        // 防抖定时器
+        let searchTimer = null;
+
+        // ===== 商机类型多选 =====
+        function toggleMultiFilter(label, group) {
+            const input = label.querySelector('input');
+            const value = input.value;
+            const isActive = label.classList.toggle('active');
+            const checkbox = label.querySelector('.filter-checkbox');
+
+            if (isActive) {
+                checkbox.textContent = '✓';
+                input.checked = true;
+                filterState[group].add(value);
+            } else {
+                checkbox.textContent = '';
+                input.checked = false;
+                filterState[group].delete(value);
+            }
+
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        // ===== 级联选择器 =====
+        function initIndustryCascader() {
+            const menu = document.getElementById('industry1Menu');
+            menu.innerHTML = industryData.map(item => `
+                <div class="cascader-item ${filterState.industry1.has(item.id) ? 'active' : ''}"
+                     onclick="toggleIndustry1('${item.id}')" onmouseenter="showIndustry2Menu('${item.id}')">
+                    <span class="checkbox">${filterState.industry1.has(item.id) ? '✓' : ''}</span>
+                    <span>${item.name}</span>
+                    <span class="arrow">▶</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleIndustry1(id) {
+            const item = industryData.find(i => i.id === id);
+            const isActive = filterState.industry1.has(id);
+
+            if (isActive) {
+                filterState.industry1.delete(id);
+                // 移除该一级下的所有二级
+                item.children.forEach(child => {
+                    filterState.industry2.delete(child.id);
+                });
+            } else {
+                filterState.industry1.add(id);
+            }
+
+            // 重新渲染一级菜单
+            initIndustryCascader();
+            // 渲染二级菜单
+            renderIndustry2Menu();
+            // 更新标签
+            updateIndustryTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        function showIndustry2Menu(parentId) {
+            const parent = industryData.find(i => i.id === parentId);
+            if (!parent) return;
+
+            const menu = document.getElementById('industry2Menu');
+            if (parent.children.length === 0) {
+                menu.innerHTML = '<div class="cascader-empty-tip">暂无数据</div>';
+                return;
+            }
+
+            menu.innerHTML = parent.children.map(child => `
+                <div class="cascader-item ${filterState.industry2.has(child.id) ? 'active' : ''}"
+                     onclick="toggleIndustry2('${child.id}')">
+                    <span class="checkbox">${filterState.industry2.has(child.id) ? '✓' : ''}</span>
+                    <span>${child.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderIndustry2Menu() {
+            const menu = document.getElementById('industry2Menu');
+            const selectedIndustry1 = Array.from(filterState.industry1);
+
+            if (selectedIndustry1.length === 0) {
+                menu.innerHTML = '<div class="cascader-empty-tip">请先选择一级行业</div>';
+                return;
+            }
+
+            // 合并所有选中一级行业的二级
+            const allChildren = [];
+            selectedIndustry1.forEach(id => {
+                const parent = industryData.find(i => i.id === id);
+                if (parent) {
+                    allChildren.push(...parent.children);
+                }
+            });
+
+            if (allChildren.length === 0) {
+                menu.innerHTML = '<div class="cascader-empty-tip">暂无数据</div>';
+                return;
+            }
+
+            menu.innerHTML = allChildren.map(child => `
+                <div class="cascader-item ${filterState.industry2.has(child.id) ? 'active' : ''}"
+                     onclick="toggleIndustry2('${child.id}')">
+                    <span class="checkbox">${filterState.industry2.has(child.id) ? '✓' : ''}</span>
+                    <span>${child.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleIndustry2(id) {
+            const isActive = filterState.industry2.has(id);
+
+            if (isActive) {
+                filterState.industry2.delete(id);
+            } else {
+                filterState.industry2.add(id);
+            }
+
+            renderIndustry2Menu();
+            updateIndustryTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        function updateIndustryTags() {
+            const container = document.getElementById('industryTags');
+
+            if (filterState.industry1.size === 0 && filterState.industry2.size === 0) {
+                container.innerHTML = '<span class="cascader-placeholder">选择行业（支持多选）</span>';
+                return;
+            }
+
+            let html = '';
+
+            // 一级行业标签
+            filterState.industry1.forEach(id => {
+                const item = industryData.find(i => i.id === id);
+                if (item) {
+                    html += `<span class="cascader-tag">
+                        ${item.name}
+                        <span class="remove" onclick="event.stopPropagation();removeIndustry1('${id}')">✕</span>
+                    </span>`;
+                }
+            });
+
+            // 二级行业标签
+            filterState.industry2.forEach(id => {
+                industryData.forEach(parent => {
+                    const child = parent.children.find(c => c.id === id);
+                    if (child) {
+                        html += `<span class="cascader-tag-group">
+                            ${parent.name} → ${child.name}
+                            <span class="remove" onclick="event.stopPropagation();removeIndustry2('${id}')">✕</span>
+                        </span>`;
+                    }
+                });
+            });
+
+            container.innerHTML = html;
+        }
+
+        function removeIndustry1(id) {
+            const parent = industryData.find(i => i.id === id);
+            if (parent) {
+                parent.children.forEach(child => {
+                    filterState.industry2.delete(child.id);
+                });
+            }
+            filterState.industry1.delete(id);
+            initIndustryCascader();
+            renderIndustry2Menu();
+            updateIndustryTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        function removeIndustry2(id) {
+            filterState.industry2.delete(id);
+            renderIndustry2Menu();
+            updateIndustryTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        // ===== 地区级联选择器 =====
+        function initProvinceCascader() {
+            const menu = document.getElementById('provinceMenu');
+            menu.innerHTML = regionData.map(item => `
+                <div class="cascader-item ${filterState.province.has(item.id) ? 'active' : ''}"
+                     onclick="toggleProvince('${item.id}')" onmouseenter="showCityMenu('${item.id}')">
+                    <span class="checkbox">${filterState.province.has(item.id) ? '✓' : ''}</span>
+                    <span>${item.name}</span>
+                    <span class="arrow">▶</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleProvince(id) {
+            const item = regionData.find(i => i.id === id);
+            const isActive = filterState.province.has(id);
+
+            if (isActive) {
+                filterState.province.delete(id);
+                item.children.forEach(child => {
+                    filterState.city.delete(child.id);
+                });
+            } else {
+                filterState.province.add(id);
+            }
+
+            initProvinceCascader();
+            renderCityMenu();
+            updateRegionTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        function showCityMenu(parentId) {
+            const parent = regionData.find(i => i.id === parentId);
+            if (!parent) return;
+
+            const menu = document.getElementById('cityMenu');
+            if (parent.children.length === 0) {
+                menu.innerHTML = '<div class="cascader-empty-tip">暂无数据</div>';
+                return;
+            }
+
+            menu.innerHTML = parent.children.map(child => `
+                <div class="cascader-item ${filterState.city.has(child.id) ? 'active' : ''}"
+                     onclick="toggleCity('${child.id}')">
+                    <span class="checkbox">${filterState.city.has(child.id) ? '✓' : ''}</span>
+                    <span>${child.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderCityMenu() {
+            const menu = document.getElementById('cityMenu');
+            const selectedProvinces = Array.from(filterState.province);
+
+            if (selectedProvinces.length === 0) {
+                menu.innerHTML = '<div class="cascader-empty-tip">请先选择省份</div>';
+                return;
+            }
+
+            const allChildren = [];
+            selectedProvinces.forEach(id => {
+                const parent = regionData.find(i => i.id === id);
+                if (parent) {
+                    allChildren.push(...parent.children);
+                }
+            });
+
+            if (allChildren.length === 0) {
+                menu.innerHTML = '<div class="cascader-empty-tip">暂无数据</div>';
+                return;
+            }
+
+            menu.innerHTML = allChildren.map(child => `
+                <div class="cascader-item ${filterState.city.has(child.id) ? 'active' : ''}"
+                     onclick="toggleCity('${child.id}')">
+                    <span class="checkbox">${filterState.city.has(child.id) ? '✓' : ''}</span>
+                    <span>${child.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleCity(id) {
+            const isActive = filterState.city.has(id);
+
+            if (isActive) {
+                filterState.city.delete(id);
+            } else {
+                filterState.city.add(id);
+            }
+
+            renderCityMenu();
+            updateRegionTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        function updateRegionTags() {
+            const container = document.getElementById('regionTags');
+
+            if (filterState.province.size === 0 && filterState.city.size === 0) {
+                container.innerHTML = '<span class="cascader-placeholder">选择地区（支持多选）</span>';
+                return;
+            }
+
+            let html = '';
+
+            filterState.province.forEach(id => {
+                const item = regionData.find(i => i.id === id);
+                if (item) {
+                    html += `<span class="cascader-tag">
+                        ${item.name}
+                        <span class="remove" onclick="event.stopPropagation();removeProvince('${id}')">✕</span>
+                    </span>`;
+                }
+            });
+
+            filterState.city.forEach(id => {
+                regionData.forEach(parent => {
+                    const child = parent.children.find(c => c.id === id);
+                    if (child) {
+                        html += `<span class="cascader-tag-group">
+                            ${parent.name} → ${child.name}
+                            <span class="remove" onclick="event.stopPropagation();removeCity('${id}')">✕</span>
+                        </span>`;
+                    }
+                });
+            });
+
+            container.innerHTML = html;
+        }
+
+        function removeProvince(id) {
+            const parent = regionData.find(i => i.id === id);
+            if (parent) {
+                parent.children.forEach(child => {
+                    filterState.city.delete(child.id);
+                });
+            }
+            filterState.province.delete(id);
+            initProvinceCascader();
+            renderCityMenu();
+            updateRegionTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        function removeCity(id) {
+            filterState.city.delete(id);
+            renderCityMenu();
+            updateRegionTags();
+            updateFilterSummary();
+            debounceSearch();
+        }
+
+        // ===== 开关级联面板 =====
+        function toggleCascader(panelId) {
+            const panel = document.getElementById(panelId);
+            const isActive = panel.classList.contains('active');
+
+            // 关闭所有面板
+            document.querySelectorAll('.cascader-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.cascader-tags').forEach(t => t.classList.remove('active'));
+
+            if (!isActive) {
+                panel.classList.add('active');
+                panel.parentElement.querySelector('.cascader-tags').classList.add('active');
+            }
+        }
+
+        // 点击外部关闭面板
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.cascader-wrapper')) {
+                document.querySelectorAll('.cascader-panel').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.cascader-tags').forEach(t => t.classList.remove('active'));
+            }
+        });
+
+        // ===== 已选条件摘要 =====
+        function updateFilterSummary() {
+            const summary = document.getElementById('filterSummary');
+            const tagsContainer = document.getElementById('filterSummaryTags');
+
+            const allFilters = [];
+
+            // 商机类型
+            const typeNames = { buy: '我要买', supply: '我能供' };
+            filterState.type.forEach(v => {
+                if (typeNames[v]) allFilters.push({ group: 'type', value: v, name: typeNames[v] });
+            });
+
+            // 一级行业
+            filterState.industry1.forEach(id => {
+                const item = industryData.find(i => i.id === id);
+                if (item) allFilters.push({ group: 'industry1', value: id, name: item.name });
+            });
+
+            // 二级行业
+            filterState.industry2.forEach(id => {
+                industryData.forEach(parent => {
+                    const child = parent.children.find(c => c.id === id);
+                    if (child) allFilters.push({ group: 'industry2', value: id, name: `${parent.name} → ${child.name}` });
+                });
+            });
+
+            // 业务品类
+            const categoryNames = { 'cat-1': '自动驾驶算法', 'cat-2': '车规级芯片', 'cat-3': '动力电池' };
+            filterState.category.forEach(v => {
+                if (categoryNames[v]) allFilters.push({ group: 'category', value: v, name: categoryNames[v] });
+            });
+
+            // 省份
+            filterState.province.forEach(id => {
+                const item = regionData.find(i => i.id === id);
+                if (item) allFilters.push({ group: 'province', value: id, name: item.name });
+            });
+
+            // 城市
+            filterState.city.forEach(id => {
+                regionData.forEach(parent => {
+                    const child = parent.children.find(c => c.id === id);
+                    if (child) allFilters.push({ group: 'city', value: id, name: `${parent.name} → ${child.name}` });
+                });
+            });
+
+            if (allFilters.length === 0) {
+                summary.style.display = 'none';
+                return;
+            }
+
+            summary.style.display = 'block';
+            tagsContainer.innerHTML = allFilters.map(f => `
+                <span class="filter-summary-tag">
+                    ${f.name}
+                    <span class="remove" onclick="removeFilterItem('${f.group}', '${f.value}')">✕</span>
+                </span>
+            `).join('');
+        }
+
+        function removeFilterItem(group, value) {
+            if (group === 'industry1') {
+                removeIndustry1(value);
+            } else if (group === 'industry2') {
+                removeIndustry2(value);
+            } else if (group === 'province') {
+                removeProvince(value);
+            } else if (group === 'city') {
+                removeCity(value);
+            } else if (filterState[group]) {
+                filterState[group].delete(value);
+                // 重新渲染对应的多选框
+                if (group === 'type' || group === 'category') {
+                    const container = document.getElementById(group + 'Options');
+                    if (container) {
+                        container.querySelectorAll('label').forEach(label => {
+                            const input = label.querySelector('input');
+                            if (input && input.value === value) {
+                                label.classList.remove('active');
+                                label.querySelector('.filter-checkbox').textContent = '';
+                                input.checked = false;
+                            }
+                        });
+                    }
+                }
+                updateFilterSummary();
+                debounceSearch();
+            }
+        }
+
+        // ===== 防抖搜索 =====
+        function debounceSearch() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                triggerSearch();
+            }, 300);
+        }
+
+        function triggerSearch() {
+            const params = {
+                type: Array.from(filterState.type),
+                industry1: Array.from(filterState.industry1),
+                industry2: Array.from(filterState.industry2),
+                category: Array.from(filterState.category),
+                province: Array.from(filterState.province),
+                city: Array.from(filterState.city)
+            };
+            console.log('筛选条件:', params);
+            // API: GET /opp/opportunity?type=buy,supply&industry1=ind-1,ind-2&industry2=ind-1-1&category=cat-1&province=prov-1&city=prov-1-1
+        }
+
+        // ===== 重置筛选 =====
+        function resetAllFilters() {
+            // 清空状态
+            Object.keys(filterState).forEach(key => {
+                filterState[key] = new Set();
+            });
+
+            // 重置多选框UI
+            document.querySelectorAll('.filter-options').forEach(container => {
+                container.querySelectorAll('label').forEach(label => {
+                    label.classList.remove('active');
+                    const checkbox = label.querySelector('.filter-checkbox');
+                    const input = label.querySelector('input');
+                    if (checkbox) checkbox.textContent = '';
+                    if (input) input.checked = false;
+                });
+            });
+
+            // 重置级联选择器
+            initIndustryCascader();
+            renderIndustry2Menu();
+            updateIndustryTags();
+            initProvinceCascader();
+            renderCityMenu();
+            updateRegionTags();
+
+            // 隐藏摘要
+            document.getElementById('filterSummary').style.display = 'none';
+
+            triggerSearch();
+        }
+
+        // ===== 初始化 =====
+        function initFilters() {
+            initIndustryCascader();
+            renderIndustry2Menu();
+            updateIndustryTags();
+            initProvinceCascader();
+            renderCityMenu();
+            updateRegionTags();
+        }
+
+        initFilters();
+
+        function goToSearch() {
+            const keyword = document.getElementById('headerSearchInput').value || '自动驾驶';
+            window.location.href = 'search.html?keyword=' + encodeURIComponent(keyword);
+        }
+
+        function showPublishModal(type) {
+            selectedTagsPublish = [];
+            renderTagListOpp();
+            renderSuggestionsOpp();
+            document.getElementById('publishModal').classList.add('active');
+            if (type === 'buy') {
+                document.querySelector('input[name="oppType"][value="buy"]').checked = true;
+            } else {
+                document.querySelector('input[name="oppType"][value="supply"]').checked = true;
+            }
+        }
+
+        function showContactModal() {
+            document.getElementById('contactModal').classList.add('active');
+        }
+
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // ----- Tags -----
+        const availableTagsOpp = ['专精特新', '高新技术企业', '上市公司', '世界500强', '中国500强', '民营企业500强', '瞪羚企业', '独角兽企业', '国产替代', '出口供应', 'OEM配套', '研发合作', '产能合作', '渠道合作'];
+        let selectedTagsPublish = [];
+
+        function shuffleOpp(arr) { const a = [...arr]; for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+        function renderSuggestionsOpp() {
+            const el = document.getElementById('tagSuggestionsPublish');
+            if (!el) return;
+            const unused = availableTagsOpp.filter(t => !selectedTagsPublish.includes(t));
+            el.innerHTML = shuffleOpp(unused).slice(0, 5).map(t => `<span onclick="pickTagOpp('${t}')" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg-main);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.75rem;cursor:pointer;color:var(--text-secondary);">+ ${t}</span>`).join('');
+        }
+        function renderTagListOpp() {
+            const el = document.getElementById('tagListPublish');
+            if (!el) return;
+            el.innerHTML = selectedTagsPublish.map(t => `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(30,136,229,0.1);border-radius:var(--radius-sm);font-size:0.75rem;color:var(--primary);">${t} <span onclick="removeTagOpp('${t}')" style="cursor:pointer;font-size:0.625rem;">✕</span></span>`).join('');
+        }
+        function pickTagOpp(tag) {
+            if (!selectedTagsPublish.includes(tag)) selectedTagsPublish.push(tag);
+            renderTagListOpp();
+            renderSuggestionsOpp();
+        }
+        function removeTagOpp(tag) {
+            selectedTagsPublish = selectedTagsPublish.filter(t => t !== tag);
+            renderTagListOpp();
+            renderSuggestionsOpp();
+        }
+        function addTagOpp(input) {
+            const val = input.value.trim();
+            if (val && !selectedTagsPublish.includes(val)) selectedTagsPublish.push(val);
+            input.value = '';
+            renderTagListOpp();
+            renderSuggestionsOpp();
+        }
+
+        function handlePublish() {
+            closeModal('publishModal');
+            showToast('发布成功', 'success');
+        }
+
+        function handleGetContact() {
+            closeModal('contactModal');
+            showToast('获取成功', 'success');
+        }
+
+        function showToast(message, type = 'default') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'success' ? ' toast-success' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenuDropdown');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function markAllRead() {
+            document.getElementById('unreadBadge').style.display = 'none';
+            showToast('已全部已读', 'success');
+        }
+
+        function goToNotify(id) {
+            window.location.href = 'notification.html';
+        }
+
+        document.addEventListener('click', function(e) {
+            const userMenu = document.getElementById('userMenuDropdown');
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if (!e.target.closest('.user-menu')) {
+                userMenu.style.display = 'none';
+            }
+            if (!e.target.closest('.notification-wrapper')) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>

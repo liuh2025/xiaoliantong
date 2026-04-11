@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业信息维护 - 校链通</title>
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        .enterprise-admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .enterprise-sidebar {
+            width: 200px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            padding-top: 64px;
+        }
+
+        .enterprise-nav {
+            padding: var(--spacing-md);
+        }
+
+        .enterprise-nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: 2px;
+            text-decoration: none;
+        }
+
+        .enterprise-nav-item:hover {
+            background: var(--bg-main);
+            color: var(--text-primary);
+        }
+
+        .enterprise-nav-item.active {
+            background: rgba(30, 136, 229, 0.1);
+            color: var(--primary);
+        }
+
+        .enterprise-main {
+            flex: 1;
+            margin-left: 200px;
+            padding: var(--spacing-xl);
+        }
+
+        .info-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .info-row {
+            display: flex;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            width: 120px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            flex: 1;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .info-editable {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .info-edit-btn {
+            color: var(--primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .logo-upload {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all var(--transition-fast);
+        }
+
+        .logo-upload:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .logo-upload .icon {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .logo-upload span {
+            font-size: 0.75rem;
+        }
+
+        .current-logo {
+            width: 100px;
+            height: 100px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .current-logo .change-btn {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            text-align: center;
+            padding: 4px;
+            font-size: 0.75rem;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+
+        .tag-add {
+            display: inline-flex;
+            align-items: center;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .tag-add:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" style="position:fixed;top:0;left:0;right:0;z-index:100;">
+        <div class="header-inner">
+            <div class="logo">
+                <span>🏛️</span>
+                <span>校链通</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-item">首页</a>
+                <a href="opportunity.html" class="nav-item">商机广场</a>
+                <a href="enterprise.html" class="nav-item">企业名录</a>
+                <a href="feeds.html" class="nav-item">校友圈</a>
+            </nav>
+            <div class="header-actions">
+                <div class="notification-wrapper" style="position:relative;">
+                    <button class="icon-btn" id="notificationBtn" onclick="toggleNotificationDropdown()">🔔<span class="badge" id="unreadBadge">3</span></button>
+                    <div class="notification-dropdown" id="notificationDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:360px;max-width:400px;z-index:1000;margin-top:8px;">
+                        <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-weight:600;font-size:0.9375rem;">通知消息</span>
+                            <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.8125rem;cursor:pointer;">全部已读</button>
+                        </div>
+                        <div class="notification-list" style="max-height:320px;overflow-y:auto;">
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(1)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业已通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您的企业"威蓝智能科技"已通过审核，现在可以发布商...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">10分钟前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:#f8f9fa;" onclick="goToNotify(2)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您的商机收到了新的查看请求</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">比亚迪汽车工业查看了您发布的"采购10万套智能座舱显示屏"</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">2小时前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(3)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业未通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您申请的企业"上海威蓝智能科技"因"证明材料不清晰"未通过审...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">1天前</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding:10px 16px;text-align:center;border-top:1px solid #eee;">
+                            <a href="../notification.html" style="color:var(--primary);font-size:0.8125rem;text-decoration:none;">查看全部通知</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-menu">
+                    <div class="avatar" style="background:var(--success);">李</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="enterprise-admin-layout">
+        <!-- Sidebar -->
+        <aside class="enterprise-sidebar">
+            <div class="enterprise-nav">
+                <a href="enterprise-info.html" class="enterprise-nav-item active">
+                    <span>🏢</span> 维护信息
+                </a>
+                <a href="employee.html" class="enterprise-nav-item">
+                    <span>👥</span> 员工管理
+                </a>
+                <a href="my-opportunity.html" class="enterprise-nav-item">
+                    <span>📋</span> 商机管理
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="enterprise-main">
+            <h2 style="margin-bottom:var(--spacing-lg);">企业信息维护</h2>
+
+            <!-- 基本认证信息 -->
+            <div class="info-section">
+                <h3 class="info-section-title">基本认证信息（不可修改）</h3>
+                <div class="info-row">
+                    <div class="info-label">企业全称</div>
+                    <div class="info-value">上海威蓝智能科技有限公司</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">统一信用代码</div>
+                    <div class="info-value">91310000XXXXXXX</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">所属行业</div>
+                    <div class="info-value">智能网联 > 自动驾驶</div>
+                </div>
+            </div>
+
+            <!-- 公开展示信息 -->
+            <div class="info-section">
+                <h3 class="info-section-title">公开展示信息（展示在企业名片页）</h3>
+
+                <div class="info-row">
+                    <div class="info-label">主营品类</div>
+                    <div class="info-value">
+                        <select class="form-select" style="width:auto;">
+                            <option selected>自动驾驶算法</option>
+                            <option>ADAS域控制器</option>
+                            <option>车规级芯片</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">所在地区</div>
+                    <div class="info-value" style="display:flex;gap:var(--spacing-sm);align-items:center;">
+                        <select class="form-select" style="width:auto;">
+                            <option selected>上海市</option>
+                            <option>北京市</option>
+                            <option>广东省</option>
+                        </select>
+                        <span style="color:var(--text-muted);">省</span>
+                        <select class="form-select" style="width:auto;">
+                            <option selected>嘉定区</option>
+                            <option>海淀区</option>
+                            <option>南山区</option>
+                        </select>
+                        <span style="color:var(--text-muted);">市</span>
+                    </div>
+                </div>
+
+                <div class="info-row" style="align-items:flex-start;">
+                    <div class="info-label">企业Logo</div>
+                    <div class="info-value">
+                        <div style="display:flex;gap:var(--spacing-lg);">
+                            <div class="current-logo">
+                                威
+                                <div class="change-btn">更换图片</div>
+                            </div>
+                            <div style="font-size:0.8125rem;color:var(--text-muted);padding-top:var(--spacing-md);">
+                                <p>支持 JPG、PNG 格式</p>
+                                <p>建议尺寸 200x200 像素</p>
+                                <p>文件大小不超过 2MB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">企业标签</div>
+                    <div class="info-value">
+                        <div class="tags-container">
+                            <span class="tag tag-primary">专精特新</span>
+                            <span class="tag tag-primary">自动驾驶</span>
+                            <span class="tag tag-primary">软硬一体</span>
+                            <span class="tag-add">+ 添加标签</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">企业简介</div>
+                    <div class="info-value" style="flex:1;">
+                        <textarea class="form-input" rows="4" style="min-height:100px;">上海威蓝智能科技有限公司成立于2019年，是一家专注于自动驾驶域控制器和ADAS算法开发的科技公司。公司核心团队来自国内外知名车企和科技公司，拥有丰富的车规级产品量产经验。</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:var(--spacing-md);">
+                <button class="btn btn-outline">取消</button>
+                <button class="btn btn-primary" onclick="showToast('保存成功', 'success')">保存修改</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showToast(message, type = 'default') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'success' ? ' toast-success' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function markAllRead() {
+            document.getElementById('unreadBadge').style.display = 'none';
+            showToast('已全部已读', 'success');
+        }
+
+        function goToNotify(id) {
+            window.location.href = '../notification.html';
+        }
+
+        document.addEventListener('click', function(e) {
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if (!e.target.closest('.notification-wrapper')) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

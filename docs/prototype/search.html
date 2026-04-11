@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索结果 - 校链通</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <style>
+        .search-header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: var(--spacing-lg) 0;
+        }
+
+        .search-header-inner {
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .search-bar-large {
+            display: flex;
+            gap: var(--spacing-md);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .search-bar-large .search-input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--bg-main);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-sm) var(--spacing-md);
+        }
+
+        .search-bar-large .search-input-wrapper:focus-within {
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-bar-large input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .search-bar-large .icon {
+            color: var(--text-muted);
+            margin-right: var(--spacing-sm);
+        }
+
+        .search-bar-large .btn {
+            flex-shrink: 0;
+        }
+
+        .search-result-info {
+            text-align: center;
+            padding: var(--spacing-xl) 0;
+            color: var(--text-secondary);
+        }
+
+        .search-result-info strong {
+            color: var(--primary);
+        }
+
+        .search-tabs {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-xl);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .search-tab {
+            padding: var(--spacing-md) var(--spacing-lg);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all var(--transition-fast);
+        }
+
+        .search-tab:hover {
+            color: var(--primary);
+        }
+
+        .search-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .search-tab-count {
+            display: inline-block;
+            background: var(--bg-main);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: var(--spacing-xs);
+        }
+
+        .search-tab.active .search-tab-count {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .result-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .result-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--border);
+            transform: translateY(-2px);
+        }
+
+        .result-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .result-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .result-card-title:hover {
+            color: var(--primary);
+        }
+
+        .result-card-tags {
+            display: flex;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .result-card-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border-light);
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .result-card-company {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .result-card-company-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Enterprise result card */
+        .enterprise-result-card {
+            display: flex;
+            gap: var(--spacing-lg);
+            align-items: flex-start;
+        }
+
+        .enterprise-result-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .enterprise-result-info {
+            flex: 1;
+        }
+
+        .enterprise-result-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .enterprise-result-desc {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .enterprise-result-tags {
+            display: flex;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+        }
+
+        .enterprise-result-action {
+            flex-shrink: 0;
+        }
+
+        /* Feed result card */
+        .feed-result-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .feed-result-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .feed-result-author {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .feed-result-company {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .feed-result-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .feed-result-content {
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .feed-result-images {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .feed-result-images img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+        }
+
+        .feed-result-images img:hover {
+            opacity: 0.9;
+        }
+
+        /* No results */
+        .no-results {
+            text-align: center;
+            padding: var(--spacing-xxl);
+            color: var(--text-muted);
+        }
+
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-lg);
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span>🏛️</span>
+                <span>校链通</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-item">首页</a>
+                <a href="opportunity.html" class="nav-item">商机广场</a>
+                <a href="enterprise.html" class="nav-item">企业名录</a>
+                <a href="feeds.html" class="nav-item">校友圈</a>
+            </nav>
+            <div class="header-actions">
+                <div class="notification-wrapper" style="position:relative;">
+                    <button class="icon-btn" id="notificationBtn" onclick="toggleNotificationDropdown()">🔔<span class="badge" id="unreadBadge">3</span></button>
+                    <div class="notification-dropdown" id="notificationDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:360px;max-width:400px;z-index:1000;margin-top:8px;">
+                        <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-weight:600;font-size:0.9375rem;">通知消息</span>
+                            <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);font-size:0.8125rem;cursor:pointer;">全部已读</button>
+                        </div>
+                        <div class="notification-list" style="max-height:320px;overflow-y:auto;">
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(1)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业已通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您的企业"威蓝智能科技"已通过审核，现在可以发布商...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">10分钟前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:#f8f9fa;" onclick="goToNotify(2)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您的商机收到了新的查看请求</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">比亚迪汽车工业查看了您发布的"采购10万套智能座舱显示屏"</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">2小时前</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item" style="padding:12px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer;" onclick="goToNotify(3)">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.875rem;font-weight:500;margin-bottom:2px;">您申请的企业未通过审核</div>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);">您申请的企业"上海威蓝智能科技"因"证明材料不清晰"未通过审...</div>
+                                        <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px;">1天前</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding:10px 16px;text-align:center;border-top:1px solid #eee;">
+                            <a href="notification.html" style="color:var(--primary);font-size:0.8125rem;text-decoration:none;">查看全部通知</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-menu" onclick="toggleUserMenu()">
+                    <div class="avatar">登</div>
+                    <div class="user-dropdown">▼</div>
+                    <div class="user-menu-dropdown" id="userMenuDropdown" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:180px;padding:8px 0;z-index:1000;margin-top:8px;">
+                        <a href="enterprise-admin/enterprise-info.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:0.875rem;">企业工作台</a>
+                        <a href="platform-admin/dashboard.html" style="display:block;padding:10px 16px;color:#333;text-decoration:none;font-size:0.875rem;">管理后台</a>
+                        <div style="border-top:1px solid #eee;margin:8px 0;"></div>
+                        <a href="login.html" style="display:block;padding:10px 16px;color:#999;text-decoration:none;font-size:0.875rem;">退出登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Header -->
+    <div class="search-header">
+        <div class="search-header-inner">
+            <div class="search-bar-large">
+                <div class="search-input-wrapper">
+                    <span class="icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="搜索供需、企业、校友..." value="自动驾驶">
+                </div>
+                <button class="btn btn-primary" onclick="performSearch()">搜索</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <div class="search-result-info">
+                搜索"<strong>自动驾驶</strong>"，找到以下结果：
+            </div>
+
+            <!-- Tabs -->
+            <div class="search-tabs">
+                <div class="search-tab active" onclick="switchTab('opportunity')">
+                    找商机<span class="search-tab-count">12</span>
+                </div>
+                <div class="search-tab" onclick="switchTab('enterprise')">
+                    找企业<span class="search-tab-count">3</span>
+                </div>
+                <div class="search-tab" onclick="switchTab('feed')">
+                    看动态<span class="search-tab-count">28</span>
+                </div>
+            </div>
+
+            <!-- 找商机 Tab -->
+            <div id="tab-opportunity" class="tab-content active">
+                <div class="result-list">
+                    <div class="result-card" onclick="showContactModal()">
+                        <div class="result-card-header">
+                            <span class="tag tag-buy" style="font-size:0.75rem;padding:4px 8px;">我要买</span>
+                            <span class="opportunity-time">2小时前</span>
+                        </div>
+                        <h3 class="result-card-title">采购10万套新能源汽车智能座舱显示屏</h3>
+                        <div class="result-card-tags">
+                            <span class="tag tag-primary">智能座舱</span>
+                            <span class="tag tag-primary">显示屏</span>
+                            <span class="tag">批量采购</span>
+                        </div>
+                        <div class="result-card-meta">
+                            <div class="result-card-company">
+                                <div class="result-card-company-logo" style="background:var(--primary);">比</div>
+                                <span>比亚迪汽车工业有限公司 <span style="color:var(--success);">✓</span></span>
+                            </div>
+                            <span>📍 深圳</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card" onclick="showContactModal()">
+                        <div class="result-card-header">
+                            <span class="tag tag-supply" style="font-size:0.75rem;padding:4px 8px;">我能供</span>
+                            <span class="opportunity-time">5小时前</span>
+                        </div>
+                        <h3 class="result-card-title">提供L4级自动驾驶算法定制服务</h3>
+                        <div class="result-card-tags">
+                            <span class="tag tag-primary">自动驾驶算法</span>
+                            <span class="tag tag-primary">定制开发</span>
+                            <span class="tag">L4级</span>
+                        </div>
+                        <div class="result-card-meta">
+                            <div class="result-card-company">
+                                <div class="result-card-company-logo" style="background:var(--success);">地</div>
+                                <span>地平线机器人技术 <span style="color:var(--success);">✓</span></span>
+                            </div>
+                            <span>📍 上海</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card" onclick="showContactModal()">
+                        <div class="result-card-header">
+                            <span class="tag tag-buy" style="font-size:0.75rem;padding:4px 8px;">我要买</span>
+                            <span class="opportunity-time">1天前</span>
+                        </div>
+                        <h3 class="result-card-title">寻车规级自动驾驶域控制器供应商</h3>
+                        <div class="result-card-tags">
+                            <span class="tag tag-primary">域控制器</span>
+                            <span class="tag tag-primary">自动驾驶</span>
+                            <span class="tag">车规级</span>
+                        </div>
+                        <div class="result-card-meta">
+                            <div class="result-card-company">
+                                <div class="result-card-company-logo" style="background:#FF9800;">拓</div>
+                                <span>拓普集团 <span style="color:var(--success);">✓</span></span>
+                            </div>
+                            <span>📍 宁波</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card" onclick="showContactModal()">
+                        <div class="result-card-header">
+                            <span class="tag tag-supply" style="font-size:0.75rem;padding:4px 8px;">我能供</span>
+                            <span class="opportunity-time">2天前</span>
+                        </div>
+                        <h3 class="result-card-title">提供自动驾驶测试数据标注服务</h3>
+                        <div class="result-card-tags">
+                            <span class="tag tag-primary">数据标注</span>
+                            <span class="tag tag-primary">自动驾驶</span>
+                            <span class="tag">AI训练</span>
+                        </div>
+                        <div class="result-card-meta">
+                            <div class="result-card-company">
+                                <div class="result-card-company-logo" style="background:#9C27B0;">数</div>
+                                <span>数据堂科技 <span style="color:var(--success);">✓</span></span>
+                            </div>
+                            <span>📍 北京</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 找企业 Tab -->
+            <div id="tab-enterprise" class="tab-content">
+                <div class="result-list">
+                    <div class="result-card">
+                        <div class="enterprise-result-card">
+                            <div class="enterprise-result-logo" style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));">威</div>
+                            <div class="enterprise-result-info">
+                                <div class="enterprise-result-name">
+                                    上海威蓝智能科技有限公司
+                                    <span class="badge badge-success" style="font-size:0.6875rem;">已认证 ✓</span>
+                                </div>
+                                <div class="enterprise-result-desc">自动驾驶域控制器、ADAS算法开发</div>
+                                <div class="enterprise-result-tags">
+                                    <span class="tag tag-primary">L4级自动驾驶</span>
+                                    <span class="tag tag-primary">校友企业</span>
+                                </div>
+                            </div>
+                            <div class="enterprise-result-action">
+                                <button class="btn btn-outline btn-sm">查看名片</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="enterprise-result-card">
+                            <div class="enterprise-result-logo" style="background:linear-gradient(135deg,#4CAF50,#2E7D32);">德</div>
+                            <div class="enterprise-result-info">
+                                <div class="enterprise-result-name">
+                                    德赛西威汽车电子股份有限公司
+                                    <span class="badge badge-success" style="font-size:0.6875rem;">已认证 ✓</span>
+                                </div>
+                                <div class="enterprise-result-desc">智能座舱域控制器、自动驾驶解决方案</div>
+                                <div class="enterprise-result-tags">
+                                    <span class="tag tag-primary">智能座舱</span>
+                                    <span class="tag tag-primary">汽车电子</span>
+                                </div>
+                            </div>
+                            <div class="enterprise-result-action">
+                                <button class="btn btn-outline btn-sm">查看名片</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="enterprise-result-card">
+                            <div class="enterprise-result-logo" style="background:linear-gradient(135deg,#9C27B0,#6A1B9A);">地</div>
+                            <div class="enterprise-result-info">
+                                <div class="enterprise-result-name">
+                                    地平线机器人技术研发有限公司
+                                    <span class="badge badge-success" style="font-size:0.6875rem;">已认证 ✓</span>
+                                </div>
+                                <div class="enterprise-result-desc">自动驾驶芯片、智能驾驶解决方案</div>
+                                <div class="enterprise-result-tags">
+                                    <span class="tag tag-primary">车规级芯片</span>
+                                    <span class="tag tag-primary">AI算法</span>
+                                </div>
+                            </div>
+                            <div class="enterprise-result-action">
+                                <button class="btn btn-outline btn-sm">查看名片</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 看动态 Tab -->
+            <div id="tab-feed" class="tab-content">
+                <div class="result-list">
+                    <div class="result-card">
+                        <div class="feed-result-header">
+                            <div class="feed-result-avatar" style="background:var(--primary);">李</div>
+                            <div>
+                                <div class="feed-result-author">李威</div>
+                                <div class="feed-result-company">上海威蓝智能科技有限公司</div>
+                            </div>
+                            <div class="feed-result-time">1小时前</div>
+                        </div>
+                        <div class="feed-result-content">
+                            我们公司最新研发的L4级自动驾驶域控制器已通过全部车规级认证，即日起接受定制化需求。有兴趣的校友请私信联系。
+                        </div>
+                        <div class="feed-result-images">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' fill='%23e0e0e0'%3E%3Crect width='80' height='80'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='sans-serif' font-size='10'%3E图片%3C/text%3E%3C/svg%3E" alt="产品图片">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' fill='%23e0e0e0'%3E%3Crect width='80' height='80'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='sans-serif' font-size='10'%3E图片%3C/text%3E%3C/svg%3E" alt="产品图片">
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="feed-result-header">
+                            <div class="feed-result-avatar" style="background:#FF9800;">张</div>
+                            <div>
+                                <div class="feed-result-author">张博士</div>
+                                <div class="feed-result-company">地平线机器人技术</div>
+                            </div>
+                            <div class="feed-result-time">3小时前</div>
+                        </div>
+                        <div class="feed-result-content">
+                            我们最新一代征程6系列芯片正式发布！支持L2+到L4级自动驾驶，搭载自研贝叶斯架构，BPU算力密度再创新高。欢迎汽车产业链校友交流合作！
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="feed-result-header">
+                            <div class="feed-result-avatar" style="background:var(--success);">王</div>
+                            <div>
+                                <div class="feed-result-author">王教授</div>
+                                <div class="feed-result-company">燕山大学汽车学院</div>
+                            </div>
+                            <div class="feed-result-time">昨天</div>
+                        </div>
+                        <div class="feed-result-content">
+                            【活动通知】2026年春季新能源汽车校友论坛将于5月在深圳举办，诚邀各位校友参加。论坛将围绕"智能电动化趋势下的供应链协同创新"主题展开，欢迎校友企业参与。
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="feed-result-header">
+                            <div class="feed-result-avatar" style="background:#9C27B0;">赵</div>
+                            <div>
+                                <div class="feed-result-author">赵总监</div>
+                                <div class="feed-result-company">德赛西威汽车电子</div>
+                            </div>
+                            <div class="feed-result-time">2天前</div>
+                        </div>
+                        <div class="feed-result-content">
+                            公司正在寻找自动驾驶算法合作伙伴，要求有L2+以上量产品牌落地经验，有兴趣的校友请私信联系。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" style="margin-top:var(--spacing-xl);">
+                <div class="pagination-item disabled"><</div>
+                <div class="pagination-item active">1</div>
+                <div class="pagination-item">2</div>
+                <div class="pagination-item">></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Contact Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">获取联系方式</h3>
+                <button class="modal-close" onclick="closeModal('contactModal')">✕</button>
+            </div>
+            <div class="modal-body" style="text-align:center;padding:var(--spacing-xxl);">
+                <div style="width:64px;height:64px;border-radius:50%;background:rgba(37,99,235,0.1);margin:0 auto var(--spacing-lg);display:flex;align-items:center;justify-content:center;font-size:2rem;">📞</div>
+                <p style="font-size:1rem;margin-bottom:var(--spacing-sm);">您即将获取该商机发布人的真实联系方式。</p>
+                <p style="font-size:0.875rem;color:var(--text-muted);">系统将向对方发送通知记录您的访问。</p>
+                <p style="font-size:0.875rem;color:var(--text-muted);margin-top:var(--spacing-sm);">确认获取吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('contactModal')">取消</button>
+                <button class="btn btn-primary" onclick="handleGetContact()">确认获取</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Read keyword from URL on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const keyword = params.get('keyword');
+            if (keyword) {
+                document.getElementById('searchInput').value = keyword;
+                document.querySelector('.search-result-info strong').textContent = keyword;
+            }
+        });
+
+        function switchTab(tab) {
+            // Update tab active state
+            document.querySelectorAll('.search-tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            event.target.closest('.search-tab').classList.add('active');
+
+            // Update content visibility
+            document.querySelectorAll('.tab-content').forEach(c => {
+                c.classList.remove('active');
+            });
+            document.getElementById('tab-' + tab).classList.add('active');
+        }
+
+        function showContactModal() {
+            document.getElementById('contactModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function handleGetContact() {
+            closeModal('contactModal');
+            showToast('获取成功', 'success');
+        }
+
+        function performSearch() {
+            const keyword = document.getElementById('searchInput').value;
+            showToast('搜索: ' + keyword, 'success');
+        }
+
+        function showToast(message, type = 'default') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'success' ? ' toast-success' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenuDropdown');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function markAllRead() {
+            document.getElementById('unreadBadge').style.display = 'none';
+            showToast('已全部已读', 'success');
+        }
+
+        function goToNotify(id) {
+            window.location.href = 'notification.html';
+        }
+
+        document.addEventListener('click', function(e) {
+            const userMenu = document.getElementById('userMenuDropdown');
+            const notifDropdown = document.getElementById('notificationDropdown');
+            if (!e.target.closest('.user-menu')) {
+                userMenu.style.display = 'none';
+            }
+            if (!e.target.closest('.notification-wrapper')) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('active');
+            });
+        });
+
+        // Handle Enter key in search input
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>
