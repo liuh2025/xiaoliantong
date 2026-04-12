@@ -20,7 +20,7 @@
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'active' ? 'success' : 'info'">
-              {{ row.status === 'active' ? '上线中' : '已下线' }}
+              {{ row.status === 'active' ? '上架中' : '已下架' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -35,7 +35,7 @@
               size="small"
               type="warning"
               @click="handleOffline(row)"
-            >下线</el-button>
+            >下架</el-button>
             <el-button
               v-else
               size="small"
@@ -239,9 +239,9 @@ const contactLogs = ref([])
 async function loadDictData() {
   try {
     const [indRes, catRes, regRes] = await Promise.all([
-      getDictIndustry({ parent_id: '' }),
+      getDictIndustry({ parent_id: 0 }),
       getDictCategory(),
-      getDictRegion({ parent_id: '' }),
+      getDictRegion({ parent_id: 0 }),
     ])
     if (indRes.data.code === 200) industryOptions.value = indRes.data.data || []
     if (catRes.data.code === 200) categoryOptions.value = catRes.data.data || []
@@ -360,13 +360,13 @@ async function submitDialog() {
 async function handleOffline(row) {
   try {
     await ElMessageBox.confirm(
-      `确定要下线商机 "${row.title}" 吗？`,
-      '下线商机',
+      `确定要下架商机 "${row.title}" 吗？`,
+      '下架商机',
       { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' },
     )
     const { data: res } = await offlineMyOpportunity(row.id)
     if (res.code === 200) {
-      ElMessage.success('已下线')
+      ElMessage.success('已下架')
       await fetchData()
     } else {
       ElMessage.error(res.message || '下线失败')

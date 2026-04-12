@@ -101,7 +101,7 @@
             <el-option label="管理员" value="enterprise_admin" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="!isEdit" label="状态">
+        <el-form-item label="账号状态">
           <el-switch v-model="dialogForm.is_active" active-text="启用" inactive-text="停用" />
         </el-form-item>
       </el-form>
@@ -179,7 +179,7 @@ function openCreateDialog() {
 function openEditDialog(row) {
   isEdit.value = true
   editId.value = row.id
-  dialogForm.value = { role_code: row.role_code }
+  dialogForm.value = { role_code: row.role_code, is_active: row.is_active }
   dialogVisible.value = true
 }
 

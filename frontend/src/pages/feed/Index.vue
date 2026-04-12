@@ -271,6 +271,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .feed-card {

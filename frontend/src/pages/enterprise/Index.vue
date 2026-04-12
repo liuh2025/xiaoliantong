@@ -180,7 +180,7 @@
                 <div class="enterprise-info">
                   <div class="enterprise-name">
                     {{ ent.name }}
-                    <span v-if="ent.auth_status === 'verified'" class="verified-badge">&#10003;</span>
+                    <span v-if="ent.auth_status === 'verified'" class="auth-badge">&#10003; 已认证</span>
                   </div>
                   <div class="enterprise-field">
                     {{ ent.business_field || ent.industry_name || '' }}
@@ -1466,6 +1466,19 @@ onMounted(() => {
 .verified-badge {
   color: var(--color-success);
   font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  background: #ECFDF5;
+  color: #43a047;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
   flex-shrink: 0;
 }
 

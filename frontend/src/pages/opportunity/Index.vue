@@ -7,7 +7,7 @@
         <p class="page-subtitle">海量商机，快速匹配</p>
       </div>
       <div class="page-actions">
-        <el-button type="primary" @click="openPublishDialog('buy')">+ 发布采购需求</el-button>
+        <el-button class="btn-buy" @click="openPublishDialog('buy')">+ 发布采购需求</el-button>
         <el-button type="success" @click="openPublishDialog('supply')">+ 发布供应能力</el-button>
       </div>
     </div>
@@ -18,7 +18,8 @@
         <!-- Type -->
         <div class="filter-section">
           <h3 class="filter-title">商机类型</h3>
-          <el-checkbox-group v-model="filters.types" @change="onFilterChange">
+          <el-checkbox-group v-model="filters.types" @change="onTypeFilterChange">
+            <el-checkbox label="全部" value="all" />
             <el-checkbox label="我要买" value="buy" />
             <el-checkbox label="我能供" value="supply" />
           </el-checkbox-group>
@@ -259,7 +260,7 @@ const pageSize = ref(10)
 
 // Filters
 const filters = ref({
-  types: [], industry: '', sub_industry: '', categories: [], province: '', city: '',
+  types: ['all'], industry: '', sub_industry: '', categories: [], province: '', city: '',
 })
 
 // Dict data
@@ -346,9 +347,9 @@ function formatTime(t) {
 async function loadDictData() {
   try {
     const [indRes, catRes, regRes] = await Promise.all([
-      getDictIndustry({ parent_id: '' }),
+      getDictIndustry({ parent_id: 0 }),
       getDictCategory(),
-      getDictRegion({ parent_id: '' }),
+      getDictRegion({ parent_id: 0 }),
     ])
     if (indRes.data.code === 200) industryOptions.value = indRes.data.data || []
     if (catRes.data.code === 200) categoryOptions.value = catRes.data.data || []
@@ -360,7 +361,8 @@ async function fetchData() {
   loading.value = true
   try {
     const params = { page: page.value, page_size: pageSize.value }
-    if (filters.value.types.length === 1) params.type = filters.value.types[0]
+    const activeTypes = filters.value.types.filter(t => t !== 'all')
+    if (activeTypes.length === 1) params.type = activeTypes[0]
     if (filters.value.industry) params.industry = filters.value.industry
     if (filters.value.sub_industry) params.sub_industry = filters.value.sub_industry
     if (filters.value.categories.length) params.category = filters.value.categories.join(',')
@@ -405,6 +407,21 @@ async function onProvinceChange(val) {
   onFilterChange()
 }
 
+// Type filter handler: "全部" clears buy/supply, selecting buy/supply clears "全部"
+function onTypeFilterChange(val) {
+  if (val.includes('all')) {
+    if (val.length > 1) {
+      const last = val[val.length - 1]
+      if (last === 'all') {
+        filters.value.types = ['all']
+      } else {
+        filters.value.types = val.filter(t => t !== 'all')
+      }
+    }
+  }
+  onFilterChange()
+}
+
 function onFilterChange() {
   page.value = 1
   fetchData()
@@ -425,7 +442,7 @@ function removeFilterTag(tag) {
 }
 
 function resetFilters() {
-  filters.value = { types: [], industry: '', sub_industry: '', categories: [], province: '', city: '' }
+  filters.value = { types: ['all'], industry: '', sub_industry: '', categories: [], province: '', city: '' }
   subIndustryOptions.value = []
   cityOptions.value = []
   onFilterChange()
@@ -551,6 +568,17 @@ onMounted(() => {
 .page-actions {
   display: flex;
   gap: 12px;
+}
+
+.btn-buy {
+  background: #ef6c00;
+  border-color: #ef6c00;
+  color: #fff;
+}
+
+.btn-buy:hover {
+  background: #f57c00;
+  border-color: #f57c00;
 }
 
 /* Layout */

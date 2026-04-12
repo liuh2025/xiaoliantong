@@ -9,6 +9,8 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from apps.enterprise.models import Enterprise, AuditRecord, MasterData
+from apps.opportunity.models import Opportunity, ContactLog
+from apps.auth_app.models import User
 from apps.enterprise.serializers import (
     EnterpriseListSerializer,
     EnterpriseDetailSerializer,
@@ -263,7 +265,10 @@ class EnterpriseClaimView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        """Claim an enterprise by credit_code."""
+        """Claim an enterprise by credit_code or enterprise_id.
+
+        Supports Step2 fields: legal_representative, business_license, position.
+        """
         serializer = EnterpriseClaimSerializer(data=request.data)
         if not serializer.is_valid():
             return Response({
@@ -272,14 +277,33 @@ class EnterpriseClaimView(APIView):
                 'data': serializer.errors,
             }, status=status.HTTP_200_OK)
 
-        credit_code = serializer.validated_data['credit_code']
+        # Find enterprise by credit_code or enterprise_id
+        enterprise = None
+        credit_code = serializer.validated_data.get('credit_code', '')
+        enterprise_id = serializer.validated_data.get('enterprise_id')
 
-        try:
-            enterprise = Enterprise.objects.get(credit_code=credit_code)
-        except Enterprise.DoesNotExist:
+        if enterprise_id:
+            try:
+                enterprise = Enterprise.objects.get(pk=enterprise_id)
+            except Enterprise.DoesNotExist:
+                return Response({
+                    'code': 404,
+                    'message': '企业不存在',
+                    'data': None,
+                }, status=status.HTTP_200_OK)
+        elif credit_code:
+            try:
+                enterprise = Enterprise.objects.get(credit_code=credit_code)
+            except Enterprise.DoesNotExist:
+                return Response({
+                    'code': 404,
+                    'message': '企业不存在',
+                    'data': None,
+                }, status=status.HTTP_200_OK)
+        else:
             return Response({
-                'code': 404,
-                'message': '企业不存在',
+                'code': 400,
+                'message': '请提供credit_code或enterprise_id',
                 'data': None,
             }, status=status.HTTP_200_OK)
 
@@ -296,9 +320,22 @@ class EnterpriseClaimView(APIView):
                 # Update enterprise
                 enterprise.admin_user = request.user
                 enterprise.auth_status = Enterprise.AuthStatus.PENDING
-                enterprise.save(
-                    update_fields=['admin_user', 'auth_status', 'updated_at'],
-                )
+
+                # Update Step2 fields if provided
+                legal_rep = serializer.validated_data.get('legal_representative')
+                if legal_rep:
+                    enterprise.legal_representative = legal_rep
+                position = serializer.validated_data.get('position')
+                if position:
+                    enterprise.position = position
+
+                update_fields = ['admin_user', 'auth_status', 'updated_at']
+                if legal_rep:
+                    update_fields.append('legal_representative')
+                if position:
+                    update_fields.append('position')
+
+                enterprise.save(update_fields=update_fields)
 
                 # Create audit record
                 AuditRecord.objects.create(
@@ -557,5 +594,41 @@ class NewestEnterpriseView(APIView):
             'message': 'success',
             'data': {
                 'items': serializer.data,
+            },
+        }, status=status.HTTP_200_OK)
+
+
+class HomeStatsView(APIView):
+    """GET /ent/stats - Public homepage statistics."""
+
+    permission_classes = []
+    authentication_classes = []
+
+    def get(self, request):
+        """Return homepage statistics."""
+        from django.db.models import Count
+
+        total_enterprises = Enterprise.objects.filter(
+            auth_status=Enterprise.AuthStatus.VERIFIED,
+        ).count()
+
+        total_opportunities = Opportunity.objects.filter(
+            status=Opportunity.OppStatus.ACTIVE,
+        ).count()
+
+        total_matchmaking = ContactLog.objects.filter(
+            status=ContactLog.ContactStatus.COMPLETED,
+        ).count()
+
+        total_users = User.objects.filter(is_active=True).count()
+
+        return Response({
+            'code': 200,
+            'message': 'success',
+            'data': {
+                'total_enterprises': total_enterprises,
+                'total_opportunities': total_opportunities,
+                'total_matchmaking': total_matchmaking,
+                'total_users': total_users,
             },
         }, status=status.HTTP_200_OK)
