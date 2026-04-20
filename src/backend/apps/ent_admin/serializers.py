@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 from apps.enterprise.models import MasterData
 from apps.opportunity.models import Opportunity
@@ -33,11 +35,16 @@ class EmployeeCreateSerializer(serializers.Serializer):
     position = serializers.CharField(max_length=50, required=False, allow_null=True, allow_blank=True)
     role_code = serializers.ChoiceField(choices=['enterprise_admin', 'employee'])
 
+    def validate_phone(self, value):
+        if not re.match(r'^1[3-9]\d{9}$', value):
+            raise serializers.ValidationError("手机号格式不正确")
+        return value
+
 
 class EmployeeUpdateSerializer(serializers.Serializer):
     """Serializer for updating an employee."""
 
-    real_name = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    real_name = serializers.CharField(max_length=50, required=False, allow_blank=True, min_length=1)
     position = serializers.CharField(max_length=50, required=False, allow_null=True, allow_blank=True)
     role_code = serializers.ChoiceField(choices=['enterprise_admin', 'employee'], required=False)
     is_active = serializers.BooleanField(required=False)

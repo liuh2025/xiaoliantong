@@ -87,7 +87,7 @@
     >
       <el-form :model="dialogForm" label-width="80px">
         <el-form-item v-if="!isEdit" label="姓名" required>
-          <el-input v-model="dialogForm.name" placeholder="请输入员工姓名" />
+          <el-input v-model="dialogForm.real_name" placeholder="请输入员工姓名" />
         </el-form-item>
         <el-form-item v-if="!isEdit" label="职位" required>
           <el-input v-model="dialogForm.position" placeholder="请输入职位" />
@@ -136,7 +136,7 @@ const dialogSaving = ref(false)
 const isEdit = ref(false)
 const editId = ref(null)
 const dialogForm = ref({
-  name: '',
+  real_name: '',
   position: '',
   phone: '',
   role_code: 'employee',
@@ -172,7 +172,7 @@ async function fetchData() {
 function openCreateDialog() {
   isEdit.value = false
   editId.value = null
-  dialogForm.value = { name: '', position: '', phone: '', role_code: 'employee', is_active: true }
+  dialogForm.value = { real_name: '', position: '', phone: '', role_code: 'employee', is_active: true }
   dialogVisible.value = true
 }
 

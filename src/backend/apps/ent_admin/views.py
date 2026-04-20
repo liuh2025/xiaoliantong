@@ -1,6 +1,7 @@
 import logging
 
 from django.db.models import Q
+from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -30,36 +31,28 @@ def _success_response(data=None):
 
 def _error_response(message, code=400):
     """Build a standard error response."""
+    http_status = {
+        400: status.HTTP_400_BAD_REQUEST,
+        403: status.HTTP_403_FORBIDDEN,
+        404: status.HTTP_404_NOT_FOUND,
+        500: status.HTTP_500_INTERNAL_SERVER_ERROR,
+    }.get(code, status.HTTP_400_BAD_REQUEST)
     return Response(
         {'code': code, 'message': message, 'data': None},
-        status=status.HTTP_200_OK,
+        status=http_status,
     )
 
 
-def _get_admin_enterprise(user):
-    """Return the VERIFIED Enterprise for the enterprise_admin user, or None."""
+def _get_enterprise(user, require_admin=False):
+    """Return the VERIFIED Enterprise for the user, or None.
+
+    If require_admin is True, only return if user is enterprise_admin.
+    """
     try:
         profile = user.ent_user_profile
-    except Exception:
+    except UserProfile.DoesNotExist:
         return None
-    if profile.role_code != 'enterprise_admin':
-        return None
-    if not profile.enterprise_id:
-        return None
-    try:
-        return Enterprise.objects.get(
-            id=profile.enterprise_id,
-            auth_status=Enterprise.AuthStatus.VERIFIED,
-        )
-    except Enterprise.DoesNotExist:
-        return None
-
-
-def _get_user_enterprise(user):
-    """Return the VERIFIED Enterprise bound to user (admin or employee), or None."""
-    try:
-        profile = user.ent_user_profile
-    except Exception:
+    if require_admin and profile.role_code != 'enterprise_admin':
         return None
     if not profile.enterprise_id:
         return None
@@ -82,13 +75,13 @@ class EmployeeListView(APIView):
 
     def get(self, request):
         """ADM-001: List employees of the current admin's enterprise."""
-        enterprise = _get_admin_enterprise(request.user)
+        enterprise = _get_enterprise(request.user, require_admin=True)
         if not enterprise:
             return _error_response('无权操作，需要企业管理员权限', 403)
 
         profiles = UserProfile.objects.filter(
             enterprise_id=enterprise.id,
-        ).select_related('user')
+        ).select_related('user').order_by('-created_at')
 
         # Keyword search on real_name or phone (user.username)
         keyword = request.query_params.get('keyword', '').strip()
@@ -98,12 +91,34 @@ class EmployeeListView(APIView):
                 | Q(user__username__icontains=keyword),
             )
 
-        serializer = EmployeeListSerializer(profiles, many=True)
-        return _success_response({'items': serializer.data})
+        # Pagination
+        try:
+            page = max(int(request.query_params.get('page', 1)), 1)
+        except (ValueError, TypeError):
+            page = 1
+        try:
+            page_size = int(request.query_params.get('page_size', 20))
+            page_size = max(page_size, 1)
+            if page_size > 100:
+                page_size = 100
+        except (ValueError, TypeError):
+            page_size = 20
+
+        total = profiles.count()
+        offset = (page - 1) * page_size
+        items = profiles[offset:offset + page_size]
+
+        serializer = EmployeeListSerializer(items, many=True)
+        return _success_response({
+            'total': total,
+            'page': page,
+            'page_size': page_size,
+            'items': serializer.data,
+        })
 
     def post(self, request):
         """ADM-002: Create/bind an employee to the current enterprise."""
-        enterprise = _get_admin_enterprise(request.user)
+        enterprise = _get_enterprise(request.user, require_admin=True)
         if not enterprise:
             return _error_response('无权操作，需要企业管理员权限', 403)
 
@@ -117,7 +132,6 @@ class EmployeeListView(APIView):
         role_code = serializer.validated_data['role_code']
 
         # Find user by phone (username)
-        from django.contrib.auth.models import User
         try:
             target_user = User.objects.get(username=phone)
         except User.DoesNotExist:
@@ -128,7 +142,7 @@ class EmployeeListView(APIView):
             target_profile = target_user.ent_user_profile
             if target_profile.enterprise_id and target_profile.enterprise_id != enterprise.id:
                 return _error_response('用户已绑定其他企业', 400)
-        except Exception:
+        except UserProfile.DoesNotExist:
             # No profile yet - create one
             target_profile = UserProfile.objects.create(
                 user=target_user,
@@ -159,12 +173,11 @@ class EmployeeDetailView(APIView):
 
     def put(self, request, pk):
         """ADM-003: Update employee info."""
-        enterprise = _get_admin_enterprise(request.user)
+        enterprise = _get_enterprise(request.user, require_admin=True)
         if not enterprise:
             return _error_response('无权操作，需要企业管理员权限', 403)
 
         # Get target user
-        from django.contrib.auth.models import User
         try:
             target_user = User.objects.get(pk=pk)
         except User.DoesNotExist:
@@ -173,7 +186,7 @@ class EmployeeDetailView(APIView):
         # Check target belongs to same enterprise
         try:
             target_profile = target_user.ent_user_profile
-        except Exception:
+        except UserProfile.DoesNotExist:
             return _error_response('用户不存在企业信息', 404)
 
         if target_profile.enterprise_id != enterprise.id:
@@ -226,11 +239,10 @@ class EmployeeResetPasswordView(APIView):
 
     def post(self, request, pk):
         """ADM-004: Reset employee password to last 6 digits of phone."""
-        enterprise = _get_admin_enterprise(request.user)
+        enterprise = _get_enterprise(request.user, require_admin=True)
         if not enterprise:
             return _error_response('无权操作，需要企业管理员权限', 403)
 
-        from django.contrib.auth.models import User
         try:
             target_user = User.objects.get(pk=pk)
         except User.DoesNotExist:
@@ -239,7 +251,7 @@ class EmployeeResetPasswordView(APIView):
         # Check target belongs to same enterprise
         try:
             target_profile = target_user.ent_user_profile
-        except Exception:
+        except UserProfile.DoesNotExist:
             return _error_response('用户不存在企业信息', 404)
 
         if target_profile.enterprise_id != enterprise.id:
@@ -264,11 +276,10 @@ class EmployeeDisableView(APIView):
 
     def put(self, request, pk):
         """ADM-005: Toggle employee is_active status."""
-        enterprise = _get_admin_enterprise(request.user)
+        enterprise = _get_enterprise(request.user, require_admin=True)
         if not enterprise:
             return _error_response('无权操作，需要企业管理员权限', 403)
 
-        from django.contrib.auth.models import User
         try:
             target_user = User.objects.get(pk=pk)
         except User.DoesNotExist:
@@ -277,11 +288,15 @@ class EmployeeDisableView(APIView):
         # Check target belongs to same enterprise
         try:
             target_profile = target_user.ent_user_profile
-        except Exception:
+        except UserProfile.DoesNotExist:
             return _error_response('用户不存在企业信息', 404)
 
         if target_profile.enterprise_id != enterprise.id:
             return _error_response('该用户不属于当前企业', 403)
+
+        # Cannot disable self
+        if target_user == request.user:
+            return _error_response('不能停用自己', 400)
 
         # Toggle is_active
         target_user.is_active = not target_user.is_active
@@ -303,11 +318,10 @@ class EmployeeUnbindView(APIView):
 
     def post(self, request, pk):
         """ADM-006: Unbind employee from enterprise."""
-        enterprise = _get_admin_enterprise(request.user)
+        enterprise = _get_enterprise(request.user, require_admin=True)
         if not enterprise:
             return _error_response('无权操作，需要企业管理员权限', 403)
 
-        from django.contrib.auth.models import User
         try:
             target_user = User.objects.get(pk=pk)
         except User.DoesNotExist:
@@ -316,11 +330,15 @@ class EmployeeUnbindView(APIView):
         # Check target belongs to same enterprise
         try:
             target_profile = target_user.ent_user_profile
-        except Exception:
+        except UserProfile.DoesNotExist:
             return _error_response('用户不存在企业信息', 404)
 
         if target_profile.enterprise_id != enterprise.id:
             return _error_response('该用户不属于当前企业', 403)
+
+        # Cannot unbind self
+        if target_user == request.user:
+            return _error_response('不能解绑自己', 400)
 
         # Unbind: clear enterprise association
         target_profile.enterprise_id = None
@@ -346,7 +364,7 @@ class OpportunityListView(APIView):
 
     def get(self, request):
         """ADM-007: List opportunities for the current user's enterprise."""
-        enterprise = _get_user_enterprise(request.user)
+        enterprise = _get_enterprise(request.user)
         if not enterprise:
             return _error_response('用户未绑定已认证企业', 403)
 
@@ -374,11 +392,16 @@ class OpportunityListView(APIView):
         queryset = queryset.order_by('-created_at')
 
         # Manual pagination
-        page = int(request.query_params.get('page', 1))
-        page_size = int(request.query_params.get('page_size', 20))
-        if page < 1:
+        try:
+            page = max(int(request.query_params.get('page', 1)), 1)
+        except (ValueError, TypeError):
             page = 1
-        if page_size < 1:
+        try:
+            page_size = int(request.query_params.get('page_size', 20))
+            page_size = max(page_size, 1)
+            if page_size > 100:
+                page_size = 100
+        except (ValueError, TypeError):
             page_size = 20
         total = queryset.count()
         offset = (page - 1) * page_size
@@ -403,7 +426,7 @@ class OpportunityDetailView(APIView):
 
     def put(self, request, pk):
         """ADM-008: Update opportunity (enterprise admin or publisher)."""
-        enterprise = _get_user_enterprise(request.user)
+        enterprise = _get_enterprise(request.user)
         if not enterprise:
             return _error_response('用户未绑定已认证企业', 403)
 
@@ -453,7 +476,7 @@ class OpportunityRepublishView(APIView):
 
     def put(self, request, pk):
         """ADM-009: Republish OFFLINE opportunity to ACTIVE."""
-        enterprise = _get_user_enterprise(request.user)
+        enterprise = _get_enterprise(request.user)
         if not enterprise:
             return _error_response('用户未绑定已认证企业', 403)
 
@@ -490,7 +513,7 @@ class OpportunityOfflineView(APIView):
 
     def put(self, request, pk):
         """ADM-010: Offline ACTIVE opportunity."""
-        enterprise = _get_user_enterprise(request.user)
+        enterprise = _get_enterprise(request.user)
         if not enterprise:
             return _error_response('用户未绑定已认证企业', 403)
 

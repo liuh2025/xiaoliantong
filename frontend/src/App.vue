@@ -9,14 +9,12 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import AuthLayout from './layouts/AuthLayout.vue'
-import AdminLayout from './layouts/AdminLayout.vue'
 
 const route = useRoute()
 
 const layout = computed(() => {
   switch (route.meta.layout) {
     case 'auth': return AuthLayout
-    case 'admin': return AdminLayout
     default: return DefaultLayout
   }
 })

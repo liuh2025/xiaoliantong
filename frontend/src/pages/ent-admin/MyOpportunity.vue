@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>商机管理</span>
-          <el-button type="primary" @click="openCreateDialog">发布商机</el-button>
+
         </div>
       </template>
 
@@ -12,15 +12,15 @@
         <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
         <el-table-column prop="type" label="类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.type === 'buy' ? 'warning' : 'success'">
-              {{ row.type === 'buy' ? '采购' : '供应' }}
+            <el-tag :type="row.type.toUpperCase() === 'BUY' ? 'warning' : 'success'">
+              {{ row.type.toUpperCase() === 'BUY' ? '采购' : '供应' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'info'">
-              {{ row.status === 'active' ? '上架中' : '已下架' }}
+            <el-tag :type="row.status.toUpperCase() === 'ACTIVE' ? 'success' : 'info'">
+              {{ row.status.toUpperCase() === 'ACTIVE' ? '上架中' : '已下架' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -31,7 +31,7 @@
             <el-button size="small" @click="openContactLogDialog(row)">查看联系方式记录</el-button>
             <el-button size="small" @click="openEditDialog(row)">编辑</el-button>
             <el-button
-              v-if="row.status === 'active'"
+              v-if="row.status.toUpperCase() === 'ACTIVE'"
               size="small"
               type="warning"
               @click="handleOffline(row)"
@@ -198,6 +198,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   getMyOpportunities,
+
   updateMyOpportunity,
   offlineMyOpportunity,
   republishMyOpportunity,
@@ -334,17 +335,24 @@ async function submitDialog() {
     ElMessage.warning('请输入商机标题')
     return
   }
-  if (!isEdit.value && dialogForm.value.description && dialogForm.value.description.length < 20) {
-    ElMessage.warning('详情描述至少20字')
-    return
-  }
   dialogSaving.value = true
   try {
     const payload = { ...dialogForm.value }
-    if (isEdit.value) delete payload.type
+    delete payload.type
+    // Map frontend field names to backend field names
+    payload.industry_id = payload.industry_1
+    payload.sub_industry_id = payload.industry_2
+    payload.province_id = payload.province
+    payload.region_id = payload.city
+    payload.detail = payload.description
+    delete payload.industry_1
+    delete payload.industry_2
+    delete payload.province
+    delete payload.city
+    delete payload.description
     const { data: res } = await updateMyOpportunity(editId.value, payload)
     if (res.code === 200) {
-      ElMessage.success(isEdit.value ? '更新成功' : '发布成功')
+      ElMessage.success('更新成功')
       dialogVisible.value = false
       await fetchData()
     } else {

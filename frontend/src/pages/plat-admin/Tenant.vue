@@ -24,41 +24,7 @@
         <el-button type="primary" @click="fetchData">搜索</el-button>
       </div>
 
-      <el-table
-        :data="list"
-        v-loading="loading"
-        empty-text="暂无企业数据"
-        row-key="id"
-        @row-click="handleRowClick"
-        highlight-current-row
-      >
-        <el-table-column type="expand">
-          <template #default="{ row }">
-            <div class="expand-content" v-loading="row._membersLoading">
-              <div class="expand-header">
-                <span>成员列表</span>
-                <el-button size="small" type="primary" @click.stop="openAddMember(row)">添加成员</el-button>
-              </div>
-              <el-table :data="row._members || []" size="small" empty-text="暂无成员">
-                <el-table-column prop="username" label="用户名" min-width="120" />
-                <el-table-column prop="phone" label="手机号" min-width="130" />
-                <el-table-column prop="role" label="角色" min-width="120">
-                  <template #default="{ row: member }">
-                    <el-tag :type="member.role === 'enterprise_admin' ? 'danger' : ''" size="small">
-                      {{ member.role === 'enterprise_admin' ? '管理员' : '普通员工' }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column label="操作" width="160">
-                  <template #default="{ row: member }">
-                    <el-button size="small" @click.stop="openEditMember(row, member)">编辑角色</el-button>
-                    <el-button size="small" type="danger" @click.stop="handleRemoveMember(row, member)">移除</el-button>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </div>
-          </template>
-        </el-table-column>
+      <el-table :data="list" v-loading="loading" empty-text="暂无企业数据">
         <el-table-column prop="name" label="企业名称" min-width="180" show-overflow-tooltip />
         <el-table-column prop="credit_code" label="统一社会信用代码" min-width="200" />
         <el-table-column prop="auth_status" label="认证状态" width="110">
@@ -74,9 +40,10 @@
           </template>
         </el-table-column>
         <el-table-column prop="created_at" label="创建时间" min-width="170" />
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" type="warning" @click.stop="handleToggleStatus(row)">
+            <el-button size="small" @click="openMemberDialog(row)">成员管理</el-button>
+            <el-button size="small" type="warning" @click="handleToggleStatus(row)">
               {{ row.is_active !== false ? '停用' : '启用' }}
             </el-button>
           </template>
@@ -96,12 +63,47 @@
       </div>
     </el-card>
 
-    <!-- Add / Edit Member Dialog -->
+    <!-- Member Management Dialog -->
     <el-dialog
       v-model="memberDialogVisible"
+      :title="`成员管理 - ${currentEnt?.name || ''}`"
+      width="720px"
+      destroy-on-close
+    >
+      <div class="member-dialog-header">
+        <el-button size="small" type="primary" @click="openAddMember">添加成员</el-button>
+      </div>
+      <el-table :data="members" v-loading="membersLoading" size="small" empty-text="暂无成员">
+        <el-table-column prop="username" label="用户名" min-width="120" />
+        <el-table-column prop="phone" label="手机号" min-width="130" />
+        <el-table-column prop="role" label="角色" min-width="120">
+          <template #default="{ row }">
+            <el-tag :type="row.role === 'enterprise_admin' ? 'danger' : ''" size="small">
+              {{ row.role === 'enterprise_admin' ? '管理员' : '普通员工' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="260">
+          <template #default="{ row }">
+            <el-button size="small" @click="openEditMember(row)">编辑角色</el-button>
+            <el-button size="small" type="warning" @click="handleResetPassword(row)">重置密码</el-button>
+            <el-button size="small" type="danger" @click="handleUnbindMember(row)">解绑</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <template #footer>
+        <el-button @click="memberDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- Add / Edit Member Sub-Dialog -->
+    <el-dialog
+      v-model="memberFormVisible"
       :title="isEditMember ? '编辑成员角色' : '添加成员'"
       width="480px"
       destroy-on-close
+      append-to-body
     >
       <el-form :model="memberForm" label-width="80px">
         <el-form-item v-if="!isEditMember" label="手机号" required>
@@ -115,7 +117,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="memberDialogVisible = false">取消</el-button>
+        <el-button @click="memberFormVisible = false">取消</el-button>
         <el-button type="primary" :loading="memberSaving" @click="submitMember">确定</el-button>
       </template>
     </el-dialog>
@@ -130,7 +132,8 @@ import {
   getTenantMembers,
   createTenantMember,
   updateTenantMember,
-  deleteTenantMember,
+  resetTenantMemberPassword,
+  unbindTenantMember,
   toggleTenantStatus,
 } from '../../api/platAdmin'
 
@@ -142,10 +145,16 @@ const pageSize = ref(10)
 const searchKey = ref('')
 const filterStatus = ref('')
 
+// Member dialog
 const memberDialogVisible = ref(false)
+const membersLoading = ref(false)
+const members = ref([])
+const currentEnt = ref(null)
+
+// Member form sub-dialog
+const memberFormVisible = ref(false)
 const memberSaving = ref(false)
 const isEditMember = ref(false)
-const currentEnt = ref(null)
 const currentMember = ref(null)
 const memberForm = ref({ phone: '', role: 'employee' })
 
@@ -173,11 +182,7 @@ async function fetchData() {
     if (filterStatus.value) params.auth_status = filterStatus.value
     const { data: res } = await getTenantList(params)
     if (res.code === 200) {
-      list.value = (res.data.items || []).map((item) => ({
-        ...item,
-        _members: [],
-        _membersLoading: false,
-      }))
+      list.value = res.data.items || []
       total.value = res.data.total || 0
     }
   } catch {
@@ -187,19 +192,26 @@ async function fetchData() {
   }
 }
 
-async function handleRowClick(row) {
-  if (row._members.length > 0) return
-  row._membersLoading = true
+async function fetchMembers() {
+  if (!currentEnt.value) return
+  membersLoading.value = true
   try {
-    const { data: res } = await getTenantMembers(row.id, { page: 1, page_size: 100 })
+    const { data: res } = await getTenantMembers(currentEnt.value.id, { page: 1, page_size: 100 })
     if (res.code === 200) {
-      row._members = res.data.items || []
+      members.value = res.data.items || []
     }
   } catch {
     // silent
   } finally {
-    row._membersLoading = false
+    membersLoading.value = false
   }
+}
+
+async function openMemberDialog(row) {
+  currentEnt.value = row
+  members.value = []
+  memberDialogVisible.value = true
+  await fetchMembers()
 }
 
 async function handleToggleStatus(row) {
@@ -222,20 +234,18 @@ async function handleToggleStatus(row) {
   }
 }
 
-function openAddMember(row) {
-  currentEnt.value = row
+function openAddMember() {
   isEditMember.value = false
   currentMember.value = null
   memberForm.value = { phone: '', role: 'employee' }
-  memberDialogVisible.value = true
+  memberFormVisible.value = true
 }
 
-function openEditMember(entRow, memberRow) {
-  currentEnt.value = entRow
+function openEditMember(memberRow) {
   isEditMember.value = true
   currentMember.value = memberRow
   memberForm.value = { role: memberRow.role }
-  memberDialogVisible.value = true
+  memberFormVisible.value = true
 }
 
 async function submitMember() {
@@ -253,10 +263,8 @@ async function submitMember() {
     }
     if (res.data.code === 200) {
       ElMessage.success(isEditMember.value ? '更新成功' : '添加成功')
-      memberDialogVisible.value = false
-      // Refresh members
-      currentEnt.value._members = []
-      await handleRowClick(currentEnt.value)
+      memberFormVisible.value = false
+      await fetchMembers()
     } else {
       ElMessage.error(res.data.message || '操作失败')
     }
@@ -267,20 +275,37 @@ async function submitMember() {
   }
 }
 
-async function handleRemoveMember(entRow, memberRow) {
+async function handleResetPassword(memberRow) {
   try {
     await ElMessageBox.confirm(
-      `确定要移除成员 "${memberRow.username || memberRow.phone}" 吗？`,
-      '移除成员',
+      `确定要重置成员 "${memberRow.username || memberRow.phone}" 的密码吗？`,
+      '重置密码',
       { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' },
     )
-    const { data: res } = await deleteTenantMember(entRow.id, memberRow.id)
+    const { data: res } = await resetTenantMemberPassword(memberRow.id)
     if (res.code === 200) {
-      ElMessage.success('已移除')
-      entRow._members = []
-      await handleRowClick(entRow)
+      ElMessage.success('密码已重置')
     } else {
-      ElMessage.error(res.message || '移除失败')
+      ElMessage.error(res.message || '重置失败')
+    }
+  } catch {
+    // cancelled
+  }
+}
+
+async function handleUnbindMember(memberRow) {
+  try {
+    await ElMessageBox.confirm(
+      `确定要解绑成员 "${memberRow.username || memberRow.phone}" 吗？此操作不可恢复。`,
+      '解绑成员',
+      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' },
+    )
+    const { data: res } = await unbindTenantMember(memberRow.id)
+    if (res.code === 200) {
+      ElMessage.success('已解绑')
+      await fetchMembers()
+    } else {
+      ElMessage.error(res.message || '解绑失败')
     }
   } catch {
     // cancelled
@@ -304,15 +329,9 @@ onMounted(fetchData)
   margin-top: 16px;
 }
 
-.expand-content {
-  padding: 12px 24px;
-}
-
-.expand-header {
+.member-dialog-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin-bottom: 12px;
-  font-weight: var(--font-weight-semibold);
 }
 </style>

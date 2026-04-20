@@ -187,7 +187,7 @@ async function submitOffline() {
   }
   submitting.value = true
   try {
-    const { data: res } = await offlineContentOpportunity(currentRow.value.id)
+    const { data: res } = await offlineContentOpportunity(currentRow.value.id, { reason: offlineForm.value.reason })
     if (res.code === 200) {
       ElMessage.success('已下线')
       offlineVisible.value = false

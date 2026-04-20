@@ -7,7 +7,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
 from datetime import timedelta
-import random
+import secrets
+import string
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from .models import AuthSmsCode
@@ -18,6 +19,20 @@ from .serializers import (
     LogoutSerializer, CustomTokenRefreshSerializer,
     CurrentUserInfoSerializer, RegisterSerializer,
 )
+
+
+def _get_user_permissions(user, profile):
+    """获取用户权限列表"""
+    try:
+        perms = getattr(profile, 'permissions', None)
+        if perms:
+            return list(perms)
+        perm_list = list(
+            user.user_permissions.values_list('codename', flat=True)
+        )
+        return perm_list
+    except Exception:
+        return []
 
 
 class SmsSendView(views.APIView):
@@ -53,8 +68,8 @@ class SmsSendView(views.APIView):
 
         if daily_count >= limit:
             return Response(
-                {'code': 400, 'message': '超出每日发送次数限制'},
-                status=status.HTTP_400_BAD_REQUEST,
+                {'code': 429, 'message': '超出每日发送次数限制'},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
 
         # 5分钟内未使用验证码自动作废重发
@@ -68,7 +83,7 @@ class SmsSendView(views.APIView):
         ).update(used_at=now)  # 标记为已使用/作废
 
         # 生成新验证码
-        code = f"{random.randint(100000, 999999)}"
+        code = ''.join(secrets.choice(string.digits) for _ in range(6))
         expire_at = now + timedelta(minutes=5)
 
         AuthSmsCode.objects.create(
@@ -149,7 +164,7 @@ class SmsLoginView(views.APIView):
         refresh['role_code'] = role_code
 
         # 获取权限列表
-        permissions = self._get_user_permissions(user, profile)
+        permissions = _get_user_permissions(user, profile)
         refresh['permissions'] = permissions
 
         # remember_me 为 true 时延长 refresh_token 有效期
@@ -167,21 +182,6 @@ class SmsLoginView(views.APIView):
                 'permissions': permissions,
             },
         }, status=status.HTTP_200_OK)
-
-    @staticmethod
-    def _get_user_permissions(user, profile):
-        """获取用户权限列表"""
-        try:
-            perms = getattr(profile, 'permissions', None)
-            if perms:
-                return list(perms)
-            # 从 User 模型的权限获取
-            perm_list = list(
-                user.user_permissions.values_list('codename', flat=True)
-            )
-            return perm_list
-        except Exception:
-            return []
 
 
 class RegisterView(views.APIView):
@@ -242,7 +242,7 @@ class RegisterView(views.APIView):
         profile = user.ent_user_profile
         refresh['role_code'] = profile.role_code
 
-        permissions = SmsLoginView._get_user_permissions(user, profile)
+        permissions = _get_user_permissions(user, profile)
         refresh['permissions'] = permissions
 
         return Response({
@@ -333,7 +333,7 @@ class PasswordLoginView(views.APIView):
         refresh = RefreshToken.for_user(user)
         refresh['role_code'] = role_code
 
-        permissions = self._get_user_permissions(user, profile)
+        permissions = _get_user_permissions(user, profile)
         refresh['permissions'] = permissions
 
         # remember_me 为 true 时延长 refresh_token 有效期
@@ -360,20 +360,6 @@ class PasswordLoginView(views.APIView):
 
         if fail_count >= LOGIN_FAIL_LIMIT:
             cache.set(lock_key, True, LOGIN_LOCK_DURATION)
-
-    @staticmethod
-    def _get_user_permissions(user, profile):
-        """获取用户权限列表"""
-        try:
-            perms = getattr(profile, 'permissions', None)
-            if perms:
-                return list(perms)
-            perm_list = list(
-                user.user_permissions.values_list('codename', flat=True)
-            )
-            return perm_list
-        except Exception:
-            return []
 
 
 # ==================== 密码重置常量 ====================

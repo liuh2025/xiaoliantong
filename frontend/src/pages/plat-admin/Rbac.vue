@@ -2,56 +2,138 @@
   <div class="rbac-page">
     <el-card v-loading="loading">
       <template #header>
-        <span>角色与权限</span>
+        <span>账号与角色权限</span>
       </template>
 
       <el-empty v-if="!loading && roles.length === 0" description="暂无角色数据" />
 
-      <div v-else class="role-list">
-        <el-card v-for="role in roles" :key="role.id || role.code" class="role-card" shadow="hover">
-          <template #header>
-            <div class="role-card-header">
-              <span class="role-name">{{ role.name }}</span>
-              <el-tag size="small">{{ role.code }}</el-tag>
-            </div>
-          </template>
-          <div class="role-desc">{{ role.description || '暂无描述' }}</div>
-
-          <div class="permission-section">
-            <div class="section-title">权限列表</div>
-            <div class="permission-grid" v-if="role.permissions && role.permissions.length > 0">
-              <el-tag
-                v-for="perm in role.permissions"
-                :key="perm.code || perm"
-                size="small"
-                type="info"
-                class="perm-tag"
-              >
-                {{ perm.name || perm }}
-              </el-tag>
-            </div>
-            <div v-else class="text-secondary">暂无权限配置</div>
+      <div v-else class="rbac-layout">
+        <!-- Left: Role list -->
+        <div class="role-sidebar">
+          <div
+            v-for="role in roles"
+            :key="role.id"
+            class="role-item"
+            :class="{ active: selectedRoleId === role.id }"
+            @click="selectRole(role.id)"
+          >
+            <div class="role-item-name">{{ role.name }}</div>
+            <el-tag size="small" type="info">{{ role.code }}</el-tag>
           </div>
-        </el-card>
+        </div>
+
+        <!-- Right: Permission matrix -->
+        <div class="permission-panel">
+          <div v-if="!selectedRole" class="empty-hint">请选择左侧角色查看权限配置</div>
+          <template v-else>
+            <div class="panel-header">
+              <div>
+                <span class="panel-title">{{ selectedRole.name }}</span>
+                <span class="panel-desc">{{ selectedRole.description }}</span>
+              </div>
+              <el-button type="primary" size="small" :loading="saving" @click="savePermissions">保存配置</el-button>
+            </div>
+
+            <el-table :data="permissionModules" border size="small" class="perm-table">
+              <el-table-column prop="label" label="功能模块" width="140" />
+              <el-table-column label="权限" min-width="200">
+                <template #default="{ row }">
+                  <el-checkbox
+                    :model-value="currentPermissions.includes(row.key)"
+                    @change="(val) => togglePermission(row.key, val)"
+                  >
+                    启用
+                  </el-checkbox>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+        </div>
       </div>
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getRoles } from '../../api/platAdmin'
+import { getRoles, getRoleDetail, updateRolePermissions } from '../../api/platAdmin'
 
 const loading = ref(false)
+const saving = ref(false)
 const roles = ref([])
+const selectedRoleId = ref(null)
+const currentPermissions = ref([])
+
+const permissionModules = [
+  { key: 'dashboard', label: '数据大盘' },
+  { key: 'audit', label: '企业审核' },
+  { key: 'tenant', label: '企业租户' },
+  { key: 'content', label: '内容管理' },
+  { key: 'master_data', label: '基础数据' },
+  { key: 'role', label: '角色权限' },
+  { key: 'settings', label: '系统设置' },
+  { key: 'enterprise', label: '企业信息' },
+  { key: 'opportunity', label: '商机管理' },
+  { key: 'feed', label: '校友圈' },
+  { key: 'member', label: '成员管理' },
+  { key: 'public', label: '公开浏览' },
+]
+
+const selectedRole = computed(() => {
+  return roles.value.find((r) => r.id === selectedRoleId.value) || null
+})
+
+function togglePermission(key, enabled) {
+  if (enabled) {
+    if (!currentPermissions.value.includes(key)) {
+      currentPermissions.value.push(key)
+    }
+  } else {
+    currentPermissions.value = currentPermissions.value.filter((k) => k !== key)
+  }
+}
+
+async function selectRole(id) {
+  selectedRoleId.value = id
+  try {
+    const { data: res } = await getRoleDetail(id)
+    if (res.code === 200) {
+      currentPermissions.value = res.data.permissions || []
+    }
+  } catch {
+    currentPermissions.value = []
+  }
+}
+
+async function savePermissions() {
+  if (!selectedRoleId.value) return
+  saving.value = true
+  try {
+    const { data: res } = await updateRolePermissions(selectedRoleId.value, {
+      permissions: currentPermissions.value,
+    })
+    if (res.code === 200) {
+      ElMessage.success('权限配置已保存')
+    } else {
+      ElMessage.error(res.message || '保存失败')
+    }
+  } catch {
+    ElMessage.error('保存失败')
+  } finally {
+    saving.value = false
+  }
+}
 
 async function fetchData() {
   loading.value = true
   try {
     const { data: res } = await getRoles()
     if (res.code === 200) {
-      roles.value = res.data || []
+      roles.value = res.data.items || res.data || []
+      if (roles.value.length > 0) {
+        await selectRole(roles.value[0].id)
+      }
     }
   } catch {
     ElMessage.error('加载角色数据失败')
@@ -64,53 +146,73 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.role-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 16px;
+.rbac-layout {
+  display: flex;
+  gap: 24px;
+  min-height: 400px;
 }
 
-.role-card-header {
+.role-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--color-border-light);
+  padding-right: 16px;
+}
+
+.role-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: background 0.2s;
 }
 
-.role-name {
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-base);
+.role-item:hover {
+  background: var(--color-bg);
 }
 
-.role-desc {
-  color: var(--color-text-secondary);
+.role-item.active {
+  background: rgba(30, 136, 229, 0.08);
+  border: 1px solid var(--color-primary);
+}
+
+.role-item-name {
+  font-weight: var(--font-weight-medium);
   font-size: var(--font-size-sm);
+}
+
+.permission-panel {
+  flex: 1;
+}
+
+.empty-hint {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: 60px 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 16px;
 }
 
-.permission-section {
-  border-top: 1px solid var(--color-border-light);
-  padding-top: 12px;
+.panel-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);
+  margin-right: 8px;
 }
 
-.section-title {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  margin-bottom: 8px;
-  color: var(--color-text-primary);
-}
-
-.permission-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.perm-tag {
-  font-size: var(--font-size-xs);
-}
-
-.text-secondary {
+.panel-desc {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+}
+
+.perm-table {
+  max-width: 400px;
 }
 </style>

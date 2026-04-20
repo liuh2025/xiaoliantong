@@ -24,6 +24,7 @@ request.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
+    // Handle 401 (token expired) before normalizing other errors
     if (error.response?.status === 401 && !originalRequest._retry) {
       const refreshToken = localStorage.getItem('refresh_token')
       if (!refreshToken) {
@@ -45,12 +46,12 @@ request.interceptors.response.use(
       isRefreshing = true
 
       try {
-        const { data } = await axios.post('/api/v1/auth/token/refresh', {
-          refresh: refreshToken,
+        const { data: resp } = await axios.post('/api/v1/auth/refresh/', {
+          refresh_token: refreshToken,
         })
-        localStorage.setItem('access_token', data.access)
-        localStorage.setItem('refresh_token', data.refresh)
-        originalRequest.headers.Authorization = `Bearer ${data.access}`
+        localStorage.setItem('access_token', resp.data.access_token)
+        localStorage.setItem('refresh_token', resp.data.refresh_token)
+        originalRequest.headers.Authorization = `Bearer ${resp.data.access_token}`
         pendingRequests.forEach((cb) => cb())
         pendingRequests = []
         return request(originalRequest)
@@ -61,6 +62,12 @@ request.interceptors.response.use(
       } finally {
         isRefreshing = false
       }
+    }
+
+    // Normalize backend error responses into resolved promises
+    // so frontend can consistently check res.code === 200
+    if (error.response?.data && typeof error.response.data.code === 'number') {
+      return Promise.resolve({ data: error.response.data })
     }
 
     return Promise.reject(error)

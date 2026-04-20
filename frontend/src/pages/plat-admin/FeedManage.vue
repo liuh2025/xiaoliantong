@@ -7,10 +7,19 @@
 
       <!-- Filter -->
       <div class="filter-bar">
+        <el-input
+          v-model="searchKey"
+          placeholder="搜索动态内容"
+          clearable
+          style="width: 240px"
+          @clear="fetchData"
+          @keyup.enter="fetchData"
+        />
         <el-select v-model="filterStatus" placeholder="状态" clearable style="width: 140px" @change="fetchData">
           <el-option label="正常" value="active" />
           <el-option label="已下线" value="offline" />
         </el-select>
+        <el-button type="primary" @click="fetchData">搜索</el-button>
       </div>
 
       <el-table :data="list" v-loading="loading" empty-text="暂无动态数据">
@@ -70,24 +79,26 @@
 
     <!-- Detail Dialog -->
     <el-dialog v-model="detailVisible" title="动态详情" width="600px" destroy-on-close>
-      <el-descriptions v-if="detailRow" :column="1" border>
-        <el-descriptions-item label="发布人">{{ detailRow.publisher_name }}</el-descriptions-item>
-        <el-descriptions-item label="所属企业">{{ detailRow.enterprise_name || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="状态">
-          <el-tag :type="detailRow.status === 'active' ? 'success' : 'info'" size="small">
-            {{ detailRow.status === 'active' ? '正常' : '已下线' }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="发布时间">{{ detailRow.created_at }}</el-descriptions-item>
-        <el-descriptions-item label="动态内容">
-          <div style="white-space:pre-wrap;line-height:1.6;">{{ detailRow.content }}</div>
-        </el-descriptions-item>
-        <el-descriptions-item v-if="detailRow.images && detailRow.images.length" label="图片">
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <img v-for="(img, idx) in detailRow.images" :key="idx" :src="img" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />
-          </div>
-        </el-descriptions-item>
-      </el-descriptions>
+      <div v-loading="detailLoading">
+        <el-descriptions v-if="detailRow" :column="1" border>
+          <el-descriptions-item label="发布人">{{ detailRow.publisher_name }}</el-descriptions-item>
+          <el-descriptions-item label="所属企业">{{ detailRow.enterprise_name || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="detailRow.status === 'active' ? 'success' : 'info'" size="small">
+              {{ detailRow.status === 'active' ? '正常' : '已下线' }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="发布时间">{{ detailRow.created_at }}</el-descriptions-item>
+          <el-descriptions-item label="动态内容">
+            <div style="white-space:pre-wrap;line-height:1.6;">{{ detailRow.content }}</div>
+          </el-descriptions-item>
+          <el-descriptions-item v-if="detailRow.images && detailRow.images.length" label="图片">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <img v-for="(img, idx) in detailRow.images" :key="idx" :src="img" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />
+            </div>
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -95,13 +106,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getContentFeeds, offlineContentFeed } from '../../api/platAdmin'
+import { getContentFeeds, getContentFeedDetail, offlineContentFeed } from '../../api/platAdmin'
 
 const loading = ref(false)
 const list = ref([])
 const total = ref(0)
 const page = ref(1)
 const pageSize = ref(10)
+const searchKey = ref('')
 const filterStatus = ref('')
 
 const offlineVisible = ref(false)
@@ -110,17 +122,32 @@ const currentRow = ref(null)
 const offlineForm = ref({ reason: '' })
 
 const detailVisible = ref(false)
+const detailLoading = ref(false)
 const detailRow = ref(null)
 
-function openDetailDialog(row) {
-  detailRow.value = row
+async function openDetailDialog(row) {
+  detailRow.value = null
   detailVisible.value = true
+  detailLoading.value = true
+  try {
+    const { data: res } = await getContentFeedDetail(row.id)
+    if (res.code === 200) {
+      detailRow.value = res.data
+    } else {
+      detailRow.value = row
+    }
+  } catch {
+    detailRow.value = row
+  } finally {
+    detailLoading.value = false
+  }
 }
 
 async function fetchData() {
   loading.value = true
   try {
     const params = { page: page.value, page_size: pageSize.value }
+    if (searchKey.value) params.keyword = searchKey.value
     if (filterStatus.value) params.status = filterStatus.value
     const { data: res } = await getContentFeeds(params)
     if (res.code === 200) {
@@ -147,7 +174,7 @@ async function submitOffline() {
   }
   submitting.value = true
   try {
-    const { data: res } = await offlineContentFeed(currentRow.value.id)
+    const { data: res } = await offlineContentFeed(currentRow.value.id, { reason: offlineForm.value.reason })
     if (res.code === 200) {
       ElMessage.success('已下线')
       offlineVisible.value = false

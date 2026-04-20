@@ -88,7 +88,7 @@ class RegisterSerializer(serializers.Serializer):
 class PasswordLoginSerializer(serializers.Serializer):
     """密码登录请求的序列化器"""
     phone = serializers.CharField(max_length=11)
-    password = serializers.CharField(min_length=1)
+    password = serializers.CharField()
     remember_me = serializers.BooleanField(required=False, default=False)
 
     def validate_phone(self, value):

@@ -6,8 +6,8 @@
         <div class="stat-icon">{{ stat.icon }}</div>
         <div class="stat-value">{{ stats[stat.key] ?? '-' }}</div>
         <div class="stat-label">{{ stat.label }}</div>
-        <div class="stat-trend" v-if="stat.trend" :class="stat.trend > 0 ? 'up' : 'down'">
-          {{ stat.trend > 0 ? '↑' : '↓' }} {{ Math.abs(stat.trend) }}%
+        <div class="stat-trend" v-if="stats[stat.trendKey]" :class="stats[stat.trendKey] > 0 ? 'up' : 'down'">
+          {{ stats[stat.trendKey] > 0 ? '↑' : '↓' }} {{ Math.abs(stats[stat.trendKey]) }}%
         </div>
       </div>
     </div>
@@ -15,36 +15,17 @@
     <!-- Trend Chart -->
     <el-card class="section-card">
       <template #header>
-        <span>最近7天商机趋势</span>
+        <span>商机趋势近30天</span>
       </template>
-      <div class="trend-chart">
+      <div class="trend-chart" v-loading="trendLoading">
         <div class="chart-bars">
-          <div v-for="(val, idx) in trendData" :key="idx" class="chart-bar-item">
-            <div class="chart-bar" :style="{ height: val + '%' }" />
-            <span class="chart-label">{{ trendLabels[idx] }}</span>
+          <div v-for="(item, idx) in trendData" :key="idx" class="chart-bar-item">
+            <div class="chart-bar" :style="{ height: barHeight(item.count) + '%' }" />
+            <span class="chart-label">{{ item.label }}</span>
           </div>
         </div>
+        <el-empty v-if="!trendLoading && trendData.length === 0" description="暂无趋势数据" />
       </div>
-    </el-card>
-
-    <!-- Recent Enterprises -->
-    <el-card class="section-card">
-      <template #header>
-        <span>最新企业入驻</span>
-      </template>
-      <el-table :data="recentEnterprises" v-loading="entLoading" empty-text="暂无入驻数据">
-        <el-table-column prop="name" label="企业名称" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="industry_name" label="行业" min-width="120" />
-        <el-table-column prop="province_name" label="地区" min-width="120" />
-        <el-table-column prop="auth_status" label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.auth_status === 'verified' ? 'success' : row.auth_status === 'pending' ? 'warning' : 'info'" size="small">
-              {{ row.auth_status === 'verified' ? '已认证' : row.auth_status === 'pending' ? '审核中' : '未认领' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="created_at" label="入驻时间" min-width="170" />
-      </el-table>
     </el-card>
   </div>
 </template>
@@ -52,27 +33,33 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getDashboardStats, getAuditList } from '../../api/platAdmin'
+import { getDashboardStats, getDashboardTrend } from '../../api/platAdmin'
 
 const stats = ref({
-  total_enterprises: 0,
-  total_opportunities: 0,
-  total_matchmaking: 0,
-  total_users: 0,
+  enterprise_count: 0,
+  opportunity_count: 0,
+  deal_count: 0,
+  active_user_count: 0,
+  enterprise_trend: 0,
+  opportunity_trend: 0,
+  deal_trend: 0,
 })
 
 const statsConfig = [
-  { key: 'total_enterprises', label: '入驻企业', icon: '🏢', trend: 12 },
-  { key: 'total_opportunities', label: '累计商机', icon: '📋', trend: 8 },
-  { key: 'total_matchmaking', label: '成功撮合', icon: '🤝', trend: 15 },
-  { key: 'total_users', label: '活跃校友', icon: '👥', trend: 5 },
+  { key: 'enterprise_count', label: '入驻企业', icon: '🏢', trendKey: 'enterprise_trend' },
+  { key: 'opportunity_count', label: '发布商机', icon: '📋', trendKey: 'opportunity_trend' },
+  { key: 'deal_count', label: '成功撮合', icon: '🤝', trendKey: 'deal_trend' },
+  { key: 'active_user_count', label: '活跃用户', icon: '👥', trendKey: '' },
 ]
 
-const trendData = ref([40, 65, 55, 80, 70, 90, 85])
-const trendLabels = ref(['周一', '周二', '周三', '周四', '周五', '周六', '周日'])
+const trendLoading = ref(false)
+const trendData = ref([])
+const maxCount = ref(1)
 
-const entLoading = ref(false)
-const recentEnterprises = ref([])
+function barHeight(count) {
+  if (maxCount.value === 0) return 0
+  return Math.max((count / maxCount.value) * 100, 2)
+}
 
 async function fetchStats() {
   try {
@@ -85,23 +72,28 @@ async function fetchStats() {
   }
 }
 
-async function fetchRecentEnterprises() {
-  entLoading.value = true
+async function fetchTrend() {
+  trendLoading.value = true
   try {
-    const { data: res } = await getAuditList({ page: 1, page_size: 5 })
+    const { data: res } = await getDashboardTrend({ period: 30, type: 'opportunity' })
     if (res.code === 200) {
-      recentEnterprises.value = res.data.items || []
+      const items = res.data?.opportunity_trend || []
+      maxCount.value = Math.max(...items.map(i => i.count), 1)
+      trendData.value = items.map(item => ({
+        label: item.date.slice(5),
+        count: item.count,
+      }))
     }
   } catch {
     // silent
   } finally {
-    entLoading.value = false
+    trendLoading.value = false
   }
 }
 
 onMounted(() => {
   fetchStats()
-  fetchRecentEnterprises()
+  fetchTrend()
 })
 </script>
 
@@ -166,9 +158,8 @@ onMounted(() => {
 .chart-bars {
   display: flex;
   align-items: flex-end;
-  gap: 24px;
+  gap: 4px;
   width: 100%;
-  max-width: 600px;
   height: 160px;
 }
 
@@ -183,16 +174,18 @@ onMounted(() => {
 
 .chart-bar {
   width: 100%;
-  max-width: 40px;
+  max-width: 20px;
   background: linear-gradient(180deg, var(--color-primary), rgba(30, 136, 229, 0.3));
   border-radius: 4px 4px 0 0;
   transition: height 0.3s;
 }
 
 .chart-label {
-  font-size: 0.75rem;
+  font-size: 0.6rem;
   color: var(--color-text-placeholder);
-  margin-top: 8px;
+  margin-top: 4px;
+  transform: rotate(-45deg);
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {

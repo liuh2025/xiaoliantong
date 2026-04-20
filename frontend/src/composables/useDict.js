@@ -12,7 +12,7 @@ export function useDict() {
   async function fetchIndustries(parentId = 0) {
     loading.value = true
     try {
-      const { data } = await request.get('/ent/dict/industry', { params: { parent_id: parentId } })
+      const { data } = await request.get('/ent/industry/', { params: { parent_id: parentId } })
       if (data.code === 200) {
         if (parentId === 0) {
           industries.value = data.data || []
@@ -28,7 +28,7 @@ export function useDict() {
   async function fetchCategories() {
     loading.value = true
     try {
-      const { data } = await request.get('/ent/dict/category')
+      const { data } = await request.get('/ent/category/')
       if (data.code === 200) {
         categories.value = data.data || []
       }
@@ -40,7 +40,7 @@ export function useDict() {
   async function fetchRegions(parentId = 0) {
     loading.value = true
     try {
-      const { data } = await request.get('/ent/dict/region', { params: { parent_id: parentId } })
+      const { data } = await request.get('/ent/region/', { params: { parent_id: parentId } })
       if (data.code === 200) {
         if (parentId === 0) {
           provinces.value = data.data || []

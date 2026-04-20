@@ -162,7 +162,7 @@ function cancelEdit() {
 async function saveEdit() {
   saving.value = true
   try {
-    const { data: res } = await updateMyEnterprise(form.value)
+    const { data: res } = await updateMyEnterprise(enterprise.value.id, form.value)
     if (res.code === 200) {
       ElMessage.success('保存成功')
       editing.value = false
