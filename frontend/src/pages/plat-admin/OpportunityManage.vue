@@ -8,12 +8,12 @@
       <!-- Filters -->
       <div class="filter-bar">
         <el-select v-model="filterType" placeholder="类型" clearable style="width: 120px" @change="fetchData">
-          <el-option label="采购" value="buy" />
-          <el-option label="供应" value="supply" />
+          <el-option label="采购" value="BUY" />
+          <el-option label="供应" value="SUPPLY" />
         </el-select>
         <el-select v-model="filterStatus" placeholder="状态" clearable style="width: 120px" @change="fetchData">
-          <el-option label="上线中" value="active" />
-          <el-option label="已下线" value="offline" />
+          <el-option label="上线中" value="ACTIVE" />
+          <el-option label="已下线" value="OFFLINE" />
         </el-select>
       </div>
 
@@ -22,15 +22,15 @@
         <el-table-column prop="enterprise_name" label="所属企业" min-width="150" show-overflow-tooltip />
         <el-table-column prop="type" label="类型" width="90">
           <template #default="{ row }">
-            <el-tag :type="row.type === 'buy' ? 'warning' : 'success'" size="small">
-              {{ row.type === 'buy' ? '采购' : '供应' }}
+            <el-tag :type="row.type === 'BUY' ? 'warning' : 'success'" size="small">
+              {{ row.type === 'BUY' ? '采购' : '供应' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="90">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">
-              {{ row.status === 'active' ? '上线' : '下线' }}
+            <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'" size="small">
+              {{ row.status === 'ACTIVE' ? '上线' : '下线' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -40,7 +40,7 @@
           <template #default="{ row }">
             <el-button size="small" @click="openDetail(row)">查看</el-button>
             <el-button
-              v-if="row.status === 'active'"
+              v-if="row.status === 'ACTIVE'"
               size="small"
               type="danger"
               @click="openOfflineDialog(row)"
@@ -68,13 +68,13 @@
         <el-descriptions-item label="标题">{{ detail.title }}</el-descriptions-item>
         <el-descriptions-item label="所属企业">{{ detail.enterprise_name }}</el-descriptions-item>
         <el-descriptions-item label="类型">
-          <el-tag :type="detail.type === 'buy' ? 'warning' : 'success'" size="small">
-            {{ detail.type === 'buy' ? '采购' : '供应' }}
+          <el-tag :type="detail.type === 'BUY' ? 'warning' : 'success'" size="small">
+            {{ detail.type === 'BUY' ? '采购' : '供应' }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="状态">
-          <el-tag :type="detail.status === 'active' ? 'success' : 'info'" size="small">
-            {{ detail.status === 'active' ? '上线' : '下线' }}
+          <el-tag :type="detail.status === 'ACTIVE' ? 'success' : 'info'" size="small">
+            {{ detail.status === 'ACTIVE' ? '上线' : '下线' }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="行业">{{ detail.industry_name || '-' }}</el-descriptions-item>
@@ -187,7 +187,7 @@ async function submitOffline() {
   }
   submitting.value = true
   try {
-    const { data: res } = await offlineContentOpportunity(currentRow.value.id)
+    const { data: res } = await offlineContentOpportunity(currentRow.value.id, { reason: offlineForm.value.reason })
     if (res.code === 200) {
       ElMessage.success('已下线')
       offlineVisible.value = false

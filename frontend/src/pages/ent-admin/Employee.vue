@@ -26,13 +26,13 @@
       </div>
 
       <el-table :data="employees" v-loading="loading" empty-text="暂无员工数据">
-        <el-table-column prop="username" label="姓名" min-width="100">
+        <el-table-column prop="real_name" label="姓名" min-width="100">
           <template #default="{ row }">
             <div style="display:flex;align-items:center;gap:8px;">
               <div style="width:32px;height:32px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;flex-shrink:0;">
-                {{ (row.username || '?').charAt(0) }}
+                {{ (row.real_name || row.phone || '?').charAt(0) }}
               </div>
-              {{ row.username }}
+              {{ row.real_name || row.phone || '-' }}
             </div>
           </template>
         </el-table-column>
@@ -86,10 +86,10 @@
       destroy-on-close
     >
       <el-form :model="dialogForm" label-width="80px">
-        <el-form-item v-if="!isEdit" label="姓名" required>
-          <el-input v-model="dialogForm.name" placeholder="请输入员工姓名" />
+        <el-form-item label="姓名" required>
+          <el-input v-model="dialogForm.real_name" placeholder="请输入员工姓名" />
         </el-form-item>
-        <el-form-item v-if="!isEdit" label="职位" required>
+        <el-form-item label="职位">
           <el-input v-model="dialogForm.position" placeholder="请输入职位" />
         </el-form-item>
         <el-form-item v-if="!isEdit" label="手机号" required>
@@ -101,7 +101,7 @@
             <el-option label="管理员" value="enterprise_admin" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="!isEdit" label="状态">
+        <el-form-item label="账号状态">
           <el-switch v-model="dialogForm.is_active" active-text="启用" inactive-text="停用" />
         </el-form-item>
       </el-form>
@@ -136,7 +136,7 @@ const dialogSaving = ref(false)
 const isEdit = ref(false)
 const editId = ref(null)
 const dialogForm = ref({
-  name: '',
+  real_name: '',
   position: '',
   phone: '',
   role_code: 'employee',
@@ -172,14 +172,19 @@ async function fetchData() {
 function openCreateDialog() {
   isEdit.value = false
   editId.value = null
-  dialogForm.value = { name: '', position: '', phone: '', role_code: 'employee', is_active: true }
+  dialogForm.value = { real_name: '', position: '', phone: '', role_code: 'employee', is_active: true }
   dialogVisible.value = true
 }
 
 function openEditDialog(row) {
   isEdit.value = true
   editId.value = row.id
-  dialogForm.value = { role_code: row.role_code }
+  dialogForm.value = {
+    real_name: row.real_name || '',
+    position: row.position || '',
+    role_code: row.role_code,
+    is_active: row.is_active,
+  }
   dialogVisible.value = true
 }
 
@@ -213,7 +218,7 @@ async function submitDialog() {
 async function handleResetPassword(row) {
   try {
     await ElMessageBox.confirm(
-      `确定要重置员工 "${row.username || row.phone}" 的密码吗？`,
+      `确定要重置员工 "${row.real_name || row.phone}" 的密码吗？`,
       '重置密码',
       { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' },
     )
@@ -232,7 +237,7 @@ async function handleToggleDisable(row) {
   const action = row.is_active ? '停用' : '启用'
   try {
     await ElMessageBox.confirm(
-      `确定要${action}员工 "${row.username || row.phone}" 吗？`,
+      `确定要${action}员工 "${row.real_name || row.phone}" 吗？`,
       action + '员工',
       { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' },
     )
@@ -251,7 +256,7 @@ async function handleToggleDisable(row) {
 async function handleUnbind(row) {
   try {
     await ElMessageBox.confirm(
-      `确定要解绑员工 "${row.username || row.phone}" 吗？此操作不可恢复。`,
+      `确定要解绑员工 "${row.real_name || row.phone}" 吗？此操作不可恢复。`,
       '解绑员工',
       { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' },
     )

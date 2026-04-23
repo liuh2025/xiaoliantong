@@ -97,6 +97,7 @@
           <div class="sidebar-card">
             <div class="sidebar-header">
               <h3>新入驻企业</h3>
+              <router-link to="/enterprise" class="sidebar-more">全部 ></router-link>
             </div>
             <div class="sidebar-list" v-loading="entLoading">
               <div
@@ -241,7 +242,7 @@
           </div>
           <h3 style="margin:8px 0 4px;">
             {{ drawerEnterprise.name }}
-            <span v-if="drawerEnterprise.auth_status === 'verified'" class="verified-badge">✓</span>
+            <span v-if="drawerEnterprise.auth_status === 'VERIFIED'" class="verified-badge">✓</span>
           </h3>
           <p style="color:var(--color-text-secondary);font-size:14px;">{{ drawerEnterprise.industry_name || '' }}</p>
         </div>
@@ -259,6 +260,31 @@
             {{ drawerEnterprise.description || '暂无简介' }}
           </el-descriptions-item>
         </el-descriptions>
+
+        <!-- Opportunities -->
+        <div style="margin-top:16px;">
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:8px;">
+            该企业发布的商机
+            <span v-if="drawerEnterprise.opportunities" style="font-size:12px;color:#999;font-weight:400;">
+              ({{ drawerEnterprise.opportunities.length }})
+            </span>
+          </h4>
+          <div v-if="drawerEnterprise.opportunities && drawerEnterprise.opportunities.length" class="drawer-opp-list">
+            <div
+              v-for="opp in drawerEnterprise.opportunities"
+              :key="opp.id"
+              class="drawer-opp-item"
+              @click="openContactDialog(opp.id)"
+            >
+              <span class="opp-type-tag" :class="opp.type === 'buy' ? 'type-buy' : 'type-supply'">
+                {{ opp.type === 'buy' ? '我要买' : '我能供' }}
+              </span>
+              <span class="opp-title-text">{{ opp.title }}</span>
+              <span class="opp-time">{{ opp.created_at }}</span>
+            </div>
+          </div>
+          <div v-else style="color:#999;font-size:13px;text-align:center;padding:16px 0;">暂无发布的商机</div>
+        </div>
       </div>
     </el-drawer>
   </div>
@@ -268,11 +294,13 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '../../stores/auth'
 import { getRecommended, createOpportunity, getContact } from '../../api/opportunity'
-import { getNewestEnterprise, getEnterpriseDetail, getDictIndustry, getDictCategory, getDictRegion } from '../../api/enterprise'
+import { getNewestEnterprise, getEnterpriseDetail, getDictIndustry, getDictCategory, getDictRegion, getHomeStats } from '../../api/enterprise'
 import { getNewestFeed } from '../../api/feed'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const stats = ref({})
 const recommendedOpps = ref([])
@@ -376,13 +404,22 @@ async function loadNewestFeeds() {
 async function loadDictData() {
   try {
     const [indRes, catRes, regRes] = await Promise.all([
-      getDictIndustry({ parent_id: '' }),
+      getDictIndustry({ parent_id: 0 }),
       getDictCategory(),
-      getDictRegion({ parent_id: '' }),
+      getDictRegion({ parent_id: 0 }),
     ])
     if (indRes.data.code === 200) industryOptions.value = indRes.data.data || []
     if (catRes.data.code === 200) categoryOptions.value = catRes.data.data || []
     if (regRes.data.code === 200) provinceOptions.value = regRes.data.data || []
+  } catch { /* silent */ }
+}
+
+async function loadStats() {
+  try {
+    const { data: res } = await getHomeStats()
+    if (res.code === 200 && res.data) {
+      stats.value = res.data
+    }
   } catch { /* silent */ }
 }
 
@@ -421,7 +458,21 @@ async function submitPublish() {
   }
   publishSaving.value = true
   try {
-    const { data: res } = await createOpportunity(publishForm.value)
+    const user = authStore.user
+    const payload = {
+      type: publishForm.value.type.toUpperCase() === 'BUY' ? 'BUY' : 'SUPPLY',
+      title: publishForm.value.title,
+      industry_id: publishForm.value.industry_1 || 0,
+      sub_industry_id: publishForm.value.industry_2 || 0,
+      category_id: publishForm.value.category || 0,
+      province_id: publishForm.value.province || 0,
+      region_id: publishForm.value.city || 0,
+      detail: publishForm.value.description || '无',
+      tags: publishForm.value.tags || [],
+      contact_name: user?.real_name || '',
+      contact_phone: user?.phone || '',
+    }
+    const { data: res } = await createOpportunity(payload)
     if (res.code === 200) {
       ElMessage.success('发布成功')
       publishVisible.value = false
@@ -484,6 +535,7 @@ async function openEnterpriseDrawer(id) {
 }
 
 onMounted(() => {
+  loadStats()
   loadRecommendedOpps()
   loadNewestEnts()
   loadNewestFeeds()
@@ -738,6 +790,16 @@ onMounted(() => {
   padding: 14px 16px;
   border-bottom: 1px solid #f0f0f0;
   font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-more {
+  font-size: 13px;
+  color: var(--color-primary, #1e88e5);
+  text-decoration: none;
+  font-weight: 400;
 }
 .sidebar-header h3 {
   margin: 0;
@@ -849,6 +911,49 @@ onMounted(() => {
 .contact-value {
   flex: 1;
   font-weight: 500;
+}
+
+/* Drawer Opportunity List */
+.drawer-opp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.drawer-opp-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.drawer-opp-item:hover {
+  background: #e3f2fd;
+}
+.opp-type-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.opp-type-tag.type-buy { background: #fff3e0; color: #ef6c00; }
+.opp-type-tag.type-supply { background: #e8f5e9; color: #43a047; }
+.opp-title-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.drawer-opp-item .opp-time {
+  font-size: 11px;
+  color: #999;
+  flex-shrink: 0;
 }
 
 /* Drawer Logo */

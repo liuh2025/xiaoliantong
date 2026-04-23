@@ -508,8 +508,30 @@ class TenantEnterpriseToggleStatusView(APIView):
         except Enterprise.DoesNotExist:
             return _error_response('企业不存在', 404)
 
+        was_active = enterprise.is_active
         enterprise.is_active = not enterprise.is_active
         enterprise.save(update_fields=['is_active', 'updated_at'])
+
+        if was_active and not enterprise.is_active:
+            # Disable cascade: disable all members + offline all opportunities
+            from django.contrib.auth.models import User
+            member_ids = UserProfile.objects.filter(
+                enterprise_id=enterprise.id,
+            ).values_list('user_id', flat=True)
+            User.objects.filter(id__in=member_ids).update(is_active=False)
+
+            from apps.opportunity.models import Opportunity
+            Opportunity.objects.filter(
+                enterprise_id=enterprise.id,
+                status=Opportunity.OppStatus.ACTIVE,
+            ).update(status=Opportunity.OppStatus.OFFLINE)
+        elif not was_active and enterprise.is_active:
+            # Re-enable: re-activate all members
+            from django.contrib.auth.models import User
+            member_ids = UserProfile.objects.filter(
+                enterprise_id=enterprise.id,
+            ).values_list('user_id', flat=True)
+            User.objects.filter(id__in=member_ids).update(is_active=True)
 
         return _success_response({
             'id': enterprise.id,

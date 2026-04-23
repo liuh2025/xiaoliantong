@@ -10,8 +10,9 @@
 
       <el-tabs v-model="activeCategory" @tab-change="fetchData">
         <el-tab-pane label="行业" name="industry" />
-        <el-tab-pane label="地区" name="region" />
-        <el-tab-pane label="分类" name="category" />
+        <el-tab-pane label="业务品类" name="category" />
+        <el-tab-pane label="业务标签" name="tag" />
+        <el-tab-pane label="行政区划" name="region" />
       </el-tabs>
 
       <el-table
@@ -35,11 +36,10 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="openCreateDialog(row)">添加子项</el-button>
             <el-button size="small" @click="openEditDialog(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -76,8 +76,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMasterDataList, createMasterData, updateMasterData, deleteMasterData } from '../../api/platAdmin'
+import { ElMessage } from 'element-plus'
+import { getMasterDataList, createMasterData, updateMasterData, toggleMasterDataStatus } from '../../api/platAdmin'
 
 const loading = ref(false)
 const activeCategory = ref('industry')
@@ -115,7 +115,6 @@ function buildTree(items) {
       roots.push(map[item.id])
     }
   })
-  // Remove empty children arrays for leaf nodes
   function clean(nodes) {
     nodes.forEach((node) => {
       if (node.children.length === 0) {
@@ -199,31 +198,13 @@ async function submitDialog() {
   }
 }
 
-async function handleDelete(row) {
+async function handleToggleActive(row) {
   try {
-    await ElMessageBox.confirm(
-      `确定要删除 "${row.name}" 吗？子节点也会一并删除。`,
-      '删除确认',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' },
-    )
-    const { data: res } = await deleteMasterData(row.id)
+    const { data: res } = await toggleMasterDataStatus(row.id)
     if (res.code === 200) {
-      ElMessage.success('已删除')
-      await fetchData()
-    } else {
-      ElMessage.error(res.message || '删除失败')
-    }
-  } catch {
-    // cancelled
-  }
-}
-
-async function handleToggleActive(row, val) {
-  try {
-    const { data: res } = await updateMasterData(row.id, { is_active: val })
-    if (res.code === 200) {
-      ElMessage.success(val ? '已启用' : '已停用')
-      row.is_active = val
+      const newState = !row.is_active
+      ElMessage.success(newState ? '已启用' : '已停用')
+      row.is_active = newState
     } else {
       ElMessage.error(res.message || '操作失败')
     }

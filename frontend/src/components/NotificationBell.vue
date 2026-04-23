@@ -8,7 +8,7 @@
     <div class="notif-panel">
       <div class="notif-header">
         <span>消息通知</span>
-        <el-button link size="small" @click="store.markAllRead">全部已读</el-button>
+        <el-button link size="small" @click="handleMarkAllRead">全部已读</el-button>
       </div>
       <div class="notif-list">
         <div
@@ -32,12 +32,18 @@
 
 <script setup>
 import { Bell } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { useNotificationStore } from '../stores/notification'
 
 const store = useNotificationStore()
 
 function handleShow() {
   store.fetchRecent()
+}
+
+async function handleMarkAllRead() {
+  await store.markAllRead()
+  ElMessage.success('已全部已读')
 }
 </script>
 

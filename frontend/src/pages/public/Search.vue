@@ -122,12 +122,12 @@ function truncateText(text, maxLen) {
 }
 
 function authStatusLabel(status) {
-  const map = { unclaimed: '未认领', pending: '审核中', verified: '已认证', rejected: '已驳回' }
+  const map = { UNCLAIMED: '未认领', PENDING: '审核中', VERIFIED: '已认证', REJECTED: '已驳回' }
   return map[status] || status
 }
 
 function authStatusTagType(status) {
-  const map = { unclaimed: 'info', pending: 'warning', verified: 'success', rejected: 'danger' }
+  const map = { UNCLAIMED: 'info', PENDING: 'warning', VERIFIED: 'success', REJECTED: 'danger' }
   return map[status] || 'info'
 }
 

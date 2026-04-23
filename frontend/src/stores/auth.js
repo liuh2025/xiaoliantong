@@ -9,7 +9,7 @@ export const useAuthStore = defineStore('auth', () => {
   const refreshToken = ref(localStorage.getItem('refresh_token') || '')
 
   const isLoggedIn = computed(() => !!accessToken.value)
-  const userName = computed(() => user.value?.username || '')
+  const userName = computed(() => user.value?.real_name || user.value?.phone || '')
   const userRole = computed(() => user.value?.role_code || 'guest')
   const enterpriseId = computed(() => user.value?.enterprise_id || null)
   const hasEnterprise = computed(() => !!enterpriseId.value)

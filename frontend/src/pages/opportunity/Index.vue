@@ -6,8 +6,8 @@
         <h1 class="page-title">商机广场</h1>
         <p class="page-subtitle">海量商机，快速匹配</p>
       </div>
-      <div class="page-actions">
-        <el-button type="primary" @click="openPublishDialog('buy')">+ 发布采购需求</el-button>
+      <div class="page-actions" v-if="authStore.hasEnterprise">
+        <el-button class="btn-buy" @click="openPublishDialog('buy')">+ 发布采购需求</el-button>
         <el-button type="success" @click="openPublishDialog('supply')">+ 发布供应能力</el-button>
       </div>
     </div>
@@ -18,7 +18,8 @@
         <!-- Type -->
         <div class="filter-section">
           <h3 class="filter-title">商机类型</h3>
-          <el-checkbox-group v-model="filters.types" @change="onFilterChange">
+          <el-checkbox-group v-model="filters.types" @change="onTypeFilterChange">
+            <el-checkbox label="全部" value="all" />
             <el-checkbox label="我要买" value="buy" />
             <el-checkbox label="我能供" value="supply" />
           </el-checkbox-group>
@@ -221,7 +222,7 @@
           </div>
           <h3 style="margin:8px 0 4px;">
             {{ drawerEnterprise.name }}
-            <span v-if="drawerEnterprise.auth_status === 'verified'" class="verified-badge">✓</span>
+            <span v-if="drawerEnterprise.auth_status === 'VERIFIED'" class="verified-badge">✓</span>
           </h3>
           <p style="color:var(--color-text-secondary);font-size:14px;">{{ drawerEnterprise.industry_name || '' }}</p>
         </div>
@@ -247,8 +248,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '../../stores/auth'
 import { getOpportunityList, createOpportunity, getContact } from '../../api/opportunity'
 import { getEnterpriseDetail, getDictIndustry, getDictCategory, getDictRegion } from '../../api/enterprise'
+
+const authStore = useAuthStore()
 
 // List state
 const loading = ref(false)
@@ -259,7 +263,7 @@ const pageSize = ref(10)
 
 // Filters
 const filters = ref({
-  types: [], industry: '', sub_industry: '', categories: [], province: '', city: '',
+  types: ['all'], industry: '', sub_industry: '', categories: [], province: '', city: '',
 })
 
 // Dict data
@@ -346,9 +350,9 @@ function formatTime(t) {
 async function loadDictData() {
   try {
     const [indRes, catRes, regRes] = await Promise.all([
-      getDictIndustry({ parent_id: '' }),
+      getDictIndustry({ parent_id: 0 }),
       getDictCategory(),
-      getDictRegion({ parent_id: '' }),
+      getDictRegion({ parent_id: 0 }),
     ])
     if (indRes.data.code === 200) industryOptions.value = indRes.data.data || []
     if (catRes.data.code === 200) categoryOptions.value = catRes.data.data || []
@@ -360,12 +364,13 @@ async function fetchData() {
   loading.value = true
   try {
     const params = { page: page.value, page_size: pageSize.value }
-    if (filters.value.types.length === 1) params.type = filters.value.types[0]
-    if (filters.value.industry) params.industry = filters.value.industry
-    if (filters.value.sub_industry) params.sub_industry = filters.value.sub_industry
-    if (filters.value.categories.length) params.category = filters.value.categories.join(',')
-    if (filters.value.province) params.province = filters.value.province
-    if (filters.value.city) params.city = filters.value.city
+    const activeTypes = filters.value.types.filter(t => t !== 'all')
+    if (activeTypes.length === 1) params.type = activeTypes[0]
+    if (filters.value.industry) params.industry_id = filters.value.industry
+    if (filters.value.sub_industry) params.sub_industry_id = filters.value.sub_industry
+    if (filters.value.categories.length) params.category_id = filters.value.categories.join(',')
+    if (filters.value.province) params.province_id = filters.value.province
+    if (filters.value.city) params.region_id = filters.value.city
     const { data: res } = await getOpportunityList(params)
     if (res.code === 200) {
       opportunities.value = res.data.items || []
@@ -405,6 +410,21 @@ async function onProvinceChange(val) {
   onFilterChange()
 }
 
+// Type filter handler: "全部" clears buy/supply, selecting buy/supply clears "全部"
+function onTypeFilterChange(val) {
+  if (val.includes('all')) {
+    if (val.length > 1) {
+      const last = val[val.length - 1]
+      if (last === 'all') {
+        filters.value.types = ['all']
+      } else {
+        filters.value.types = val.filter(t => t !== 'all')
+      }
+    }
+  }
+  onFilterChange()
+}
+
 function onFilterChange() {
   page.value = 1
   fetchData()
@@ -425,7 +445,7 @@ function removeFilterTag(tag) {
 }
 
 function resetFilters() {
-  filters.value = { types: [], industry: '', sub_industry: '', categories: [], province: '', city: '' }
+  filters.value = { types: ['all'], industry: '', sub_industry: '', categories: [], province: '', city: '' }
   subIndustryOptions.value = []
   cityOptions.value = []
   onFilterChange()
@@ -466,7 +486,21 @@ async function submitPublish() {
   }
   publishSaving.value = true
   try {
-    const { data: res } = await createOpportunity(publishForm.value)
+    const user = authStore.user
+    const payload = {
+      type: publishForm.value.type.toUpperCase() === 'BUY' ? 'BUY' : 'SUPPLY',
+      title: publishForm.value.title,
+      industry_id: publishForm.value.industry_1 || 0,
+      sub_industry_id: publishForm.value.industry_2 || 0,
+      category_id: publishForm.value.category || 0,
+      province_id: publishForm.value.province || 0,
+      region_id: publishForm.value.city || 0,
+      detail: publishForm.value.description || '无',
+      tags: publishForm.value.tags || [],
+      contact_name: user?.real_name || '',
+      contact_phone: user?.phone || '',
+    }
+    const { data: res } = await createOpportunity(payload)
     if (res.code === 200) {
       ElMessage.success('发布成功')
       publishVisible.value = false
@@ -551,6 +585,17 @@ onMounted(() => {
 .page-actions {
   display: flex;
   gap: 12px;
+}
+
+.btn-buy {
+  background: #ef6c00;
+  border-color: #ef6c00;
+  color: #fff;
+}
+
+.btn-buy:hover {
+  background: #f57c00;
+  border-color: #f57c00;
 }
 
 /* Layout */

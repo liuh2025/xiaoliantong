@@ -180,7 +180,9 @@
                 <div class="enterprise-info">
                   <div class="enterprise-name">
                     {{ ent.name }}
-                    <span v-if="ent.auth_status === 'verified'" class="verified-badge">&#10003;</span>
+                    <span v-if="ent.auth_status === 'VERIFIED'" class="auth-badge">&#10003; 已认证</span>
+                    <span v-else-if="ent.auth_status === 'PENDING'" class="auth-badge" style="background:#e6a23c;color:#fff;">&#9203; 待审核</span>
+                    <span v-else-if="ent.auth_status === 'REJECTED'" class="auth-badge" style="background:#f56c6c;color:#fff;">&#10007; 已拒绝</span>
                   </div>
                   <div class="enterprise-field">
                     {{ ent.business_field || ent.industry_name || '' }}
@@ -239,7 +241,9 @@
             </div>
             <h2 class="drawer-name">
               {{ detailData.name }}
-              <span v-if="detailData.auth_status === 'verified'" class="verified-badge-lg">已认证 &#10003;</span>
+              <span v-if="detailData.auth_status === 'VERIFIED'" class="verified-badge-lg">已认证 &#10003;</span>
+              <span v-else-if="detailData.auth_status === 'PENDING'" class="verified-badge-lg" style="background:#e6a23c;color:#fff;">&#9203; 待审核</span>
+              <span v-else-if="detailData.auth_status === 'REJECTED'" class="verified-badge-lg" style="background:#f56c6c;color:#fff;">&#10007; 已拒绝</span>
             </h2>
             <p class="drawer-field">{{ detailData.business_field || detailData.industry_name || '' }}</p>
           </div>
@@ -952,13 +956,13 @@ async function loadEnterprises() {
       page: currentPage.value,
       page_size: pageSize.value,
     }
-    if (filters.industry) params.industry = filters.industry
-    if (filters.sub_industry) params.sub_industry = filters.sub_industry
-    if (filters.categoryList.length === 1) params.category = filters.categoryList[0]
-    if (filters.province) params.province = filters.province
-    if (filters.city) params.city = filters.city
+    if (filters.industry) params.industry_id = filters.industry
+    if (filters.sub_industry) params.sub_industry_id = filters.sub_industry
+    if (filters.categoryList.length > 0) params.category_id = filters.categoryList.join(',')
+    if (filters.province) params.province_id = filters.province
+    if (filters.city) params.region_id = filters.city
     if (filters.tags.length) params.tags = filters.tags.join(',')
-    if (filters.search) params.search = filters.search
+    if (filters.search) params.keyword = filters.search
 
     const { data } = await getEnterpriseList(params)
     if (data.code === 200) {
@@ -1014,7 +1018,7 @@ async function openClaimDialog() {
 async function loadUnclaimedEnts() {
   claimLoading.value = true
   try {
-    const { data } = await getEnterpriseList({ auth_status: 'unclaimed', page_size: 50 })
+    const { data } = await getEnterpriseList({ auth_status: 'UNCLAIMED', page_size: 50 })
     if (data.code === 200) {
       unclaimedEnts.value = data.data.items || data.data || []
     }
@@ -1043,12 +1047,11 @@ async function submitClaim() {
   }
   claimSubmitting.value = true
   try {
-    const payload = new FormData()
-    payload.append('enterprise_id', selectedClaimEnt.value.id)
-    payload.append('legal_representative', claimForm.legal_representative)
-    payload.append('position', claimForm.position)
-    if (claimForm.business_license) {
-      payload.append('business_license', claimForm.business_license)
+    const payload = {
+      enterprise_id: selectedClaimEnt.value.id,
+      legal_representative: claimForm.legal_representative,
+      position: claimForm.position,
+      business_license: '',
     }
     const { data } = await claimEnterprise(payload)
     if (data.code === 200) {
@@ -1144,20 +1147,20 @@ async function submitCreate() {
   }
   createSaving.value = true
   try {
-    const payload = new FormData()
-    payload.append('name', createForm.name)
-    payload.append('credit_code', createForm.credit_code)
-    if (createForm.industry) payload.append('industry', createForm.industry)
-    if (createForm.sub_industry) payload.append('sub_industry', createForm.sub_industry)
-    if (createForm.category) payload.append('category', createForm.category)
-    if (createForm.province) payload.append('province', createForm.province)
-    if (createForm.city) payload.append('city', createForm.city)
-    if (createForm.tags.length) payload.append('tags', JSON.stringify(createForm.tags))
-    if (createForm.logo) payload.append('logo', createForm.logo)
-    if (createForm.description) payload.append('description', createForm.description)
-    payload.append('legal_representative', createForm.legal_representative)
-    if (createForm.business_license) payload.append('business_license', createForm.business_license)
-    payload.append('position', createForm.position)
+    const payload = {
+      name: createForm.name,
+      credit_code: createForm.credit_code,
+      legal_representative: createForm.legal_representative,
+      business_license: '',
+      industry_id: createForm.industry || 0,
+      sub_industry_id: createForm.sub_industry || 0,
+      category_id: createForm.category || 0,
+      province_id: createForm.province || 0,
+      region_id: createForm.city || 0,
+      tags: createForm.tags || [],
+      description: createForm.description || '',
+    }
+    if (createForm.position) payload.position = createForm.position
 
     const { data } = await createEnterprise(payload)
     if (data.code === 200) {
@@ -1466,6 +1469,19 @@ onMounted(() => {
 .verified-badge {
   color: var(--color-success);
   font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  background: #ECFDF5;
+  color: #43a047;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
   flex-shrink: 0;
 }
 

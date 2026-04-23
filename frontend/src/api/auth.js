@@ -37,10 +37,10 @@ export function getUserInfo() {
 
 // POST /auth/refresh
 export function refreshToken(refresh) {
-  return request.post('/auth/refresh', { refresh })
+  return request.post('/auth/refresh/', { refresh_token: refresh })
 }
 
 // POST /auth/logout
 export function logout(refresh) {
-  return request.post('/auth/logout', { refresh })
+  return request.post('/auth/logout/', { refresh_token: refresh })
 }

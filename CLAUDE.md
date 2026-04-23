@@ -8,7 +8,7 @@
 
 - **项目名称**: XiaoLianTong
 - **项目简称**: XLT
-- **当前阶段**: M3 开发阶段
+- **当前阶段**: M4 测试阶段
 - **当前版本**: v0.1.0
 - **技术栈**: Python (Django+DRF) + Vue3 + MySQL + Docker
 - **开发模式**: TDD + 六阶段里程碑管理

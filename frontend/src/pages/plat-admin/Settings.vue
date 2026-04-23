@@ -1,9 +1,10 @@
 <template>
   <div class="settings-page">
+    <!-- 基础设置 -->
     <el-card v-loading="loading">
       <template #header>
         <div class="card-header">
-          <span>系统设置</span>
+          <span>基础设置</span>
           <el-button v-if="!editing" type="primary" @click="startEdit">编辑</el-button>
           <div v-else class="edit-actions">
             <el-button @click="cancelEdit">取消</el-button>
@@ -12,62 +13,49 @@
         </div>
       </template>
 
-      <el-empty v-if="!loading && displaySettings.length === 0" description="暂无系统设置" />
-
-      <el-descriptions v-else :column="1" border>
-        <el-descriptions-item
-          v-for="item in displaySettings"
-          :key="item.key"
-          :label="item.label || item.key"
-        >
+      <el-descriptions :column="1" border>
+        <el-descriptions-item label="平台名称">
           <template v-if="editing">
-            <el-input v-if="typeof item.value === 'string'" v-model="form[item.key]" />
-            <el-input-number
-              v-else-if="typeof item.value === 'number'"
-              v-model="form[item.key]"
-              :min="0"
-            />
-            <el-switch v-else-if="typeof item.value === 'boolean'" v-model="form[item.key]" />
+            <el-input v-model="form.platform_name" />
           </template>
-          <template v-else>
-            <span v-if="typeof item.value === 'boolean'">
-              <el-tag :type="item.value ? 'success' : 'info'" size="small">
-                {{ item.value ? '是' : '否' }}
-              </el-tag>
-            </span>
-            <span v-else>{{ item.value }}</span>
+          <template v-else>{{ settings.platform_name || '-' }}</template>
+        </el-descriptions-item>
+        <el-descriptions-item label="客服热线">
+          <template v-if="editing">
+            <el-input v-model="form.support_phone" />
           </template>
+          <template v-else>{{ settings.support_phone || '-' }}</template>
         </el-descriptions-item>
       </el-descriptions>
+    </el-card>
+
+    <!-- 安全与策略（预留） -->
+    <el-card class="section-card">
+      <template #header>
+        <span>安全与策略</span>
+      </template>
+      <el-empty description="功能开发中，敬请期待" :image-size="60" />
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getSettings, updateSettings } from '../../api/platAdmin'
 
 const loading = ref(false)
 const saving = ref(false)
 const editing = ref(false)
-const rawSettings = ref({})
+const settings = ref({})
 const form = ref({})
-
-const displaySettings = computed(() => {
-  return Object.entries(rawSettings.value).map(([key, value]) => ({
-    key,
-    value,
-    label: key,
-  }))
-})
 
 async function fetchData() {
   loading.value = true
   try {
     const { data: res } = await getSettings()
     if (res.code === 200) {
-      rawSettings.value = res.data || {}
+      settings.value = res.data.items || res.data || {}
     }
   } catch {
     ElMessage.error('加载设置失败')
@@ -78,7 +66,10 @@ async function fetchData() {
 
 function startEdit() {
   editing.value = true
-  form.value = { ...rawSettings.value }
+  form.value = {
+    platform_name: settings.value.platform_name || '',
+    support_phone: settings.value.support_phone || '',
+  }
 }
 
 function cancelEdit() {
@@ -88,14 +79,17 @@ function cancelEdit() {
 async function saveEdit() {
   saving.value = true
   try {
-    const { data: res } = await updateSettings(form.value)
-    if (res.code === 200) {
-      ElMessage.success('保存成功')
-      editing.value = false
-      await fetchData()
-    } else {
-      ElMessage.error(res.message || '保存失败')
+    const keys = Object.keys(form.value)
+    for (const key of keys) {
+      const { data: res } = await updateSettings({ key, value: form.value[key] })
+      if (res.code !== 200) {
+        ElMessage.error(res.message || '保存失败')
+        return
+      }
     }
+    ElMessage.success('保存成功')
+    editing.value = false
+    await fetchData()
   } catch {
     ElMessage.error('保存失败')
   } finally {
@@ -116,5 +110,9 @@ onMounted(fetchData)
 .edit-actions {
   display: flex;
   gap: 8px;
+}
+
+.section-card {
+  margin-top: 16px;
 }
 </style>

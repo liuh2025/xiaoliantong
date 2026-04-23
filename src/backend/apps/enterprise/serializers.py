@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.enterprise.models import Enterprise, MasterData
+from apps.opportunity.models import Opportunity
 
 
 class EnterpriseListSerializer(serializers.ModelSerializer):
@@ -25,34 +26,49 @@ class EnterpriseListSerializer(serializers.ModelSerializer):
         return obj.auth_status == Enterprise.AuthStatus.VERIFIED
 
     def get_industry_name(self, obj):
-        """Return industry name (placeholder until ENT-008 implements dict API)."""
-        if not self._is_verified(obj):
+        """Return industry name from MasterData."""
+        if not self._is_verified(obj) or not obj.industry_id:
             return ''
-        return ''
+        md = MasterData.objects.filter(
+            id=obj.industry_id, category='industry', is_active=True,
+        ).first()
+        return md.name if md else ''
 
     def get_sub_industry_name(self, obj):
-        """Return sub-industry name (placeholder until ENT-008 implements dict API)."""
-        if not self._is_verified(obj):
+        """Return sub-industry name from MasterData."""
+        if not self._is_verified(obj) or not obj.sub_industry_id:
             return ''
-        return ''
+        md = MasterData.objects.filter(
+            id=obj.sub_industry_id, category='industry', is_active=True,
+        ).first()
+        return md.name if md else ''
 
     def get_category_name(self, obj):
-        """Return category name (placeholder until ENT-008 implements dict API)."""
-        if not self._is_verified(obj):
+        """Return category name from MasterData."""
+        if not self._is_verified(obj) or not obj.category_id:
             return ''
-        return ''
+        md = MasterData.objects.filter(
+            id=obj.category_id, category='category', is_active=True,
+        ).first()
+        return md.name if md else ''
 
     def get_province_name(self, obj):
-        """Return province name (placeholder until ENT-008 implements dict API)."""
-        if not self._is_verified(obj):
+        """Return province name from MasterData."""
+        if not self._is_verified(obj) or not obj.province_id:
             return ''
-        return ''
+        md = MasterData.objects.filter(
+            id=obj.province_id, category='region', is_active=True,
+        ).first()
+        return md.name if md else ''
 
     def get_region_name(self, obj):
-        """Return region name (placeholder until ENT-008 implements dict API)."""
-        if not self._is_verified(obj):
+        """Return region (city) name from MasterData."""
+        if not self._is_verified(obj) or not obj.region_id:
             return ''
-        return ''
+        md = MasterData.objects.filter(
+            id=obj.region_id, category='region', is_active=True,
+        ).first()
+        return md.name if md else ''
 
     def to_representation(self, instance):
         """Apply desensitization for non-VERIFIED enterprises."""
@@ -103,24 +119,49 @@ class EnterpriseDetailSerializer(serializers.ModelSerializer):
         return obj.auth_status == Enterprise.AuthStatus.VERIFIED
 
     def get_industry_name(self, obj):
-        """Return industry name (placeholder until ENT-008 implements dict API)."""
-        return ''
+        """Return industry name from MasterData."""
+        if not obj.industry_id:
+            return ''
+        md = MasterData.objects.filter(
+            id=obj.industry_id, category='industry', is_active=True,
+        ).first()
+        return md.name if md else ''
 
     def get_sub_industry_name(self, obj):
-        """Return sub-industry name (placeholder until ENT-008 implements dict API)."""
-        return ''
+        """Return sub-industry name from MasterData."""
+        if not obj.sub_industry_id:
+            return ''
+        md = MasterData.objects.filter(
+            id=obj.sub_industry_id, category='industry', is_active=True,
+        ).first()
+        return md.name if md else ''
 
     def get_category_name(self, obj):
-        """Return category name (placeholder until ENT-008 implements dict API)."""
-        return ''
+        """Return category name from MasterData."""
+        if not obj.category_id:
+            return ''
+        md = MasterData.objects.filter(
+            id=obj.category_id, category='category', is_active=True,
+        ).first()
+        return md.name if md else ''
 
     def get_province_name(self, obj):
-        """Return province name (placeholder until ENT-008 implements dict API)."""
-        return ''
+        """Return province name from MasterData."""
+        if not obj.province_id:
+            return ''
+        md = MasterData.objects.filter(
+            id=obj.province_id, category='region', is_active=True,
+        ).first()
+        return md.name if md else ''
 
     def get_region_name(self, obj):
-        """Return region name (placeholder until ENT-008 implements dict API)."""
-        return ''
+        """Return region (city) name from MasterData."""
+        if not obj.region_id:
+            return ''
+        md = MasterData.objects.filter(
+            id=obj.region_id, category='region', is_active=True,
+        ).first()
+        return md.name if md else ''
 
     def get_admin_user_name(self, obj):
         """Return admin user's full name (VERIFIED only, None otherwise)."""
@@ -153,11 +194,19 @@ class EnterpriseDetailSerializer(serializers.ModelSerializer):
             return None
 
     def get_opportunities(self, obj):
-        """Return latest 3 opportunities published by the enterprise.
-
-        TODO: 待 opp 模块开发后替换为实际查询，当前返回空列表。
-        """
-        return []
+        """Return latest 5 active opportunities published by the enterprise."""
+        opps = Opportunity.objects.filter(
+            enterprise=obj, status=Opportunity.OppStatus.ACTIVE,
+        ).order_by('-created_at')[:5]
+        return [
+            {
+                'id': o.id,
+                'title': o.title,
+                'type': o.type,
+                'created_at': o.created_at.strftime('%Y-%m-%d') if o.created_at else '',
+            }
+            for o in opps
+        ]
 
     def to_representation(self, instance):
         """Apply desensitization for non-VERIFIED enterprises."""
@@ -174,11 +223,19 @@ class EnterpriseDetailSerializer(serializers.ModelSerializer):
 class EnterpriseClaimSerializer(serializers.Serializer):
     """Serializer for enterprise claim request."""
 
-    credit_code = serializers.CharField(required=True, max_length=18)
+    credit_code = serializers.CharField(required=False, max_length=18, allow_blank=True)
+    enterprise_id = serializers.IntegerField(required=False)
+    legal_representative = serializers.CharField(required=False, max_length=50, allow_blank=True)
+    business_license = serializers.CharField(required=False, max_length=500, allow_blank=True)
+    position = serializers.CharField(required=False, max_length=50, allow_blank=True)
 
 
 class EnterpriseCreateSerializer(serializers.ModelSerializer):
     """Serializer for enterprise create request."""
+
+    business_license = serializers.CharField(
+        max_length=500, required=False, allow_blank=True, default='',
+    )
 
     class Meta:
         model = Enterprise
