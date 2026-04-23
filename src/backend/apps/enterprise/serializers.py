@@ -233,6 +233,10 @@ class EnterpriseClaimSerializer(serializers.Serializer):
 class EnterpriseCreateSerializer(serializers.ModelSerializer):
     """Serializer for enterprise create request."""
 
+    business_license = serializers.CharField(
+        max_length=500, required=False, allow_blank=True, default='',
+    )
+
     class Meta:
         model = Enterprise
         fields = [

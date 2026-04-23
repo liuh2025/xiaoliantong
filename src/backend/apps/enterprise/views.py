@@ -116,14 +116,13 @@ class EnterpriseListView(APIView):
 
     def _apply_filters(self, queryset, params):
         """Apply filtering based on query parameters."""
-        filter_mapping = {
+        single_val_filters = {
             'industry_id': 'industry_id',
             'sub_industry_id': 'sub_industry_id',
-            'category_id': 'category_id',
             'province_id': 'province_id',
             'region_id': 'region_id',
         }
-        for param_name, field_name in filter_mapping.items():
+        for param_name, field_name in single_val_filters.items():
             value = params.get(param_name)
             if value is not None:
                 try:
@@ -131,6 +130,16 @@ class EnterpriseListView(APIView):
                 except (ValueError, TypeError):
                     continue
                 queryset = queryset.filter(**{field_name: value})
+
+        # category_id supports comma-separated values (multi-select)
+        category_param = params.get('category_id')
+        if category_param:
+            try:
+                ids = [int(v.strip()) for v in category_param.split(',') if v.strip()]
+            except (ValueError, TypeError):
+                ids = []
+            if ids:
+                queryset = queryset.filter(category_id__in=ids)
 
         # Tags filter: comma-separated string, match enterprises whose
         # tags JSON array contains any of the specified tag values.

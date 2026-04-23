@@ -7,9 +7,9 @@
 
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="全部" name="all" />
-        <el-tab-pane label="待审核" name="pending" />
-        <el-tab-pane label="已通过" name="approved" />
-        <el-tab-pane label="已拒绝" name="rejected" />
+        <el-tab-pane label="待审核" name="PENDING" />
+        <el-tab-pane label="已通过" name="APPROVED" />
+        <el-tab-pane label="已拒绝" name="REJECTED" />
       </el-tabs>
 
       <el-table :data="list" v-loading="loading" empty-text="暂无审核数据">
@@ -24,7 +24,7 @@
         <el-table-column prop="created_at" label="申请时间" min-width="170" />
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <template v-if="row.status === 'pending'">
+            <template v-if="row.status === 'PENDING'">
               <el-button size="small" type="success" @click="openApproveDialog(row)">通过</el-button>
               <el-button size="small" type="danger" @click="openRejectDialog(row)">拒绝</el-button>
             </template>
@@ -112,11 +112,11 @@ const approveForm = ref({ reason: '' })
 const rejectForm = ref({ reason: '' })
 
 const statusMap = {
-  pending: { label: '待审核', type: 'warning' },
-  approved: { label: '已通过', type: 'success' },
-  verified: { label: '已认证', type: 'success' },
-  rejected: { label: '已拒绝', type: 'danger' },
-  unclaimed: { label: '未认领', type: 'info' },
+  PENDING: { label: '待审核', type: 'warning' },
+  APPROVED: { label: '已通过', type: 'success' },
+  VERIFIED: { label: '已认证', type: 'success' },
+  REJECTED: { label: '已拒绝', type: 'danger' },
+  UNCLAIMED: { label: '未认领', type: 'info' },
 }
 
 function statusType(status) {

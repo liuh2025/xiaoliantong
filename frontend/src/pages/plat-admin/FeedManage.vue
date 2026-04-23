@@ -16,8 +16,8 @@
           @keyup.enter="fetchData"
         />
         <el-select v-model="filterStatus" placeholder="状态" clearable style="width: 140px" @change="fetchData">
-          <el-option label="正常" value="active" />
-          <el-option label="已下线" value="offline" />
+          <el-option label="正常" value="ACTIVE" />
+          <el-option label="已下线" value="OFFLINE" />
         </el-select>
         <el-button type="primary" @click="fetchData">搜索</el-button>
       </div>
@@ -28,8 +28,8 @@
         <el-table-column prop="enterprise_name" label="所属企业" min-width="150" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" width="90">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">
-              {{ row.status === 'active' ? '正常' : '已下线' }}
+            <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'" size="small">
+              {{ row.status === 'ACTIVE' ? '正常' : '已下线' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -38,7 +38,7 @@
           <template #default="{ row }">
             <el-button size="small" @click="openDetailDialog(row)">查看详情</el-button>
             <el-button
-              v-if="row.status === 'active'"
+              v-if="row.status === 'ACTIVE'"
               size="small"
               type="danger"
               @click="openOfflineDialog(row)"
@@ -84,8 +84,8 @@
           <el-descriptions-item label="发布人">{{ detailRow.publisher_name }}</el-descriptions-item>
           <el-descriptions-item label="所属企业">{{ detailRow.enterprise_name || '-' }}</el-descriptions-item>
           <el-descriptions-item label="状态">
-            <el-tag :type="detailRow.status === 'active' ? 'success' : 'info'" size="small">
-              {{ detailRow.status === 'active' ? '正常' : '已下线' }}
+            <el-tag :type="detailRow.status === 'ACTIVE' ? 'success' : 'info'" size="small">
+              {{ detailRow.status === 'ACTIVE' ? '正常' : '已下线' }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="发布时间">{{ detailRow.created_at }}</el-descriptions-item>

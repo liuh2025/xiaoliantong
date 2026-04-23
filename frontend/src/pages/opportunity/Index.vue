@@ -6,7 +6,7 @@
         <h1 class="page-title">商机广场</h1>
         <p class="page-subtitle">海量商机，快速匹配</p>
       </div>
-      <div class="page-actions">
+      <div class="page-actions" v-if="authStore.hasEnterprise">
         <el-button class="btn-buy" @click="openPublishDialog('buy')">+ 发布采购需求</el-button>
         <el-button type="success" @click="openPublishDialog('supply')">+ 发布供应能力</el-button>
       </div>
@@ -222,7 +222,7 @@
           </div>
           <h3 style="margin:8px 0 4px;">
             {{ drawerEnterprise.name }}
-            <span v-if="drawerEnterprise.auth_status === 'verified'" class="verified-badge">✓</span>
+            <span v-if="drawerEnterprise.auth_status === 'VERIFIED'" class="verified-badge">✓</span>
           </h3>
           <p style="color:var(--color-text-secondary);font-size:14px;">{{ drawerEnterprise.industry_name || '' }}</p>
         </div>
@@ -248,8 +248,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '../../stores/auth'
 import { getOpportunityList, createOpportunity, getContact } from '../../api/opportunity'
 import { getEnterpriseDetail, getDictIndustry, getDictCategory, getDictRegion } from '../../api/enterprise'
+
+const authStore = useAuthStore()
 
 // List state
 const loading = ref(false)
@@ -363,11 +366,11 @@ async function fetchData() {
     const params = { page: page.value, page_size: pageSize.value }
     const activeTypes = filters.value.types.filter(t => t !== 'all')
     if (activeTypes.length === 1) params.type = activeTypes[0]
-    if (filters.value.industry) params.industry = filters.value.industry
-    if (filters.value.sub_industry) params.sub_industry = filters.value.sub_industry
-    if (filters.value.categories.length) params.category = filters.value.categories.join(',')
-    if (filters.value.province) params.province = filters.value.province
-    if (filters.value.city) params.city = filters.value.city
+    if (filters.value.industry) params.industry_id = filters.value.industry
+    if (filters.value.sub_industry) params.sub_industry_id = filters.value.sub_industry
+    if (filters.value.categories.length) params.category_id = filters.value.categories.join(',')
+    if (filters.value.province) params.province_id = filters.value.province
+    if (filters.value.city) params.region_id = filters.value.city
     const { data: res } = await getOpportunityList(params)
     if (res.code === 200) {
       opportunities.value = res.data.items || []
@@ -483,7 +486,21 @@ async function submitPublish() {
   }
   publishSaving.value = true
   try {
-    const { data: res } = await createOpportunity(publishForm.value)
+    const user = authStore.user
+    const payload = {
+      type: publishForm.value.type.toUpperCase() === 'BUY' ? 'BUY' : 'SUPPLY',
+      title: publishForm.value.title,
+      industry_id: publishForm.value.industry_1 || 0,
+      sub_industry_id: publishForm.value.industry_2 || 0,
+      category_id: publishForm.value.category || 0,
+      province_id: publishForm.value.province || 0,
+      region_id: publishForm.value.city || 0,
+      detail: publishForm.value.description || '无',
+      tags: publishForm.value.tags || [],
+      contact_name: user?.real_name || '',
+      contact_phone: user?.phone || '',
+    }
+    const { data: res } = await createOpportunity(payload)
     if (res.code === 200) {
       ElMessage.success('发布成功')
       publishVisible.value = false

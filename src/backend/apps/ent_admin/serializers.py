@@ -44,7 +44,7 @@ class EmployeeCreateSerializer(serializers.Serializer):
 class EmployeeUpdateSerializer(serializers.Serializer):
     """Serializer for updating an employee."""
 
-    real_name = serializers.CharField(max_length=50, required=False, allow_blank=True, min_length=1)
+    real_name = serializers.CharField(max_length=50, required=False, allow_blank=True)
     position = serializers.CharField(max_length=50, required=False, allow_null=True, allow_blank=True)
     role_code = serializers.ChoiceField(choices=['enterprise_admin', 'employee'], required=False)
     is_active = serializers.BooleanField(required=False)

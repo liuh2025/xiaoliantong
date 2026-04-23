@@ -1,7 +1,7 @@
 import request from './request'
 
 export const getEnterpriseList = (params) => request.get('/ent/enterprise/', { params })
-export const getEnterpriseDetail = (id) => request.get(`/ent/enterprise/${id}`)
+export const getEnterpriseDetail = (id) => request.get(`/ent/enterprise/${id}/`)
 export const createEnterprise = (data) => request.post('/ent/enterprise/create/', data)
 export const claimEnterprise = (data) => request.post('/ent/enterprise/claim/', data)
 export const getMyEnterprise = () => request.get('/ent/enterprise/my/')

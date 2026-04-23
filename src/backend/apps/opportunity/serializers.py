@@ -135,10 +135,10 @@ class OpportunityCreateSerializer(serializers.Serializer):
     category_id = serializers.IntegerField()
     province_id = serializers.IntegerField()
     region_id = serializers.IntegerField()
-    detail = serializers.CharField()
+    detail = serializers.CharField(allow_blank=True, default='')
     tags = serializers.JSONField(required=False, default=list)
-    contact_name = serializers.CharField(max_length=50)
-    contact_phone = serializers.CharField(max_length=11)
+    contact_name = serializers.CharField(max_length=50, allow_blank=True, default='')
+    contact_phone = serializers.CharField(max_length=11, allow_blank=True, default='')
     contact_wechat = serializers.CharField(
         max_length=50, required=False, allow_blank=True, default='',
     )

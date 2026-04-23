@@ -109,7 +109,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.role && userInfo) {
     try {
       const user = JSON.parse(userInfo)
-      if (to.meta.role === 'enterprise_admin' && !user.enterprise_id) {
+      if (to.meta.role === 'enterprise_admin' && (user.role_code !== 'enterprise_admin' || !user.enterprise_id)) {
         return next({ name: 'Home' })
       }
       if (to.meta.role === 'platform_operator' && user.role_code !== 'platform_operator' && user.role_code !== 'super_admin') {

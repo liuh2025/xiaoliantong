@@ -118,10 +118,10 @@ const form = ref({
 })
 
 const authStatusMap = {
-  verified: { label: '已认证', type: 'success' },
-  pending: { label: '审核中', type: 'warning' },
-  rejected: { label: '已拒绝', type: 'danger' },
-  unclaimed: { label: '未认领', type: 'info' },
+  VERIFIED: { label: '已认证', type: 'success' },
+  PENDING: { label: '审核中', type: 'warning' },
+  REJECTED: { label: '已拒绝', type: 'danger' },
+  UNCLAIMED: { label: '未认领', type: 'info' },
 }
 
 const authStatusType = computed(() => {

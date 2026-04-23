@@ -242,7 +242,7 @@
           </div>
           <h3 style="margin:8px 0 4px;">
             {{ drawerEnterprise.name }}
-            <span v-if="drawerEnterprise.auth_status === 'verified'" class="verified-badge">✓</span>
+            <span v-if="drawerEnterprise.auth_status === 'VERIFIED'" class="verified-badge">✓</span>
           </h3>
           <p style="color:var(--color-text-secondary);font-size:14px;">{{ drawerEnterprise.industry_name || '' }}</p>
         </div>
@@ -294,11 +294,13 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '../../stores/auth'
 import { getRecommended, createOpportunity, getContact } from '../../api/opportunity'
 import { getNewestEnterprise, getEnterpriseDetail, getDictIndustry, getDictCategory, getDictRegion, getHomeStats } from '../../api/enterprise'
 import { getNewestFeed } from '../../api/feed'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const stats = ref({})
 const recommendedOpps = ref([])
@@ -456,7 +458,21 @@ async function submitPublish() {
   }
   publishSaving.value = true
   try {
-    const { data: res } = await createOpportunity(publishForm.value)
+    const user = authStore.user
+    const payload = {
+      type: publishForm.value.type.toUpperCase() === 'BUY' ? 'BUY' : 'SUPPLY',
+      title: publishForm.value.title,
+      industry_id: publishForm.value.industry_1 || 0,
+      sub_industry_id: publishForm.value.industry_2 || 0,
+      category_id: publishForm.value.category || 0,
+      province_id: publishForm.value.province || 0,
+      region_id: publishForm.value.city || 0,
+      detail: publishForm.value.description || '无',
+      tags: publishForm.value.tags || [],
+      contact_name: user?.real_name || '',
+      contact_phone: user?.phone || '',
+    }
+    const { data: res } = await createOpportunity(payload)
     if (res.code === 200) {
       ElMessage.success('发布成功')
       publishVisible.value = false

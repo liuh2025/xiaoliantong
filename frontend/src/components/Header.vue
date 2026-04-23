@@ -24,7 +24,7 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-if="authStore.hasEnterprise" @click="$router.push('/ent-admin')">
+                <el-dropdown-item v-if="authStore.userRole === 'enterprise_admin'" @click="$router.push('/ent-admin')">
                   企业工作台
                 </el-dropdown-item>
                 <el-dropdown-item
